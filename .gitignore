@@ -53,3 +53,11 @@ outputs/tables/*
 
 # Logs
 *.log
+
+# Local build scratch
+tmp/
+
+# Presentation QA render artifacts and Office lock files
+presentations/*/
+presentations/*.inspect.ndjson
+presentations/~$*
