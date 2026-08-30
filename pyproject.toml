@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chennai-routing"
+version = "0.1.0"
+description = "Setup scaffold for flood- and congestion-aware dynamic traffic routing for Chennai."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "osmnx>=1.9",
+    "networkx>=3.2",
+    "geopandas>=0.14",
+    "shapely>=2.0",
+    "pandas>=2.1",
+    "numpy>=1.26",
+    "matplotlib>=3.8",
+    "requests>=2.30",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

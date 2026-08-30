@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+build/
+dist/
+*.egg-info/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Test and coverage artifacts
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+
+# IDE/editor settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Data and generated outputs
+cache/
+data/raw/*
+data/processed/*
+outputs/*
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!outputs/maps/
+outputs/maps/*
+!outputs/maps/.gitkeep
+!outputs/figures/
+outputs/figures/*
+!outputs/figures/.gitkeep
+!outputs/tables/
+outputs/tables/*
+!outputs/tables/.gitkeep
+
+# Logs
+*.log
