@@ -6,9 +6,9 @@
 
 ## 1. Executive Summary
 
-Stage 1 is a valid, reproducible proof of concept, but it is much smaller than the proposed final system. It downloads a small Chennai OpenStreetMap (OSM) graph, maps historical 2015 flood hotspots to nearby roads, assigns one mapped edge a controlled `BLOCKED` state, converts that state to zero effective capacity and infinite BPR travel time, and reruns NetworkX Dijkstra. It does **not** yet ingest rainfall, model current flooding, simulate traffic, process incidents, implement emergency priority, or control rerouting.
+Stage 1 is a valid, rerunnable proof of concept, but it is much smaller than the proposed final system. It downloads a small Chennai OpenStreetMap (OSM) graph, maps historical 2015 flood hotspots to nearby roads, assigns one mapped edge a controlled `BLOCKED` state, converts that state to zero effective capacity and infinite BPR travel time, and reruns NetworkX Dijkstra. Its live OSM/OpenCity inputs are mutable and unpinned, so identical future bytes/routes are not guaranteed. It does **not** yet ingest rainfall, model current flooding, simulate traffic, process incidents, implement emergency priority, or control rerouting.
 
-The current implementation is **snapshot dynamic shortest-path routing with refreshed edge weights**, not a formal time-dependent shortest-path algorithm. The edge cost used during a query is a scalar. It does not depend on the time at which a vehicle enters that edge.
+The current implementation is **two static shortest-path queries on different scenario snapshots**, not a formal time-dependent or incremental dynamic-shortest-path algorithm. The edge cost used during a query is a scalar. It does not depend on the time at which a vehicle enters that edge.
 
 ### Decision
 
@@ -20,11 +20,11 @@ CCH separates:
 2. comparatively fast customization when BPR/flood/incident weights change; and
 3. fast hierarchical route queries.
 
-That workflow matches this project better than repeatedly searching the full Chennai graph after every update. CCH was specifically designed for road networks with changing metrics ([Dibbelt, Strasser, and Wagner, 2016](https://doi.org/10.1145/2886843)). It is exact for the customized non-negative scalar metric. It is not a new algorithm and is not, by itself, the project's novelty.
+That workflow matches this project better than repeatedly searching the full Chennai graph after every update. CCH was specifically designed for road networks with changing metrics ([Dibbelt, Strasser, and Wagner, 2016](https://doi.org/10.1145/2886843)). It can be exact for the represented non-negative integer metric; floating BPR times require a documented, overflow-safe quantization whose error must be measured. It is not a new algorithm and is not, by itself, the project's novelty.
 
-**Backup recommendation: D* Lite.**
+**Backup recommendation: ALT-guided bidirectional A\*.**
 
-D* Lite incrementally repairs a previous route after local edge-cost changes and is easier to implement in pure Python ([Koenig and Likhachev, 2002](https://cdn.aaai.org/AAAI/2002/AAAI02-072.pdf)). It is a reasonable fallback for a corridor, one vehicle/OD pair, and sparse closures. It is less suitable than CCH when BPR updates change many edges or many unrelated origin-destination queries must be answered.
+ALT uses precomputed landmark distances and triangle-inequality lower bounds to guide A* ([Goldberg and Harrelson, 2005](https://www.microsoft.com/en-us/research/publication/computing-the-shortest-path-a-search-meets-graph-theory/)). Bidirectional ALT/A* is less update-efficient than CCH but supports the same many-origin/many-destination workload, can be implemented and tested in Python, and can retain free-flow landmark bounds while congestion, flood, and incidents only increase travel time. D* Lite remains a useful experiment for one moving vehicle and sparse local closures, but it is not a full-system backup.
 
 ### Defensible novelty
 
@@ -47,7 +47,7 @@ OpenWeather is **not completely paid**. Its official pricing pages list a perman
 The active pipeline is in [`src/chennai_routing/stage1_poc.py`](../src/chennai_routing/stage1_poc.py):
 
 1. Fetch OpenCity CKAN metadata and the Chennai 2015 GCC flood-hotspot KML.
-2. Parse 327 historical point locations into EPSG:4326.
+2. Parse historical point locations into EPSG:4326; the last recorded run loaded 327, but that count is not invariant because the source is mutable.
 3. Center a small OSM driving-network query on the first usable point.
 4. Add OSM speed and free-flow travel-time attributes.
 5. Project flood points and roads to a local metric CRS.
@@ -87,7 +87,7 @@ where:
 - \(m(\text{NORMAL})=1\), \(m(\text{DEGRADED})=0.7\), \(m(\text{SEVERE})=0.3\), and \(m(\text{BLOCKED})=0\);
 - \(\alpha=0.15\), \(\beta=4\).
 
-These values are demonstration parameters, not Chennai-calibrated measurements. BPR is implemented in [`src/chennai_routing/models/bpr.py`](../src/chennai_routing/models/bpr.py), and capacity multipliers are in [`src/chennai_routing/models/capacity.py`](../src/chennai_routing/models/capacity.py).
+These values are demonstration parameters, not Chennai-calibrated measurements. Because all unblocked edges receive the same \(x/c=0.5\), their BPR multiplier is uniform and Stage 1 contains no spatial congestion differentiation; only the forced blockage changes route choice. BPR is implemented in [`src/chennai_routing/models/bpr.py`](../src/chennai_routing/models/bpr.py), and capacity multipliers are in [`src/chennai_routing/models/capacity.py`](../src/chennai_routing/models/capacity.py).
 
 ### 2.4 Representation status
 
@@ -147,7 +147,13 @@ A formal **time-dependent shortest-path** problem uses an edge travel-time funct
 w_e(\tau)
 \]
 
-where \(\tau\) is the time the vehicle enters edge \(e\). If a path reaches an edge at 08:35 rather than 08:10, the traversal cost can differ within the same query. Most exact time-dependent road algorithms assume FIFO: entering an edge later cannot produce an earlier exit solely by waiting on that edge. See the time-dependent routing overview and CATCHUp formulation in [Strasser, Zeitz, and Wagner (2020)](https://doi.org/10.4230/LIPIcs.ESA.2020.81).
+where \(\tau\) is the time the vehicle enters edge \(e\). If a path reaches an edge at 08:35 rather than 08:10, the traversal cost can differ within the same query. Most exact time-dependent road algorithms assume FIFO:
+
+\[
+\tau_1 \leq \tau_2 \implies \tau_1+w_e(\tau_1)\leq \tau_2+w_e(\tau_2).
+\]
+
+Entering an edge later therefore cannot produce an earlier exit solely because of its travel-time function. See the CATCHUp formulation in [Strasser, Zeitz, and Wagner (2020)](https://doi.org/10.4230/LIPIcs.ESA.2020.81).
 
 ### 3.2 Classification of Stage 1
 
@@ -158,7 +164,7 @@ Stage 1:
 - changes one edge to infinite cost;
 - runs another independent shortest-path query.
 
-It is therefore **dynamic shortest path with snapshot/time-varying edge weights**, not formal time-dependent routing. “Time-dependent Dijkstra” should not be used for the current implementation.
+It is therefore most precisely **two static shortest-path queries on different scenario snapshots**, not an incremental dynamic-shortest-path algorithm and not formal time-dependent routing. At system-design level, future snapshots may form a dynamic sequence, but Stage 1 implements no update algorithm or temporal edge function. “Time-dependent Dijkstra” should not be used for the current implementation.
 
 ## 4. Dijkstra Assessment
 
@@ -276,16 +282,32 @@ For this project, end-to-end RL is not recommended: Chennai training/validation 
 
 ### 6.1 Directly relevant routing work
 
-**S. Ganguly and S. Roy, “A Network Based Approach for Post-Disaster Relief by Vehicle Route Planning — Case Study of Chennai Floods,” 2017 International Conference on Information and Communication Technologies for Disaster Management.** [DOI](https://doi.org/10.1109/ICT-DM.2017.8275694).
+**Prasangsha Ganguly and Sudip Roy, “Post-Disaster Relief by Vehicle Route Planning and Service Time Estimation in Case of Chennai Floods,” 4th International Conference on Information and Communication Technologies for Disaster Management, 2017.** [DOI](https://doi.org/10.1109/ICT-DM.2017.8275694).
 
 The paper uses a Chennai/OSM post-disaster network, broken links, branch-and-bound vehicle routing, demand priorities, and service-time/queue considerations for relief distribution. It establishes that Chennai flood vehicle-route planning is not new. It does not provide the proposed near-real-time capacity/BPR customization, evolving rainfall/flood states, route hysteresis, broad congestion simulation, or CCH comparison.
 
 ### 6.2 Chennai flood mapping and transport exposure
 
-- “Flood Vulnerability Assessment of Urban Road Network: A Case Study of Chennai,” 2018. [DOI](https://doi.org/10.17485/ijst/2018/v11i6/110831). This concerns network vulnerability/exposure, not the proposed dynamic routing engine.
+- C. Faiz Ahmed and Natraj Kranthi, “Flood Vulnerability Assessment Using Geospatial Techniques: Chennai, India,” 2018. [DOI](https://doi.org/10.17485/ijst/2018/v11i6/110831). This concerns network vulnerability/exposure, not the proposed dynamic routing engine.
 - “Change Detection Based Flood Mapping of 2015 Flood Event of Chennai City Using Sentinel-1 SAR Images,” *IGARSS 2019*. [DOI](https://doi.org/10.1109/IGARSS.2019.8899282). Dense urban SAR limitations are relevant.
 - “Near Real Time Flood Inundation Mapping Using Social Media Data: A Case Study of Chennai Floods,” 2021. [DOI](https://doi.org/10.1186/s40677-021-00195-x). Crowdsourced observations can improve event validation but have spatial and participation bias.
 - “Flooded Streets—A Crowdsourced Sensing System for Disaster Response: A Case Study of Chennai Floods,” *IEEE Systems Conference*, 2016. [DOI](https://doi.org/10.1109/SYSENG.2016.7753186).
+- Rana Alabdan et al., “Assessment of Flood Vulnerability in a Coastal Metropolitan City for Sustainable Environmental Using Machine Learning Methods,” *Scientific Reports*, 2025. [DOI](https://doi.org/10.1038/s41598-025-08912-4). It uses 280 historical flood sites and twelve conditioning factors with ANN/random-forest susceptibility modelling, so an ML Chennai susceptibility map is not itself novel.
+
+### 6.2.1 Detailed Chennai prior-art extraction
+
+`—` means the paper did not implement that routing component; it does not mean the underlying phenomenon was absent.
+
+| Paper | Data and method | Routing/traffic/capacity | Dynamic evidence and priority | Stability/satellite | Limitation and remaining gap |
+|---|---|---|---|---|---|
+| Prasangsha Ganguly & Sudip Roy, “Post-Disaster Relief by Vehicle Route Planning and Service Time Estimation in Case of Chennai Floods,” ICT-DM 2017, [DOI](https://doi.org/10.1109/ICT-DM.2017.8275694) | OSM processed in QGIS; target relief locations, priorities, broken links; branch-and-bound vehicle routing plus queueing service-time model | Minimizes travel/service time; no reported BPR, dynamic congestion, accident stream, or calibrated capacity degradation | Historical 2015 disaster case; relief-location priority, not live emergency-vehicle preemption; no IMERG rainfall | Broken links are scenario constraints; no event-trigger threshold/hysteresis; no satellite routing input reported | Directly occupies Chennai flood relief routing, but not changing traffic/flood states, CCH, or feedback-aware rerouting |
+| C. Faiz Ahmed & Natraj Kranthi, “Flood Vulnerability Assessment Using Geospatial Techniques: Chennai, India,” *Indian Journal of Science and Technology* 11(6), 2018, [DOI](https://doi.org/10.17485/ijst/2018/v11i6/110831) | Landsat-8 OLI, Sentinel-1, CartoDEM-3 R1, watershed and GIS indices; quantifies built, road, rail, and population exposure | No route algorithm, BPR, congestion, incidents, or dynamic capacity | Historical 2015 flood; no vehicle priority or live rainfall-to-route process | Satellite-based vulnerability classes; no route stability | Supports susceptibility/exposure validation, not operational road routing or road-level passability |
+| Venkata Sai Krishna Vanama & Y. S. Rao, “Change Detection Based Flood Mapping of 2015 Flood Event of Chennai City Using Sentinel-1 SAR Images,” *IGARSS 2019*, [DOI](https://doi.org/10.1109/IGARSS.2019.8899282) | Pre-/during-flood Sentinel-1 VV GRDH; normalized change index and thresholding | No routing, traffic, BPR, incidents, priority, or capacity model | Historical event imagery, not continuous rainfall/road updates | Underestimated flooding in dense urban areas because of moderate effective resolution | Useful warning/validation source; cannot supply fine-grained live street passability |
+| Dhivya Karmegam, Sivakumar Ramamoorthy & Bagavandas Mappillairaju, “Near Real Time Flood Inundation Mapping Using Social Media Data…,” *Geoenvironmental Disasters* 8:25, 2021, [DOI](https://doi.org/10.1186/s40677-021-00195-x) | Twitter/Facebook posts from 1–3 Dec 2015; keyword filtering; 95 depth/location reports, 72 in Chennai; interpolation and limited field validation | No routing, BPR, congestion, accidents, capacity, or vehicle priority | Event-time crowdsourced depth evidence; not a supported operational API | No rerouting stability; no satellite routing engine | Reported about ±0.3 m RMSE, but sparse/self-selected reports and interpolation bias prevent road truth |
+| Nitin Naik, “Flooded Streets—A Crowdsourced Sensing System for Disaster Response: A Case Study,” *IEEE ISSE 2016*, [DOI](https://doi.org/10.1109/SYSENG.2016.7753186) | OSM/Mapbox tool; crowd reports for more than 2,500 streets; low-lying layers from ISRO/NASA and inundation context | A public situational map, not an optimized routing, BPR, traffic, or capacity system | Event-time citizen reports; no formal emergency priority algorithm or rainfall model | No threshold/hysteresis; map layers rather than route evaluation | Demonstrates Chennai road-level crowdsourcing prior art; provenance, false reports, and reproducible archive access remain concerns |
+| Rana Alabdan et al., “Assessment of Flood Vulnerability in a Coastal Metropolitan City for Sustainable Environmental Using Machine Learning Methods,” *Scientific Reports*, 2025, [DOI](https://doi.org/10.1038/s41598-025-08912-4) | 280 historical flood sites and twelve conditioning factors; ANN and random forest susceptibility models | No route engine, BPR traffic, incident stream, or capacity-update evaluation reported | Static susceptibility mapping rather than event-time vehicle priority | No route stability; geospatial conditioning factors | Directly occupies Chennai ML susceptibility modelling; dynamic road-state and route evaluation remain separate |
+
+No reviewed Chennai paper in this extraction implements scripted accidents, a current congestion feed, a CCH/dynamic-label engine, route-switch hysteresis, or simultaneous projected-load updates. These statements are bounded to the reviewed sources and cutoff, not universal absence claims.
 
 ### 6.3 Chennai traffic simulation evidence
 
@@ -318,7 +340,7 @@ No reviewed source reproduces the entire proposed pipeline. However, there is su
 
 The safe statement is:
 
-> Searches completed through 3 September 2026 found no indexed work that evaluates the exact combination of Chennai-specific flood/rainfall evidence, unified effective-capacity/BPR updates, CCH metric customization, event-triggered stable rerouting, emergency-first route allocation, and feedback-aware projected loads.
+> This scoping search, completed through 3 September 2026, did not identify a work that evaluates the exact combination of Chennai-specific flood/rainfall evidence, unified effective-capacity/BPR updates, CCH metric customization, event-triggered stable rerouting, emergency-first route allocation, and feedback-aware projected loads.
 
 This is a **potential integration/evaluation gap**, not proof of universal absence.
 
@@ -388,12 +410,12 @@ Ratings are relative to this project, not universal rankings.
 | Dijkstra | Fresh query | Low at scale | Correct baseline | Handles changed weights only | Handles scalar BPR weights | Low | Essential baseline | None | Baseline only |
 | A* | Fresh query; heuristic reusable | Better than Dijkstra with strong admissible heuristic | Good | Handles changed weights | Good for snapshots | Low–medium | Useful baseline | None | Comparator |
 | Bidirectional A* | Fresh query from both ends | Often faster; stopping rules are subtle | Good | Same as A* | Good for snapshots | Medium | Useful comparator | None | Comparator |
-| ALT | Landmark preprocessing; changed weights may weaken/invalidate bounds | Fast static queries | Strong | Closures manageable only with valid lower bounds | Broad changes complicate landmarks | Medium | Good benchmark | None | Comparator |
+| ALT | Landmark lower bounds remain valid if dynamic costs never fall below the preprocessing metric | Faster guided queries; no metric customization | Strong | Closures and cost increases preserve free-flow bounds | Handles broad increases but cannot reuse prior search | Medium | Good full-workload fallback | None | **Backup with bidirectional A\*** |
 | CH | Weight-dependent hierarchy | Very fast queries; expensive rebuild after changes | Excellent static roads | Poor for frequent closures unless updated | Poorer for changing metrics | High | Established | None | Not primary |
 | **CCH** | Fast metric customization after topology preprocessing | Strong for update batches plus many queries | **Excellent** | Local or batch capacity changes fit customization | **Strong for refreshed BPR metric** | High but bounded | **High** | Engine itself none | **Primary** |
 | CATCHUp / TD-CCH | Time-dependent profiles; live updates remain complex | Fast exact TD queries after indexing | Excellent | Useful if hazard/traffic is forecast by entry time | Strong for predicted profiles | Very high; Rust research stack | High future value | None | Future upgrade, not current |
 | LPA* | Incrementally repairs changed vertices | Strong for repeated same OD and sparse changes | Good | Good for localized flood/incident changes | Weakens under network-wide flow refresh | Medium | Good ablation | None | Candidate, not primary |
-| D* Lite | LPA*-derived repair; moving start | Strong for one moving agent and sparse changes | Good on directed graphs with care | Good local closure repair | Poorer for many OD/global BPR changes | Medium | Strong backup | None | **Backup** |
+| D* Lite | LPA*-derived repair; moving start | Strong for one moving agent and sparse changes | Good on directed graphs with care | Good local closure repair | Poorer for many OD/global BPR changes | Medium | Strong ablation | None | Local-update comparator |
 | AD* / Anytime Dynamic A* | Incremental plus bounded-suboptimal anytime refinement | Useful under strict compute deadlines | Possible, mostly robotics evidence | Handles local updates | Limited road-network evidence | High | Interesting emergency ablation | None | Not primary |
 | Dynamic hub labeling | Maintains query labels | Excellent distance queries after complex updates | Strong research fit | Can reflect edge changes | Path recovery/turns/weights add work | Very high | High algorithm-study value | Existing | Not student core |
 | BatchHL+ | Batch insert/delete label maintenance | Excellent reported update/query scale | Generic large networks | Batch disruption concept fits | Floating weighted road integration uncertain | Very high; C++ research code | High comparator concept | Existing | Do not select |
@@ -401,6 +423,19 @@ Ratings are relative to this project, not universal rankings.
 | Partitioned Dynamic Hub Labeling | Incremental/partitioned index maintenance | Strong reported scale | Designed for large roads | Relevant | Relevant | Very high | Current research | Existing | Literature only |
 | Learning-assisted A*/GNN | Predictor changes costs/heuristic | Depends on model and safe fallback | Potentially good | Needs labeled hazard data | Strong prediction potential | High data burden | Optional future | Established combination | Predictor only |
 | End-to-end RL routing | Learns actions under simulation | Fast inference, expensive/fragile training | Possible | Distribution shift/safety risk | Can model interaction | Very high | Risky | Established | Not recommended |
+
+### 8.1 Mechanistic and implementation notes
+
+- **A\* / bidirectional A\*:** A* orders its priority queue by \(g+h\), while Dijkstra is the special case \(h=0\). An admissible, consistent straight-line/free-flow heuristic preserves optimality. Bidirectional A* searches from both endpoints, but correct stopping criteria and reverse costs on directed roads require care. Neither reuses the previous search after a weight update.
+- **ALT:** chooses landmarks and derives directed lower bounds from both orientations, for example \(\max\{d(L,t)-d(L,v),\,d(v,L)-d(t,L),\,0\}\). Preprocessing therefore stores distances to and from landmarks, and memory grows with landmark count. If those distances use physical/free-flow lower-bound costs and all BPR/hazard updates only increase costs, bounds remain admissible without rebuilding. Speed depends strongly on landmark quality.
+- **LPA\*:** stores each vertex's current cost \(g\) and one-step lookahead `rhs`; locally inconsistent vertices enter a two-component priority queue. Edge changes call `UpdateVertex`, and `ComputeShortestPath` repairs only the affected search region. Its reuse is tied to a related source/goal problem.
+- **D* Lite:** reverses the LPA* search direction and adds a key modifier as the start moves. It is well suited to one agent discovering local changes. Per-vehicle state and broad BPR updates make it unattractive for thousands of unrelated OD requests.
+- **AD\* / Anytime Dynamic A\*:** combines incremental repair with an inflated heuristic \(\epsilon h\), returns an \(\epsilon\)-bounded solution quickly, and reduces \(\epsilon\) as time permits. AD* and “Anytime Dynamic A*” are the same algorithm, not two separate candidates. Approximation complicates transport-policy comparisons.
+- **CH / CCH:** CH contracts vertices and inserts shortcuts under a weight-dependent order. CCH instead computes a metric-independent nested-dissection order/topology, then performs triangle-based basic or perfect customization for a weight vector. Queries search only upward arcs in both directions and unpack shortcuts. Partial customization support and guarantees are implementation-specific and must be verified rather than assumed.
+- **CATCHUp / time-dependent potentials:** CATCHUp stores paths in shortcuts and lazily derives time functions; the 2022 potential method combines predicted profiles with live changes. Both require FIFO temporal profiles and substantially more preprocessing/data engineering than this snapshot model.
+- **Dynamic hub labels / BatchHL+ / 2025 labels:** two-hop labels answer distances through common hubs; dynamic variants identify and repair affected labels after edge changes. BatchHL+ exploits interactions among batches. Stable Tree Labelling and Partitioned Dynamic Hub Labeling improve update/query/space trade-offs. Public prototypes focus on distance labels; complete route reconstruction, turns, floating weights, and Python packaging are not turnkey.
+- **Learning-assisted routing:** a GNN can predict edge travel time or provide a search heuristic, but a non-admissible learned heuristic loses exactness. The safe architecture predicts weights and leaves route feasibility to a deterministic engine.
+- **RL routing:** learns route/allocation actions from an environment and can represent multi-vehicle feedback, but performance depends on simulator fidelity, reward design, and transfer to unseen monsoon conditions. It has the highest data and validation burden.
 
 ## 9. Novelty Matrix
 
@@ -419,9 +454,11 @@ Ratings are relative to this project, not universal rankings.
 | Unified effective capacity for flood + incidents + congestion | Partial | Capacity reduction and BPR are common; exact integration varies | Medium | Transparent, traceable multi-hazard update mechanism |
 | CCH + Chennai flood-capacity batches | No exact match found | Searches through cutoff | Partial via CCH traffic customization and Chennai flood routing separately | **Underexplored implementation/evaluation combination** |
 | CCH + threshold/hysteresis + sequential projected loads | No exact match found | Searches through cutoff | Components individually established | **Potential systems contribution** |
-| Entire combination A from prompt | No exact match found | Broad multi-database search | Many components separately occupied | **Potential integration/evaluation gap** |
-| Combinations B–D | Partial | Incremental/dynamic flood routing exists; exact BPR/stability coupling not located | Medium–high | Comparative experimental gap, not new base algorithm |
-| Combination E | Partial | Physical capacity/disruption models exist | Medium | Traceable common-capacity implementation and sensitivity |
+| A: flood-aware dynamic routing + congestion + incidents + capacity degradation + BPR + event trigger + hysteresis + emergency priority + Chennai | No exact match in reviewed sources | Chennai relief routing: [Ganguly & Roy](https://doi.org/10.1109/ICT-DM.2017.8275694); dynamic flood/congestion: [CEUS 2021](https://doi.org/10.1016/j.compenvurbsys.2021.101622); emergency flood accessibility: [Natural Hazards 2026](https://doi.org/10.1007/s11069-026-08005-z); oscillation control is established separately | High component overlap, low exact-integration evidence | **Potential integration/evaluation gap only** |
+| B: incremental shortest path + flood-induced cost changes + capacity traffic model + controlled rerouting | Partial | LPA*/D* Lite are established; dynamic flood rerouting exists; capacity/BPR are established | High conceptual overlap; exact evaluation conjunction not located | Compare repair versus CCH/repeated Dijkstra under localized and broad updates; not a new algorithm claim |
+| C: anytime/incremental routing + flood severity + congestion + emergency priority + route stability | Partial | [AD*](https://aaai.org/papers/icaps-05-027-anytime-dynamic-a-an-anytime-replanning-algorithm/), [EMVLight](https://doi.org/10.1016/j.trc.2022.103955), flood/emergency work, and stability literature cover components | High | A bounded Chennai experiment may be useful, but “first anytime emergency flood router” is unsupported |
+| D: dynamic graph shortest-path methods + urban flood disruption + BPR traffic + realistic rerouting policy | Partial | [CCH](https://doi.org/10.1145/2886843), [BatchHL+](https://doi.org/10.1007/s00778-023-00799-9), flood routing, and BPR exist separately | Medium–high | Update-locality, batch-size, and rerouting-policy evaluation on Chennai may be underexplored |
+| E: flood, accidents, and congestion all translated through effective capacity instead of unrelated additive penalties | Partial | Flood depth/disruption functions ([Pregnolato et al.](https://doi.org/10.1016/j.trd.2017.06.020)), incident capacity reduction, and BPR are established; an exact matching Chennai implementation was not located | Medium | Traceable common-capacity model, calibration, and sensitivity are a defensible modelling/integration contribution |
 
 ### 9.1 Novelty classification
 
@@ -440,9 +477,9 @@ Ratings are relative to this project, not universal rankings.
 
 **Does not solve:** flood inference, BPR calibration, time dependence, threshold logic, or multi-vehicle equilibrium.
 
-**Complexity:** Native-library adapter, node/arc indexing, path unpacking, turn/parallel-edge handling, and persisted preprocessing. Use [RoutingKit](https://github.com/RoutingKit/RoutingKit) as the reference implementation. Python integration must be proved on the target machines before making it mandatory.
+**Complexity:** Native-library adapter, node/arc indexing, path unpacking, turn-expanded modelling, parallel-edge handling, integer-weight quantization, infinity sentinels, and persisted preprocessing. OSMnx's node-based graph does not automatically provide complete turn restrictions. Use [RoutingKit](https://github.com/RoutingKit/RoutingKit) as the reference implementation. Python integration must be proved on the target machines before making it mandatory.
 
-**Expected performance:** much faster queries than full-graph Dijkstra after customization; actual customization latency must be measured on the Chennai graph and update batches.
+**Expected performance:** likely much faster queries than full-graph Dijkstra after customization; actual graph size, memory, preprocessing, customization, query latency, OD volume, update frequency, and break-even point must be measured before the choice is locked for implementation.
 
 **Literature status:** mature and established. No novelty from merely using CCH.
 
@@ -492,7 +529,9 @@ Ratings are relative to this project, not universal rankings.
 
 ### 11.1 Exact name
 
-**Customizable Contraction Hierarchies (CCH), using metric customization after accepted road-cost update batches.**
+**Conditional primary: Customizable Contraction Hierarchies (CCH), using metric customization after accepted road-cost update batches.**
+
+“Conditional” means the research recommendation is CCH, but implementation approval requires a small feasibility benchmark proving native build portability, graph conversion, quantization error, path unpacking, and a favorable break-even point on the selected Chennai graph. If that gate fails, use the backup in Section 12.
 
 ### 11.2 Why it is appropriate
 
@@ -507,7 +546,7 @@ The Chennai road topology changes slowly. Flood severity, incidents, and traffic
 - query and update costs can be measured separately;
 - it scales more plausibly from the tiny Stage 1 bbox to a Chennai subnetwork.
 
-CCH still uses hierarchical shortest-path ideas and bidirectional searches internally. The honest claim is not “unrelated to Dijkstra”; it is “a preprocessed, customizable hierarchical road-network engine rather than repeated full-graph Dijkstra.”
+CCH still uses hierarchical shortest-path ideas and bidirectional searches internally. The honest claim is not “unrelated to Dijkstra”; it is “a preprocessed, customizable hierarchical road-network engine rather than repeated full-graph Dijkstra.” Exactness applies to the represented integer metric. Convert BPR seconds to bounded integers using a documented scale, test rounding-induced route changes, reserve a safe finite closure sentinel, and reject overflow.
 
 ### 11.4 Proposed interaction with the model
 
@@ -525,11 +564,28 @@ rain/flood/incident/SUMO update
 
 vehicle request
   -> class-specific feasibility/metric
-  -> CCH query
+  -> CCH candidate routes
+  -> rescore candidates using current projected loads
   -> route-stability acceptance check
   -> projected load reservation
-  -> next vehicle query
+  -> next vehicle in allocation sub-batch
+
+end of sub-batch or material load threshold
+  -> recompute BPR weights
+  -> CCH recustomization
 ```
+
+This is a two-timescale approximation:
+
+- At each SUMO/control interval, convert observed or simulated edge counts to a consistent equivalent flow rate (for example, vehicles/hour over a declared rolling window), while capacity uses the same time unit.
+- CCH produces a small candidate set under the latest customized snapshot.
+- Within a sub-batch, vehicles are ordered by emergency status and route degradation. Candidate routes are rescored after each projected flow reservation without recustomizing CCH for every vehicle.
+- Re-customize after \(K\) assignments, at the next simulation tick, or when projected \(x/c\) crosses a configured material-change threshold.
+- Evaluate \(K\) and the threshold. Small \(K\) improves freshness but costs more; large \(K\) risks missing a route outside the stale candidate set.
+
+The candidate-generation method and candidate count must be specified later; CCH alone returns one shortest path. This policy is not guaranteed to reach user or system equilibrium.
+
+Avoid traffic-delay double counting. In one experiment, use BPR calibrated from SUMO flow as the router's estimated cost and use realized SUMO travel time only as the outcome. In a separate direct-observation experiment, route on measured/SUMO edge travel time without adding BPR delay again.
 
 ### 11.5 Emergency interaction
 
@@ -551,7 +607,7 @@ CCH returns the current best route; the policy decides whether to adopt it:
 3. accept a new route only when improvement exceeds hysteresis;
 4. enforce a minimum hold interval except for closures/safety;
 5. limit each rerouting batch;
-6. reserve projected flow after every accepted route.
+6. reserve projected flow after every accepted route, rescore remaining candidates, and trigger recustomization only at the declared sub-batch/tick rule.
 
 Threshold and hysteresis are controls around CCH, not modifications to the CCH algorithm.
 
@@ -565,20 +621,24 @@ Expect faster route queries and better amortization across many vehicles. Do not
 - memory;
 - changed-edge batch size;
 - number of OD queries per update;
-- break-even point versus repeated Dijkstra and D* Lite.
+- integer quantization error and closure-sentinel safety;
+- turn-expanded versus node-based graph size;
+- break-even point versus repeated Dijkstra, ALT, and D* Lite.
 
 ## 12. Backup Algorithm
 
-**D* Lite** is the backup.
+**ALT-guided bidirectional A\*** is the backup.
 
 Use it if:
 
 - native CCH build/bindings are unreliable on the student's machines;
-- the final study is one corridor rather than city scale;
-- updates are sparse and localized;
-- each vehicle maintains a route while its start moves.
+- quantization, path unpacking, or turn modelling cannot be validated;
+- CCH customization does not break even at the measured update/query workload;
+- a pure-Python implementation is required.
 
-Implement D* Lite from the original pseudocode with a tested priority queue and admissible geographic lower bound. Do not use an unverified tutorial implementation. It remains an established algorithm, so novelty must still come from modelling and evaluation.
+Precompute landmark distances under a free-flow lower-bound metric. Because BPR congestion, capacity degradation, and closures must not reduce an edge below free-flow time, those landmark bounds remain admissible after updates. Use correct directed lower bounds and bidirectional stopping rules, and fall back to ordinary A* if the bidirectional implementation is not verified. This backup reruns searches rather than incrementally repairing them, but it covers many unrelated OD requests and remains explainable, testable, and dependency-light.
+
+D* Lite remains a localized-update ablation. It may outperform both methods for one moving vehicle and sparse changes, but it is not the full-system fallback.
 
 ## 13. Proposed Research Contribution
 
@@ -661,6 +721,7 @@ Keep:
 src/chennai_routing/routing/
   base.py                 # Router protocol and RouteResult
   dijkstra_baseline.py    # existing behavior, evaluation only
+  alt_router.py           # Python backup using landmark lower bounds
   cch_adapter.py          # MultiDiGraph <-> stable integer arcs
   cch_router.py           # preprocess/customize/query/unpack
   update_batch.py         # changed-edge batches and triggers
@@ -729,7 +790,8 @@ Required:
 - repeated snapshot Dijkstra;
 - CCH with full customization;
 - CCH with partial/incremental customization if supported reliably;
-- D* Lite backup/ablation for localized updates.
+- ALT-guided bidirectional A* backup;
+- D* Lite ablation for localized updates.
 
 Optional:
 
@@ -793,58 +855,61 @@ Otherwise the study would compare policies rather than algorithms.
 1. **CCH integration risk:** reference implementations are native C++/Rust, not a simple NetworkX replacement.
 2. **No guaranteed Python package stability:** validate build, path unpacking, licences, and platform support before committing.
 3. **CCH is not novelty:** publication needs the modelling/evaluation contribution.
-4. **Snapshot limitation:** CCH over refreshed weights is not formal time-dependent routing.
-5. **Global BPR changes:** frequent full-network changes can make customization expensive.
-6. **Traffic-data gap:** public road-level Chennai counts/speeds are limited; SUMO is simulation.
-7. **Flood-ground-truth gap:** historical points and coarse rainfall cannot prove current road passability.
-8. **Satellite limitations:** spatial/revisit/urban errors prevent road-level certainty.
-9. **Capacity calibration:** current multipliers, capacities, and BPR parameters are assumptions.
-10. **No signal preemption evidence:** route priority must not be presented as traffic-signal control.
-11. **Herding:** sequential reservations are an approximation, not dynamic user equilibrium.
-12. **Compliance:** suggested routes may not be followed.
-13. **Emergency ethics:** unsafe recommendations must fail closed and remain simulation/shadow decisions.
-14. **Study-area validity:** a small corridor cannot support city-wide claims.
-15. **Novelty search limit:** inaccessible papers, patents, theses, and later publications may overlap.
+4. **Represented-metric exactness:** floating BPR values require bounded integer quantization; turn restrictions and parallel arcs require explicit graph modelling.
+5. **Snapshot limitation:** CCH over refreshed weights is not formal time-dependent routing.
+6. **Global BPR changes:** frequent full-network changes can make customization expensive.
+7. **Allocation staleness:** sub-batch candidate sets can omit a route that becomes best after projected reservations; per-vehicle recustomization can erase the speed advantage.
+8. **Flow semantics:** flow and capacity require the same units/window, and BPR-estimated delay must not be added to realized SUMO delay twice.
+9. **Traffic-data gap:** public road-level Chennai counts/speeds are limited; SUMO is simulation.
+10. **Flood-ground-truth gap:** historical points and coarse rainfall cannot prove current road passability.
+11. **Satellite limitations:** spatial/revisit/urban errors prevent road-level certainty.
+12. **Capacity calibration:** current multipliers, capacities, and BPR parameters are assumptions.
+13. **No signal preemption evidence:** route priority must not be presented as traffic-signal control.
+14. **Herding:** sequential reservations are an approximation, not dynamic user equilibrium.
+15. **Compliance:** suggested routes may not be followed.
+16. **Emergency ethics:** unsafe recommendations must fail closed and remain simulation/shadow decisions.
+17. **Study-area validity:** a small corridor cannot support city-wide claims.
+18. **Novelty search limit:** inaccessible papers, patents, theses, and later publications may overlap.
 
 ## 18. Final Recommendation
 
 ### Explicit answers
 
-1. **What is wrong with Dijkstra as the final algorithm?**  
+1. **What exactly is wrong with using Dijkstra as the final algorithm for this project?**
    It recomputes from scratch, does not exploit fixed road topology or prior updates, and scales poorly for many Chennai queries. Its age is not the technical problem.
 
-2. **Strongest practical replacement?**  
-   Customizable Contraction Hierarchies with batched metric customization.
+2. **What is the strongest practical replacement?**
+   Conditional CCH with batched metric customization, subject to the feasibility/break-even gate in Section 11. ALT-guided bidirectional A* is the fallback.
 
-3. **Why technically better?**  
-   It reuses topology preprocessing, customizes changing BPR/flood/incident weights, and answers many exact route queries quickly.
+3. **Why is that replacement technically better?**
+   It reuses topology preprocessing, customizes changing BPR/flood/incident weights, and can answer many represented-metric route queries quickly. Quantization and graph conversion must be validated.
 
-4. **Is CCH itself novel?**  
+4. **Is the replacement itself actually novel?**
    No. It is established 2016 work building on CH.
 
-5. **What is defensible novelty?**  
+5. **What exactly can we defensibly call our project's novelty?**
    The Chennai-specific, unified effective-capacity/BPR disruption model combined with CCH update batches, stability-aware priority routing, projected-load feedback, and comprehensive compound-event evaluation.
 
-6. **Has essentially the same Chennai flood-routing system been published?**  
+6. **Has someone already published essentially the same Chennai flood-routing system?**
    Chennai flood relief routing has been published, but the exact proposed integrated system was not located. The overlap is substantial enough that no “first Chennai flood router” claim is valid.
 
-7. **What appears underexplored?**  
+7. **What part of our design appears underexplored?**
    CCH customization under flood/incident capacity batches, coupled with rerouting stability and feedback-aware multi-vehicle priority allocation on reproducible Chennai events.
 
-8. **Can it be implemented reliably in Python?**  
-   The orchestration can be Python, but the practical CCH core should use a verified native implementation such as RoutingKit through a small adapter. Pure-Python CCH is not recommended. D* Lite is the reliable pure-Python backup.
+8. **Can this be implemented reliably in Python?**
+   The orchestration can be Python, but the practical CCH core should use a verified native implementation such as RoutingKit through a small adapter. Pure-Python CCH is not recommended. ALT-guided A* is the reliable Python backup.
 
-9. **How much of Stage 1 changes?**  
+9. **How much of Stage 1 must be changed?**
    The GIS/data/flood/capacity/BPR/visualization pipeline can remain. Routing calls, graph indexing, tests, timing/provenance, and documentation change. This is a focused routing-layer migration, not a rewrite.
 
-10. **What should faculty be told?**  
+10. **What should we tell our faculty member is the research contribution?**
     The project does not claim a new base shortest-path algorithm. It contributes and evaluates a transparent Chennai-specific compound-disruption routing framework using a modern customizable road-network engine, stable rerouting, emergency-aware allocation, and honest public-data/simulation boundaries.
 
 ### Decision gate before implementation
 
 Do not replace Stage 1 yet. First obtain approval for:
 
-- CCH as primary and D* Lite as backup;
+- conditional CCH as primary and ALT-guided bidirectional A* as backup;
 - snapshot dynamic routing for the first final-system version;
 - Dijkstra retained only as baseline/correctness oracle;
 - integration/evaluation novelty rather than a false new-algorithm claim;
@@ -852,7 +917,11 @@ Do not replace Stage 1 yet. First obtain approval for:
 
 ## Search Method and Coverage Note
 
-The review used combinations of the prompt's Chennai queries plus searches for flood routing, BPR/capacity disruption, dynamic shortest paths, CCH/CATCHUp, LPA*/D* Lite/AD*, dynamic hub labeling, BatchHL+, route stability, emergency priority, dynamic traffic assignment, and learning-assisted routing. Sources were sought through publisher/DOI pages and material discoverable in Google Scholar-style indexes, IEEE, ACM, Springer, ScienceDirect/Elsevier, AAAI, TR venues, Crossref/OpenAlex/Semantic Scholar-style metadata, arXiv, official repositories, NASA, Copernicus, Eclipse, OpenStreetMap, OpenCity, and Zenodo.
+This is a **broad narrative/scoping audit**, not a PRISMA systematic review. It must not be cited as proof of exhaustive worldwide novelty. The audit was performed on 3 September 2026 using combinations of the prompt's Chennai queries plus searches for flood routing, BPR/capacity disruption, dynamic shortest paths, CCH/CATCHUp, LPA*/D* Lite/AD*, dynamic hub labeling, BatchHL+, route stability, emergency priority, dynamic traffic assignment, and learning-assisted routing.
+
+Candidate records were discovered through publisher/DOI pages and material indexed or discoverable via Google Scholar-style search, IEEE, ACM, Springer, ScienceDirect/Elsevier, AAAI, Transportation Research venues, Crossref/OpenAlex/Semantic Scholar metadata, arXiv, and official repositories. Dataset claims were checked against NASA, Copernicus, Eclipse, OpenStreetMap, OpenCity, and Zenodo pages. Peer-reviewed work and official documentation were preferred; preprints were retained only for recent 2025–2026 dynamic-label context and identified as such.
+
+Inclusion criteria were direct relevance to at least one of: Chennai flooding/roads, dynamic or time-dependent road routing, flood/disruption routing, emergency priority, capacity/BPR modelling, rerouting stability, system-level assignment, or one of the requested algorithms. SEO articles and untraceable algorithm claims were excluded. No formal result-count log, duplicate-removal table, quality score, patent/thesis search, or complete backward/forward citation graph was produced in this phase; therefore rows saying “no exact match identified” are provisional.
 
 Representative exact searches included:
 
