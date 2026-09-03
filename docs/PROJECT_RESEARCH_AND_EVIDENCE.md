@@ -123,7 +123,7 @@ q_{e,t}
 
 where:
 
-- \(x_{e,t}\) is observed or simulated flow;
+- \(x_{e,t}\) is assigned or simulated entering demand in PCE per declared interval, not discharged throughput;
 - \(c^0_e\) is baseline capacity;
 - \(s^{flood}_{e,t}\) is the inferred flood-related state;
 - \(s^{incident}_{e,t}\) is incident/lane availability;
@@ -133,7 +133,7 @@ The routing cost is updated only after accepted state changes. The system must r
 
 - local closures or severe flood evidence;
 - broader capacity degradation;
-- changing traffic flow;
+- changing entering demand, queues, and network loading;
 - incidents;
 - stale or missing evidence;
 - route degradation significant enough to justify a change; and
@@ -654,7 +654,7 @@ Rainfall, elevation, and flood history remain separate evidence channels. The st
 | Drains/water bodies       | Infrastructure lines/points       | Distance/density/mask                                | Susceptibility/context | Modifies prior with quality flags     | Indirect state influence            |
 | IMERG                     | 30-minute precipitation           | 30-min/3-h/6-h accumulation                          | Dynamic flood forcing  | May degrade susceptible edges         | Updated capacity/availability       |
 | Verified closure/SAR/DSWx | Report/water class + time         | Edge intersection/confidence/expiry                  | Observation override   | Escalates state or blocks edge        | Avoids affected edge                |
-| SUMO flow                 | Edge counts/vehicles              | Compatible hourly/PCE flow                           | BPR route estimator    | Changes \(x/c^{eff}\)                 | Changes customized weight           |
+| SUMO demand               | Assigned entering vehicles/routes | Compatible hourly/PCE entering demand                | BPR route estimator    | Changes \(x/c^{eff}\)                 | Changes customized weight           |
 | Incident scenario         | Lane/edge event                   | Incident multiplier/closure                          | Effective capacity     | Reduces \(c^{eff}\)                   | Raises cost/removes edge            |
 | Accepted routes           | Provisional assignments           | Projected flow/load concentration                    | Allocation policy      | Anticipates self-induced load         | Diversifies/limits reroutes         |
 | Route history             | Current route/cost/time           | Degradation, improvement, cooldown                   | Stability policy       | No topology change                    | Accept/reject route change          |
@@ -750,7 +750,7 @@ flowchart TD
 
 **Objective:** Generate dynamic flow and compound disruption.  
 **Inputs:** SUMO demand, road capacities, flood state, scripted incidents.  
-**Processing:** Convert edge counts to compatible flow, apply condition/incident capacity, calculate BPR route cost.  
+**Processing:** Convert assigned entering demand to compatible PCE/time units, retain discharged throughput and queues as separate outcomes, apply condition/incident capacity, and calculate BPR route cost.\
 **Output:** Versioned edge-weight batches and realized simulation outcomes.  
 **Algorithm/Model:** BPR for route estimation; SUMO for dynamic loading.  
 **Datasets:** OSM-derived network and experimental scenarios.  
@@ -869,8 +869,8 @@ CCH is not formal time-dependent routing. If future edges contain FIFO time func
 
 1. **Static Dijkstra:** route once, no response to updates.
 2. **Repeated snapshot Dijkstra:** recompute after every accepted batch.
-3. **A-star/ALT comparator:** measures benefit from reusable heuristic bounds without CCH customization.
-4. **D-star Lite ablation:** tests sparse local repair for one moving route; not the full-system backup.
+3. **A\*/ALT comparator:** measures benefit from reusable heuristic bounds without CCH customization.
+4. **D\* Lite ablation:** tests sparse local repair for one moving route; not the full-system backup.
 
 Dijkstra remains necessary as a correctness oracle and baseline. Stage 1 itself is a controlled **two-snapshot Dijkstra proof of concept**, not the route-once static baseline. Dijkstra is not rejected merely because it is old; it is unsuitable as the final high-throughput engine because each query starts from scratch and it provides no network-level allocation.
 
@@ -950,15 +950,22 @@ This does not implement or claim traffic-signal preemption, live ambulance track
 
 ### Planned Decision Policy
 
-For vehicle \(i\), rerouting is eligible only if:
+For vehicle \(i\), define:
+
+- \(C_i^{ref}\): cost of the currently followed route when that route was last accepted;
+- \(C_i^{current}(t)\): cost of that same route under weights at decision time \(t\);
+- \(C_i^{candidate}(t)\): cost of the candidate route under those weights; and
+- \(C_i^{best}(t)\): cost of the best feasible candidate under those weights.
+
+Rerouting is eligible only if:
 
 \[
-\frac{C_i^{current}(t)-C_i^{accepted}}{C_i^{accepted}}\ge\theta_{deg}
+\frac{C_i^{current}(t)-C_i^{ref}}{C_i^{ref}}\ge\theta_{deg}
 \quad\text{and}\quad
 \frac{C_i^{current}(t)-C_i^{candidate}(t)}{C_i^{current}(t)}\ge\theta_{gain},
 \]
 
-and cooldown \(\Delta t_{cool}\) has expired, unless the current route becomes infeasible. Eligible requests are ordered by: infeasible route, emergency deadline slack, largest relative degradation, request timestamp, then stable vehicle ID. Candidate routes violating a hard closure are rejected. Within each sub-batch of size \(B\), accepted route demand is reserved on its edges; after \(B\) accepts or changed-weight threshold \(K\), costs are recomputed and CCH is re-customized. A normal-user protection \(C_i^{accepted}\le(1+\delta_{normal})C_i^{best}\) is measured and enforced where a feasible protected route exists. All \(\theta\), \(\Delta t\), \(B\), \(K\), and \(\delta\) values are experiment parameters, not assumed optima.
+and cooldown \(\Delta t_{cool}\) has expired, unless the current route becomes infeasible. On acceptance, the candidate becomes the current route and \(C_i^{ref}\) is reset to \(C_i^{candidate}(t)\). Eligible requests are ordered by: infeasible route, emergency deadline slack, largest relative degradation, request timestamp, then stable vehicle ID. Candidate routes violating a hard closure are rejected. Within each sub-batch of size \(B\), accepted route demand is reserved on its edges; after \(B\) accepts or changed-weight threshold \(K\), costs are recomputed and CCH is re-customized. A normal-user protection \(C_i^{candidate}(t)\le(1+\delta_{normal})C_i^{best}(t)\) is enforced where a feasible protected route exists. All \(\theta\), \(\Delta t\), \(B\), \(K\), and \(\delta\) values are experiment parameters, not assumed optima.
 
 ## Novelty and Research Gap
 
