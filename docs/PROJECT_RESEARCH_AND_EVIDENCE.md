@@ -74,6 +74,8 @@ The repository contains a working Stage 1 proof of concept:
 - CSV, JSON, GraphML, and PNG outputs;
 - tests for CRS handling, flood-to-road mapping, capacity/BPR behavior, blocked-edge avoidance, and route change.
 
+**Dijkstra is currently used in the Stage 1 proof of concept and is retained as a baseline; the researched final routing engine is conditional CCH and has not been implemented.**
+
 The last reported run loaded 327 historical points and found a real mapped edge whose blockage forced a detour. Its generated outputs are ignored by Git and are not preserved on this branch, so this is handoff evidence rather than an independently inspectable frozen artifact. That count and route are not guaranteed invariants because the remote OSM/OpenCity inputs are mutable.
 
 Stage 1 demonstrates flood-point mapping and avoidance of a controlled hard closure. Because every normal edge receives the same \(x/c=0.5\), its finite BPR multiplier scales free-flow costs uniformly; Stage 1 does **not** yet validate congestion-sensitive route choice or calibrated capacity effects.
@@ -279,18 +281,18 @@ where each multiplier lies in \((0,1]\), \(c^{min}_e\) prevents division by nume
 
 ### Factor Summary
 
-| Factor | Why It Matters | Data Source | Data Type | How Derived | Where Used | Evidence |
-|---|---|---|---|---|---|---|
-| Road graph/free flow | Defines feasible movement | OSM/OSMnx | Map snapshot/derived | Geometry, length, speed | Topology, \(t^0\) | Ganguly & Roy 2017 |
-| Baseline capacity | Connects road form to congestion | OSM + assumptions | Derived | Class/lane lookup | \(c^0\) | BPR/assignment literature |
-| Traffic flow | Represents congestion and feedback | SUMO | Simulated/projected | Interval counts | BPR/allocation | DTA literature |
-| Flood susceptibility | Differentiates rainfall response | OpenCity + SRTM + hydrology | Historical/derived | Transparent feature score | Flood-state prior | Chennai vulnerability studies |
-| Rainfall | Dynamic environmental forcing | IMERG | Satellite estimate | 30-min/3-h/6-h sums | State estimator | NASA product evidence |
-| Flood/closure observation | Escalates or blocks roads | Verified reports; optional SAR/DSWx | Observed | Spatial/time/confidence join | Road condition | Chennai mapping studies |
-| Incident | Models non-flood disruption | SUMO scripts | Experimental | Capacity/closure event | Effective capacity | Incident-routing literature |
-| Evidence quality | Prevents stale certainty | Source metadata | Derived | Expiry/confidence | State transitions | Data-quality limitations |
-| Stability/projected load | Limits churn and herding | Routes + flow | Derived/projected | Trigger/hysteresis/reservation | Decision layer | Stability literature |
-| Service priority | Tests emergency response trade-off | Scenario config | Experimental | Lexicographic class policy | Query/allocation | Emergency-routing literature |
+| Factor                    | Why It Matters                     | Data Source                         | Data Type            | How Derived                    | Where Used         | Evidence                      |
+| ------------------------- | ---------------------------------- | ----------------------------------- | -------------------- | ------------------------------ | ------------------ | ----------------------------- |
+| Road graph/free flow      | Defines feasible movement          | OSM/OSMnx                           | Map snapshot/derived | Geometry, length, speed        | Topology, \(t^0\)  | Ganguly & Roy 2017            |
+| Baseline capacity         | Connects road form to congestion   | OSM + assumptions                   | Derived              | Class/lane lookup              | \(c^0\)            | BPR/assignment literature     |
+| Traffic flow              | Represents congestion and feedback | SUMO                                | Simulated/projected  | Interval counts                | BPR/allocation     | DTA literature                |
+| Flood susceptibility      | Differentiates rainfall response   | OpenCity + SRTM + hydrology         | Historical/derived   | Transparent feature score      | Flood-state prior  | Chennai vulnerability studies |
+| Rainfall                  | Dynamic environmental forcing      | IMERG                               | Satellite estimate   | 30-min/3-h/6-h sums            | State estimator    | NASA product evidence         |
+| Flood/closure observation | Escalates or blocks roads          | Verified reports; optional SAR/DSWx | Observed             | Spatial/time/confidence join   | Road condition     | Chennai mapping studies       |
+| Incident                  | Models non-flood disruption        | SUMO scripts                        | Experimental         | Capacity/closure event         | Effective capacity | Incident-routing literature   |
+| Evidence quality          | Prevents stale certainty           | Source metadata                     | Derived              | Expiry/confidence              | State transitions  | Data-quality limitations      |
+| Stability/projected load  | Limits churn and herding           | Routes + flow                       | Derived/projected    | Trigger/hysteresis/reservation | Decision layer     | Stability literature          |
+| Service priority          | Tests emergency response trade-off | Scenario config                     | Experimental         | Lexicographic class policy     | Query/allocation   | Emergency-routing literature  |
 
 ### Factors Considered but Rejected
 
@@ -387,7 +389,7 @@ The catalogue lists actual KML resources and descriptions. A professor can open 
 **Official Documentation:** [Basin drainage catalogue](https://data.opencity.in/dataset/chennai-basin-drainage-maps)  
 **Interactive Viewer / Map:** Resource previews are available on supported OpenCity pages.  
 **Repository / Code:** [Hydrology module boundary](../src/chennai_routing/data/hydrology.py)  
-**Supporting Paper / Evidence:** [Chennai integrated flood forecasting system](https://doi.org/10.18520/cs/v117/i5/741-745)
+**Supporting Paper / Evidence:** [Chennai integrated flood forecasting system — publisher PDF; no DOI was found](https://currentscience.ac.in/Volumes/117/05/0741.pdf)
 
 #### What You Can Verify
 
@@ -569,52 +571,52 @@ Zenodo displays files, versions, authors, DOI, and licence. The CSV records are 
 
 ### Rejected Benchmark Datasets
 
-| Dataset | Classification | Evidence | Decision |
-|---|---|---|---|
-| [Sen1Floods11](https://doi.org/10.1109/CVPRW50498.2020.00113) | Rejected Source / ML benchmark | 4,831 chips from 11 events; no Chennai event; maintainer repository has no resolved licence file | Exclude unless separate licence clarification and flood-segmentation study |
-| [STURM-Flood](https://doi.org/10.5281/zenodo.12748983) | Rejected Source / optional ML benchmark | 10 m global event tiles; Chennai inclusion unverified; CC BY 4.0 | Exclude from routing core; custom flood ML is separate work |
+| Dataset                                                       | Classification                          | Evidence                                                                                         | Decision                                                                   |
+| ------------------------------------------------------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| [Sen1Floods11](https://doi.org/10.1109/CVPRW50498.2020.00113) | Rejected Source / ML benchmark          | 4,831 chips from 11 events; no Chennai event; maintainer repository has no resolved licence file | Exclude unless separate licence clarification and flood-segmentation study |
+| [STURM-Flood](https://doi.org/10.5281/zenodo.12748983)        | Rejected Source / optional ML benchmark | 10 m global event tiles; Chennai inclusion unverified; CC BY 4.0                                 | Exclude from routing core; custom flood ML is separate work                |
 
 ## Dataset Classification Summary
 
-| Source | Classification | Why |
-|---|---|---|
-| OSM/OSMnx | Primary Project Input | Required topology |
-| OpenCity flood layers | Historical Evidence / Primary | Chennai-specific flood prior and validation |
-| SRTM/NASADEM | Supporting Input | Coarse static terrain only |
-| OpenCity drains/water bodies | Supporting Input | Hydrological context with quality caveats |
-| GPM IMERG | Primary Project Input | Reproducible rainfall forcing |
-| SUMO | Experimental Dataset Generator | Reproducible dynamic traffic/incident environment |
-| Sentinel-1 | Optional Enhancement | Intermittent area evidence |
-| OPERA DSWx-S1 | Optional Enhancement | Easier area-level water product, not street scale |
-| India Flood Inventory | Historical Evidence | Event context, not roads |
-| OpenWeather/Open-Meteo | Optional Live Extension | Forecast convenience, not core |
-| Sen1Floods11/STURM-Flood | Rejected Source for core | ML scope/domain/licence limitations |
-| Processed edge-state tables | Derived Dataset | Reproducible project output |
+| Source                       | Classification                 | Why                                               |
+| ---------------------------- | ------------------------------ | ------------------------------------------------- |
+| OSM/OSMnx                    | Primary Project Input          | Required topology                                 |
+| OpenCity flood layers        | Historical Evidence / Primary  | Chennai-specific flood prior and validation       |
+| SRTM/NASADEM                 | Supporting Input               | Coarse static terrain only                        |
+| OpenCity drains/water bodies | Supporting Input               | Hydrological context with quality caveats         |
+| GPM IMERG                    | Primary Project Input          | Reproducible rainfall forcing                     |
+| SUMO                         | Experimental Dataset Generator | Reproducible dynamic traffic/incident environment |
+| Sentinel-1                   | Optional Enhancement           | Intermittent area evidence                        |
+| OPERA DSWx-S1                | Optional Enhancement           | Easier area-level water product, not street scale |
+| India Flood Inventory        | Historical Evidence            | Event context, not roads                          |
+| OpenWeather/Open-Meteo       | Optional Live Extension        | Forecast convenience, not core                    |
+| Sen1Floods11/STURM-Flood     | Rejected Source for core       | ML scope/domain/licence limitations               |
+| Processed edge-state tables  | Derived Dataset                | Reproducible project output                       |
 
 ## APIs and Live Data Services
 
 ### Required / Core Data Sources
 
-| Provider/service | Purpose | Official access | Cost/authentication | Geographic/time status | Reproducibility and fallback |
-|---|---|---|---|---|---|
-| OSM Overpass via OSMnx | Road snapshot | [Overpass API](https://overpass-api.de/) / [OSMnx docs](https://osmnx.readthedocs.io/) | Free, no key; fair-use/rate limits | Chennai/current mutable map | Cache graph; a dated Geofabrik PBF is a pinning source only after a separate `osmium`/`pyrosm` import path is implemented and validated |
-| OpenCity CKAN | Flood/drain metadata and files | [CKAN package API](https://data.opencity.in/api/3/action/package_show?id=chennai-floods-2015-data) | Free, no key | Historical/static | Store provenance/checksum; local processed copy |
-| NASA Earthdata/GES DISC | IMERG/elevation/OPERA | [Earthdata Search](https://search.earthdata.nasa.gov/) | Free account/token | Global; product-specific latency | Pin product/version/time range |
-| SUMO TraCI | Simulation state/control | [TraCI docs](https://eclipse.dev/sumo/docs/TraCI.html) | Free, local; no key | Simulated | Scenario files/seeds are the reproducible source |
+| Provider/service        | Purpose                        | Official access                                                                                    | Cost/authentication                | Geographic/time status           | Reproducibility and fallback                                                                                                            |
+| ----------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------- | ---------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| OSM Overpass via OSMnx  | Road snapshot                  | [Overpass API](https://overpass-api.de/) / [OSMnx docs](https://osmnx.readthedocs.io/)             | Free, no key; fair-use/rate limits | Chennai/current mutable map      | Cache graph; a dated Geofabrik PBF is a pinning source only after a separate `osmium`/`pyrosm` import path is implemented and validated |
+| OpenCity CKAN           | Flood/drain metadata and files | [CKAN package API](https://data.opencity.in/api/3/action/package_show?id=chennai-floods-2015-data) | Free, no key                       | Historical/static                | Store provenance/checksum; local processed copy                                                                                         |
+| NASA Earthdata/GES DISC | IMERG/elevation/OPERA          | [Earthdata Search](https://search.earthdata.nasa.gov/)                                             | Free account/token                 | Global; product-specific latency | Pin product/version/time range                                                                                                          |
+| SUMO TraCI              | Simulation state/control       | [TraCI docs](https://eclipse.dev/sumo/docs/TraCI.html)                                             | Free, local; no key                | Simulated                        | Scenario files/seeds are the reproducible source                                                                                        |
 
 ### Optional Live Extensions
 
-| Service | Purpose | Official documentation | Free-tier/current status | Authentication/rate limits | Use and fallback |
-|---|---|---|---|---|---|
-| OpenWeather Free | Current weather + 3-hourly 5-day forecast | [Pricing](https://openweathermap.org/full-price), [API](https://openweathermap.org/api) | Permanent free plan lists 60 calls/min and 1,000,000/month; roughly two-hour source updates | Account/API key | Optional UI/forecast context; fallback IMERG/Open-Meteo |
-| OpenWeather One Call 4.0 | Finer forecast/timeline/alerts | [One Call 4.0](https://openweathermap.org/api/one-call-4), [FAQ](https://openweathermap.org/faq) | Separate pay-as-you-call setup; first 1,000 calls/day included, overage charged | API key and billing setup; cap at 1,000/day | Optional only; never required |
-| Open-Meteo | Forecast-model access | [Forecast API](https://open-meteo.com/en/docs), [pricing/licence](https://open-meteo.com/en/pricing) | Free no-key non-commercial use with CC BY 4.0 attribution; published open-access limits are 600/min, 5,000/hour, and 10,000/day | No key for public non-commercial endpoint; commercial use requires a plan | Preferred no-friction forecast fallback; preserve model identity and attribution |
-| IMD APIs | Official warnings, nowcasts, AWS/ARG | [IMD API reference](https://api.imd.gov.in/public/api_reference.html) | Public registration; some access requires IP whitelisting; quotas/pricing not uniformly published | Registration/authorization | Supporting authority evidence; do not make core depend on approval |
-| Chennai Flood DSS | Local gauges/water levels/forecast display | [Public dashboard](https://chennaifloodmonitor.tn.gov.in/HomePage/Dashboard) | Free dashboard; no documented public developer API/reuse licence found | Browser access | Manual validation only unless formal feed is granted |
-| Mappls traffic | India-native route/traffic/incident service | [REST API repository](https://github.com/mappls-api/mappls-rest-apis) | Key/account; limited access and commercial terms vary | Vendor quota/terms | Optional validation; SUMO remains reproducible core |
-| TomTom Traffic | Flow/incidents | [Traffic API docs](https://docs.tomtom.com/traffic-api/documentation/tomtom-maps/v1/product-information/introduction/) | Developer key and plan/free allowance | Vendor limits/licence | Optional Chennai coverage pilot |
-| HERE Traffic | Flow/incidents | [Traffic API coverage](https://docs.here.com/traffic-api/docs/traffic-here-traffic-api-v7-coverage-information) | Key/OAuth and plan | Vendor limits/licence | Optional; no core dependency |
-| Google Routes | Traffic-aware route/ETA | [Traffic-aware routing](https://developers.google.com/maps/documentation/routes/config_trade_offs) | Billing account/API key; India allowances and SKU pricing vary | Google terms restrict storage/extraction | Comparator only; cannot create an open traffic dataset |
+| Service                  | Purpose                                     | Official documentation                                                                                                 | Free-tier/current status                                                                                                        | Authentication/rate limits                                                | Use and fallback                                                                 |
+| ------------------------ | ------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| OpenWeather Free         | Current weather + 3-hourly 5-day forecast   | [Pricing](https://openweathermap.org/full-price), [API](https://openweathermap.org/api)                                | Permanent free plan lists 60 calls/min and 1,000,000/month; roughly two-hour source updates                                     | Account/API key                                                           | Optional UI/forecast context; fallback IMERG/Open-Meteo                          |
+| OpenWeather One Call 4.0 | Finer forecast/timeline/alerts              | [One Call 4.0](https://openweathermap.org/api/one-call-4), [FAQ](https://openweathermap.org/faq)                       | Separate pay-as-you-call setup; first 1,000 calls/day included, overage charged                                                 | API key and billing setup; cap at 1,000/day                               | Optional only; never required                                                    |
+| Open-Meteo               | Forecast-model access                       | [Forecast API](https://open-meteo.com/en/docs), [pricing/licence](https://open-meteo.com/en/pricing)                   | Free no-key non-commercial use with CC BY 4.0 attribution; published open-access limits are 600/min, 5,000/hour, and 10,000/day | No key for public non-commercial endpoint; commercial use requires a plan | Preferred no-friction forecast fallback; preserve model identity and attribution |
+| IMD APIs                 | Official warnings, nowcasts, AWS/ARG        | [IMD API reference](https://api.imd.gov.in/public/api_reference.html)                                                  | Public registration; some access requires IP whitelisting; quotas/pricing not uniformly published                               | Registration/authorization                                                | Supporting authority evidence; do not make core depend on approval               |
+| Chennai Flood DSS        | Local gauges/water levels/forecast display  | [Public dashboard](https://chennaifloodmonitor.tn.gov.in/HomePage/Dashboard)                                           | Free dashboard; no documented public developer API/reuse licence found                                                          | Browser access                                                            | Manual validation only unless formal feed is granted                             |
+| Mappls traffic           | India-native route/traffic/incident service | [REST API repository](https://github.com/mappls-api/mappls-rest-apis)                                                  | Key/account; limited access and commercial terms vary                                                                           | Vendor quota/terms                                                        | Optional validation; SUMO remains reproducible core                              |
+| TomTom Traffic           | Flow/incidents                              | [Traffic API docs](https://docs.tomtom.com/traffic-api/documentation/tomtom-maps/v1/product-information/introduction/) | Developer key and plan/free allowance                                                                                           | Vendor limits/licence                                                     | Optional Chennai coverage pilot                                                  |
+| HERE Traffic             | Flow/incidents                              | [Traffic API coverage](https://docs.here.com/traffic-api/docs/traffic-here-traffic-api-v7-coverage-information)        | Key/OAuth and plan                                                                                                              | Vendor limits/licence                                                     | Optional; no core dependency                                                     |
+| Google Routes            | Traffic-aware route/ETA                     | [Traffic-aware routing](https://developers.google.com/maps/documentation/routes/config_trade_offs)                     | Billing account/API key; India allowances and SKU pricing vary                                                                  | Google terms restrict storage/extraction                                  | Comparator only; cannot create an open traffic dataset                           |
 
 ### Sources Not Used
 
@@ -626,36 +628,36 @@ Zenodo displays files, versions, authors, DOI, and licence. The CSV records are 
 
 ## Historical vs Current Data
 
-| Information | Correct classification | Correct interpretation |
-|---|---|---|
-| OpenCity 2015 points | Historical observation | A place flooded in that event |
-| Return-period hazard zones | Modelled historical hazard | Relative hazard under a specified event probability |
-| SRTM/NASADEM | Static historical terrain | Coarse susceptibility context |
-| IMERG Early | Delayed near-current satellite rainfall estimate | Area rainfall forcing, not flood depth |
-| IMERG Final | Historical gauge-adjusted research rainfall | Calibration/replay |
-| Sentinel-1/DSWx | Observation at acquisition time | Area water evidence with urban/revisit limitations |
-| Flood susceptibility | Derived static/semi-static feature | Relative tendency, not current probability unless calibrated |
-| Road condition | Derived time-stamped model state | Routing input with explanation/confidence |
-| SUMO traffic | Simulated | Controlled experiment, not live Chennai |
-| Commercial traffic API | Near-current vendor estimate | Optional and licence-constrained |
-| Scripted incident | Experimental | Robustness scenario, not a recorded crash |
+| Information                | Correct classification                           | Correct interpretation                                       |
+| -------------------------- | ------------------------------------------------ | ------------------------------------------------------------ |
+| OpenCity 2015 points       | Historical observation                           | A place flooded in that event                                |
+| Return-period hazard zones | Modelled historical hazard                       | Relative hazard under a specified event probability          |
+| SRTM/NASADEM               | Static historical terrain                        | Coarse susceptibility context                                |
+| IMERG Early                | Delayed near-current satellite rainfall estimate | Area rainfall forcing, not flood depth                       |
+| IMERG Final                | Historical gauge-adjusted research rainfall      | Calibration/replay                                           |
+| Sentinel-1/DSWx            | Observation at acquisition time                  | Area water evidence with urban/revisit limitations           |
+| Flood susceptibility       | Derived static/semi-static feature               | Relative tendency, not current probability unless calibrated |
+| Road condition             | Derived time-stamped model state                 | Routing input with explanation/confidence                    |
+| SUMO traffic               | Simulated                                        | Controlled experiment, not live Chennai                      |
+| Commercial traffic API     | Near-current vendor estimate                     | Optional and licence-constrained                             |
+| Scripted incident          | Experimental                                     | Robustness scenario, not a recorded crash                    |
 
 Rainfall, elevation, and flood history remain separate evidence channels. The state estimator combines them only through documented rules. No source listed here independently proves that a road is safe.
 
 ## Data → Factor → Model → Routing Mapping
 
-| Source | Raw Information | Derived Information | Model Component | Effect on Network | Effect on Routing |
-|---|---|---|---|---|---|
-| OSM | Roads, geometry, class, direction | Stable nodes/arcs, free-flow time, baseline capacity | Road graph | Defines topology/\(t^0,c^0\) | Feasible route space |
-| OpenCity flood | Points, depth/hazard zones | Nearby/intersecting historical evidence | Susceptibility | Raises prior vulnerability | Influences rain-to-state transition |
-| SRTM/NASADEM | Elevation grid | Edge elevation/slope | Susceptibility | Differentiates low/flow-prone terrain | Does not directly close road |
-| Drains/water bodies | Infrastructure lines/points | Distance/density/mask | Susceptibility/context | Modifies prior with quality flags | Indirect state influence |
-| IMERG | 30-minute precipitation | 30-min/3-h/6-h accumulation | Dynamic flood forcing | May degrade susceptible edges | Updated capacity/availability |
-| Verified closure/SAR/DSWx | Report/water class + time | Edge intersection/confidence/expiry | Observation override | Escalates state or blocks edge | Avoids affected edge |
-| SUMO flow | Edge counts/vehicles | Compatible hourly/PCE flow | BPR route estimator | Changes \(x/c^{eff}\) | Changes customized weight |
-| Incident scenario | Lane/edge event | Incident multiplier/closure | Effective capacity | Reduces \(c^{eff}\) | Raises cost/removes edge |
-| Accepted routes | Provisional assignments | Projected flow/load concentration | Allocation policy | Anticipates self-induced load | Diversifies/limits reroutes |
-| Route history | Current route/cost/time | Degradation, improvement, cooldown | Stability policy | No topology change | Accept/reject route change |
+| Source                    | Raw Information                   | Derived Information                                  | Model Component        | Effect on Network                     | Effect on Routing                   |
+| ------------------------- | --------------------------------- | ---------------------------------------------------- | ---------------------- | ------------------------------------- | ----------------------------------- |
+| OSM                       | Roads, geometry, class, direction | Stable nodes/arcs, free-flow time, baseline capacity | Road graph             | Defines topology/\(t^0,c^0\)          | Feasible route space                |
+| OpenCity flood            | Points, depth/hazard zones        | Nearby/intersecting historical evidence              | Susceptibility         | Raises prior vulnerability            | Influences rain-to-state transition |
+| SRTM/NASADEM              | Elevation grid                    | Edge elevation/slope                                 | Susceptibility         | Differentiates low/flow-prone terrain | Does not directly close road        |
+| Drains/water bodies       | Infrastructure lines/points       | Distance/density/mask                                | Susceptibility/context | Modifies prior with quality flags     | Indirect state influence            |
+| IMERG                     | 30-minute precipitation           | 30-min/3-h/6-h accumulation                          | Dynamic flood forcing  | May degrade susceptible edges         | Updated capacity/availability       |
+| Verified closure/SAR/DSWx | Report/water class + time         | Edge intersection/confidence/expiry                  | Observation override   | Escalates state or blocks edge        | Avoids affected edge                |
+| SUMO flow                 | Edge counts/vehicles              | Compatible hourly/PCE flow                           | BPR route estimator    | Changes \(x/c^{eff}\)                 | Changes customized weight           |
+| Incident scenario         | Lane/edge event                   | Incident multiplier/closure                          | Effective capacity     | Reduces \(c^{eff}\)                   | Raises cost/removes edge            |
+| Accepted routes           | Provisional assignments           | Projected flow/load concentration                    | Allocation policy      | Anticipates self-induced load         | Diversifies/limits reroutes         |
+| Route history             | Current route/cost/time           | Degradation, improvement, cooldown                   | Stability policy       | No topology change                    | Accept/reject route change          |
 
 ## System Architecture
 
@@ -867,8 +869,8 @@ CCH is not formal time-dependent routing. If future edges contain FIFO time func
 
 1. **Static Dijkstra:** route once, no response to updates.
 2. **Repeated snapshot Dijkstra:** recompute after every accepted batch.
-3. **A*/ALT comparator:** measures benefit from reusable heuristic bounds without CCH customization.
-4. **D* Lite ablation:** tests sparse local repair for one moving route; not the full-system backup.
+3. **A-star/ALT comparator:** measures benefit from reusable heuristic bounds without CCH customization.
+4. **D-star Lite ablation:** tests sparse local repair for one moving route; not the full-system backup.
 
 Dijkstra remains necessary as a correctness oracle and baseline. Stage 1 itself is a controlled **two-snapshot Dijkstra proof of concept**, not the route-once static baseline. Dijkstra is not rejected merely because it is old; it is unsuitable as the final high-throughput engine because each query starts from scratch and it provides no network-level allocation.
 
@@ -980,17 +982,17 @@ Therefore, no individual item above is the project's novelty.
 
 ### Closest Existing Studies
 
-| Study | Problem / data | Method / algorithm | Overlap | Difference from this project |
-|---|---|---|---|---|
-| Ganguly & Roy, “Post-Disaster Relief by Vehicle Route Planning… Chennai Floods,” 2017, IEEE ICT-DM, [DOI](https://doi.org/10.1109/ICT-DM.2017.8275694) | 2015 Chennai relief locations, OSM, broken links | Branch-and-bound vehicle routing + service queues | Chennai, flood, priority, broken roads | Static event; no BPR congestion, rainfall updates, CCH, or hysteresis |
-| Ghosh et al., “Development of India's First Integrated Expert Urban Flood Forecasting System for Chennai,” 2019, *Current Science*, [DOI](https://doi.org/10.18520/cs/v117/i5/741-745) | Chennai gauges, NWP, tides, river/reservoir, terrain/drainage | Coupled forecasting/scenario system | Strong dynamic Chennai flood input | No transport/routing layer |
-| Kumar et al., “City-Level Route Planning with Time-Dependent Networks,” 2020, *Current Science*, [DOI](https://doi.org/10.18520/cs/v119/i4/680-690) | Chennai road networks and time-dependent links | Dijkstra, bidirectional A*, ALT | Chennai city-level dynamic travel cost | No flood, incidents, capacity feedback, priority, or stability |
-| He et al., “Efficient Dynamic Route Optimization for Urban Flooding Evacuation…,” 2021, *CEUS*, [DOI](https://doi.org/10.1016/j.compenvurbsys.2021.101622) | Dynamic urban flooding/evacuation | Cellular automata route optimization | Dynamic flood routing | Not the proposed Chennai vehicle-capacity/CCH study |
-| Bahrami et al., “Joint Optimization of Flood Water Routing and Congestion-Aware Evacuation Scheduling,” 2026, *TR-E*, [DOI](https://doi.org/10.1016/j.tre.2025.104645) | Flood-water routing and congested evacuation | Capacity-aware cell transmission + decomposition | Strong flood/traffic/capacity integration | No Chennai, CCH update study, incidents, or explicit route hysteresis |
-| Li et al., “A Dynamic Simulation Framework for Evaluating the Impacts of Urban Flooding on Transportation Systems,” 2026, *IJDRS*, [DOI](https://doi.org/10.1007/s13753-026-00697-y) | Inundation, roads, SUMO, emergency advice | Depth-speed/closures + simulation/rerouting | Very close dynamic integration | No BPR/CCH contribution or explicit stability/load-reservation evaluation |
-| Luan & Jiang, ambulance routing under incidents, 2024, *PLOS ONE*, [DOI](https://doi.org/10.1371/journal.pone.0301637) | Highway incidents and ambulance travel | Improved BPR/intersection effects + metaheuristic | Congestion, incidents, BPR, emergency | No flood or Chennai; different network/problem |
-| Dibbelt et al., “Customizable Contraction Hierarchies,” 2016, *ACM JEA*, [DOI](https://doi.org/10.1145/2886843) | Changing metrics on large road graphs | CCH | Proposed engine | Engine is established; using it is not novelty |
-| Buchhold et al., “Real-Time Traffic Assignment Using Engineered CCH,” 2019, *ACM JEA*, [DOI](https://doi.org/10.1145/3362693) | Large batched traffic assignment | Engineered/parallel CCH | BPR-like repeated routing workload | No flood/incident/stability/Chennai evidence |
+| Study                                                                                                                                                                                  | Problem / data                                                | Method / algorithm                                | Overlap                                   | Difference from this project                                              |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------- |
+| Ganguly & Roy, “Post-Disaster Relief by Vehicle Route Planning… Chennai Floods,” 2017, IEEE ICT-DM, [DOI](https://doi.org/10.1109/ICT-DM.2017.8275694)                                 | 2015 Chennai relief locations, OSM, broken links              | Branch-and-bound vehicle routing + service queues | Chennai, flood, priority, broken roads    | Static event; no BPR congestion, rainfall updates, CCH, or hysteresis     |
+| Ghosh et al., “Development of India's First Integrated Expert Urban Flood Forecasting System for Chennai,” 2019, _Current Science_, [publisher PDF; no DOI found](https://currentscience.ac.in/Volumes/117/05/0741.pdf) | Chennai gauges, NWP, tides, river/reservoir, terrain/drainage | Coupled forecasting/scenario system               | Strong dynamic Chennai flood input        | No transport/routing layer                                                |
+| Kumar et al., “City-Level Route Planning with Time-Dependent Networks,” 2020, _Current Science_, [DOI](https://doi.org/10.18520/cs/v119/i4/680-690)                                    | Chennai road networks and time-dependent links                | Dijkstra, bidirectional A*, ALT                   | Chennai city-level dynamic travel cost    | No flood, incidents, capacity feedback, priority, or stability            |
+| He et al., “Efficient Dynamic Route Optimization for Urban Flooding Evacuation…,” 2021, _CEUS_, [DOI](https://doi.org/10.1016/j.compenvurbsys.2021.101622)                             | Dynamic urban flooding/evacuation                             | Cellular automata route optimization              | Dynamic flood routing                     | Not the proposed Chennai vehicle-capacity/CCH study                       |
+| Bahrami et al., “Joint Optimization of Flood Water Routing and Congestion-Aware Evacuation Scheduling,” 2026, _TR-E_, [DOI](https://doi.org/10.1016/j.tre.2025.104645)                 | Flood-water routing and congested evacuation                  | Capacity-aware cell transmission + decomposition  | Strong flood/traffic/capacity integration | No Chennai, CCH update study, incidents, or explicit route hysteresis     |
+| Li et al., “A Dynamic Simulation Framework for Evaluating the Impacts of Urban Flooding on Transportation Systems,” 2026, _IJDRS_, [DOI](https://doi.org/10.1007/s13753-026-00697-y)   | Inundation, roads, SUMO, emergency advice                     | Depth-speed/closures + simulation/rerouting       | Very close dynamic integration            | No BPR/CCH contribution or explicit stability/load-reservation evaluation |
+| Luan & Jiang, ambulance routing under incidents, 2024, _PLOS ONE_, [DOI](https://doi.org/10.1371/journal.pone.0301637)                                                                 | Highway incidents and ambulance travel                        | Improved BPR/intersection effects + metaheuristic | Congestion, incidents, BPR, emergency     | No flood or Chennai; different network/problem                            |
+| Dibbelt et al., “Customizable Contraction Hierarchies,” 2016, _ACM JEA_, [DOI](https://doi.org/10.1145/2886843)                                                                        | Changing metrics on large road graphs                         | CCH                                               | Proposed engine                           | Engine is established; using it is not novelty                            |
+| Buchhold et al., “Real-Time Traffic Assignment Using Engineered CCH,” 2019, _ACM JEA_, [DOI](https://doi.org/10.1145/3362693)                                                          | Large batched traffic assignment                              | Engineered/parallel CCH                           | BPR-like repeated routing workload        | No flood/incident/stability/Chennai evidence                              |
 
 ### Research Gap
 
@@ -1020,14 +1022,14 @@ Confidence is medium because no matching evaluated Chennai system was found in t
 
 ## Novelty Breakdown
 
-| Dimension | Assessment | Evidence | Confidence |
-|---|---|---|---|
-| Algorithmic novelty | **Low / not currently claimed** | CCH, ALT, Dijkstra, D* Lite, thresholds all exist | High |
-| Modelling novelty | **Limited integration contribution** | Capacity/BPR and flood disruption exist separately and jointly in some studies | Medium |
-| Integration novelty | **Strongest candidate** | Exact Chennai+CCH+compound-state+stability conjunction not identified | Medium |
-| Data/open-data novelty | **Application/reproducibility contribution** | Sources exist; versioned edge-level assembly may be useful | Medium |
-| Application novelty | **Chennai case-study contribution** | Chennai flood routing and time-dependent routing already exist separately | Medium |
-| Evaluation novelty | **Strong if completed** | Update locality, stability, projected load, and compound scenarios jointly evaluated | Medium–high |
+| Dimension              | Assessment                                   | Evidence                                                                             | Confidence  |
+| ---------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------ | ----------- |
+| Algorithmic novelty    | **Low / not currently claimed**              | CCH, ALT, Dijkstra, D* Lite, thresholds all exist                                    | High        |
+| Modelling novelty      | **Limited integration contribution**         | Capacity/BPR and flood disruption exist separately and jointly in some studies       | Medium      |
+| Integration novelty    | **Strongest candidate**                      | Exact Chennai+CCH+compound-state+stability conjunction not identified                | Medium      |
+| Data/open-data novelty | **Application/reproducibility contribution** | Sources exist; versioned edge-level assembly may be useful                           | Medium      |
+| Application novelty    | **Chennai case-study contribution**          | Chennai flood routing and time-dependent routing already exist separately            | Medium      |
+| Evaluation novelty     | **Strong if completed**                      | Update locality, stability, projected load, and compound scenarios jointly evaluated | Medium–high |
 
 ## What Is Not Novel
 
@@ -1059,38 +1061,38 @@ We propose a reproducible, snapshot-dynamic Chennai routing framework that maps 
 
 ### Theme 1 — Dynamic and Customizable Road Routing
 
-| Paper | Problem | Method/data | Result | Limitation | Relevance/difference |
-|---|---|---|---|---|---|
-| Hart, Nilsson & Raphael, “A Formal Basis for… Minimum Cost Paths,” 1968, IEEE, [DOI](https://doi.org/10.1109/TSSC.1968.300136) | Heuristic shortest path | A* | Exact with admissible heuristic | Fresh search after update | Baseline family, not novelty |
-| Goldberg & Harrelson, “Computing the Shortest Path: A* Search Meets Graph Theory,” 2005, SODA, [link](https://www.microsoft.com/en-us/research/publication/computing-the-shortest-path-a-search-meets-graph-theory/) | Faster road queries | ALT landmarks | Strong admissible potentials | Landmark update/space | Project backup |
-| Koenig & Likhachev, “D* Lite,” 2002, AAAI, [paper](https://cdn.aaai.org/AAAI/2002/AAAI02-072.pdf) | Repair after local changes | Reverse incremental LPA* | Reuses search state | Query-specific; broad updates reduce benefit | Local-update ablation |
-| Dibbelt, Strasser & Wagner, “Customizable Contraction Hierarchies,” 2016, ACM JEA, [DOI](https://doi.org/10.1145/2886843) | Fast changing-metric road routing | Topology preprocess + metric customize | Fast exact represented-metric queries | Native integration/turns/quantization | Conditional primary engine |
-| Strasser, Wagner & Zeitz, “Space-Efficient, Fast and Exact Routing in Time-Dependent Road Networks,” 2020, ESA, [DOI](https://doi.org/10.4230/LIPIcs.ESA.2020.81) | FIFO time-dependent road routing | CATCHUp | Compact exact TD queries | Heavy profiles/customization | Future only if \(w_e(\tau)\) exists |
-| Farhan, Koehler & Wang, “BatchHL+,” 2023/24, VLDB Journal, [DOI](https://doi.org/10.1007/s00778-023-00799-9) | Batch-dynamic distance labels | Highway-cover label repair | Large reported update gains | Main assumptions not turnkey weighted directed routing | Reviewed, not selected |
+| Paper                                                                                                                                                                                                                | Problem                           | Method/data                            | Result                                | Limitation                                             | Relevance/difference                |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | -------------------------------------- | ------------------------------------- | ------------------------------------------------------ | ----------------------------------- |
+| Hart, Nilsson & Raphael, “A Formal Basis for… Minimum Cost Paths,” 1968, IEEE, [DOI](https://doi.org/10.1109/TSSC.1968.300136)                                                                                       | Heuristic shortest path           | A*                                     | Exact with admissible heuristic       | Fresh search after update                              | Baseline family, not novelty        |
+| Goldberg & Harrelson, “Computing the Shortest Path: A* Search Meets Graph Theory,” 2005, SODA, [link](https://www.microsoft.com/en-us/research/publication/computing-the-shortest-path-a-search-meets-graph-theory/) | Faster road queries               | ALT landmarks                          | Strong admissible potentials          | Landmark update/space                                  | Project backup                      |
+| Koenig & Likhachev, “D* Lite,” 2002, AAAI, [paper](https://cdn.aaai.org/AAAI/2002/AAAI02-072.pdf)                                                                                                                    | Repair after local changes        | Reverse incremental LPA*               | Reuses search state                   | Query-specific; broad updates reduce benefit           | Local-update ablation               |
+| Dibbelt, Strasser & Wagner, “Customizable Contraction Hierarchies,” 2016, ACM JEA, [DOI](https://doi.org/10.1145/2886843)                                                                                            | Fast changing-metric road routing | Topology preprocess + metric customize | Fast exact represented-metric queries | Native integration/turns/quantization                  | Conditional primary engine          |
+| Strasser, Wagner & Zeitz, “Space-Efficient, Fast and Exact Routing in Time-Dependent Road Networks,” 2020, ESA, [DOI](https://doi.org/10.4230/LIPIcs.ESA.2020.81)                                                    | FIFO time-dependent road routing  | CATCHUp                                | Compact exact TD queries              | Heavy profiles/customization                           | Future only if \(w_e(\tau)\) exists |
+| Farhan, Koehler & Wang, “BatchHL+,” 2023/24, VLDB Journal, [DOI](https://doi.org/10.1007/s00778-023-00799-9)                                                                                                         | Batch-dynamic distance labels     | Highway-cover label repair             | Large reported update gains           | Main assumptions not turnkey weighted directed routing | Reviewed, not selected              |
 
 ### Theme 2 — Flood Effects on Transport
 
-| Paper | Problem | Method/data | Result | Limitation | Relevance/difference |
-|---|---|---|---|---|---|
-| Pregnolato et al., “The Impact of Flooding on Road Transport,” 2017, TR-D, [DOI](https://doi.org/10.1016/j.trd.2017.06.020) | Flood depth and road disruption | Empirical depth-speed function | Replaces binary assumptions | UK context; vehicle transferability | Supports physical speed/capacity reasoning |
-| He et al., 2021, CEUS, [DOI](https://doi.org/10.1016/j.compenvurbsys.2021.101622) | Dynamic flood evacuation | Hydraulic/CA route optimization | Dynamic route improvement | Different mode/model/context | Broad claim already occupied |
-| Bahrami et al., 2026, TR-E, [DOI](https://doi.org/10.1016/j.tre.2025.104645) | Joint flood and congested evacuation | Water routing + CTM + decomposition | Strong integrated optimization | Data/computation and non-Chennai setting | Closest capacity-aware precedent |
-| Li et al., 2026, IJDRS, [DOI](https://doi.org/10.1007/s13753-026-00697-y) | Flood impact on transport | Inundation + SUMO + rerouting | Dynamic simulation and emergency guidance | No proposed stability/CCH study | Closest simulation precedent |
+| Paper                                                                                                                       | Problem                              | Method/data                         | Result                                    | Limitation                               | Relevance/difference                       |
+| --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------ | ----------------------------------- | ----------------------------------------- | ---------------------------------------- | ------------------------------------------ |
+| Pregnolato et al., “The Impact of Flooding on Road Transport,” 2017, TR-D, [DOI](https://doi.org/10.1016/j.trd.2017.06.020) | Flood depth and road disruption      | Empirical depth-speed function      | Replaces binary assumptions               | UK context; vehicle transferability      | Supports physical speed/capacity reasoning |
+| He et al., 2021, CEUS, [DOI](https://doi.org/10.1016/j.compenvurbsys.2021.101622)                                           | Dynamic flood evacuation             | Hydraulic/CA route optimization     | Dynamic route improvement                 | Different mode/model/context             | Broad claim already occupied               |
+| Bahrami et al., 2026, TR-E, [DOI](https://doi.org/10.1016/j.tre.2025.104645)                                                | Joint flood and congested evacuation | Water routing + CTM + decomposition | Strong integrated optimization            | Data/computation and non-Chennai setting | Closest capacity-aware precedent           |
+| Li et al., 2026, IJDRS, [DOI](https://doi.org/10.1007/s13753-026-00697-y)                                                   | Flood impact on transport            | Inundation + SUMO + rerouting       | Dynamic simulation and emergency guidance | No proposed stability/CCH study          | Closest simulation precedent               |
 
 ### Theme 3 — Stability and System-Level Rerouting
 
-| Paper | Problem | Method/data | Result | Limitation | Relevance/difference |
-|---|---|---|---|---|---|
-| Mahmassani & Chang, boundedly rational user equilibrium, 1987, *Transportation Science*, [DOI](https://doi.org/10.1287/trsc.21.2.89) | Travelers do not switch for tiny gains | Indifference-band equilibrium | Behavioral basis for thresholds | Does not design this flood system | Threshold is not novel |
-| Bianchin & Pasqualetti, routing-app stability, 2024, IEEE OJCS, [DOI](https://doi.org/10.1109/OJCSYS.2024.3397270) | Synchronous guidance oscillation | Dynamical/control analysis | Routing can destabilize flow | Stylized networks | Justifies controlled rerouting |
-| “Urban Congestion Relief Experiments through Routing-App Interventions,” 2026, *Nature Cities*, [DOI](https://doi.org/10.1038/s44284-026-00443-x) | Network benefit from limited rerouting | Six-month field intervention | Modest benefits with bounded changes | US cities/proprietary platform | Supports quotas/bounded detours |
+| Paper                                                                                                                                             | Problem                                | Method/data                   | Result                               | Limitation                        | Relevance/difference            |
+| ------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- | ----------------------------- | ------------------------------------ | --------------------------------- | ------------------------------- |
+| Mahmassani & Chang, boundedly rational user equilibrium, 1987, _Transportation Science_, [DOI](https://doi.org/10.1287/trsc.21.2.89)              | Travelers do not switch for tiny gains | Indifference-band equilibrium | Behavioral basis for thresholds      | Does not design this flood system | Threshold is not novel          |
+| Bianchin & Pasqualetti, routing-app stability, 2024, IEEE OJCS, [DOI](https://doi.org/10.1109/OJCSYS.2024.3397270)                                | Synchronous guidance oscillation       | Dynamical/control analysis    | Routing can destabilize flow         | Stylized networks                 | Justifies controlled rerouting  |
+| “Urban Congestion Relief Experiments through Routing-App Interventions,” 2026, _Nature Cities_, [DOI](https://doi.org/10.1038/s44284-026-00443-x) | Network benefit from limited rerouting | Six-month field intervention  | Modest benefits with bounded changes | US cities/proprietary platform    | Supports quotas/bounded detours |
 
 ### Theme 4 — Emergency Priority
 
-| Paper | Problem | Method/data | Result | Limitation | Relevance/difference |
-|---|---|---|---|---|---|
-| Su et al., “EMVLight,” 2022/23, TR-C, [DOI](https://doi.org/10.1016/j.trc.2022.103955) | Emergency routing and signal control | Multi-agent RL + SUMO | Reported simulated response improvements | Simulation, data/safety, signal access | Emergency priority is established |
-| Luan & Jiang, 2024, PLOS ONE, [DOI](https://doi.org/10.1371/journal.pone.0301637) | Ambulance route under incidents | Improved BPR + metaheuristic | Incident-aware ambulance optimization | Highway/non-flood context | Strong overlap subset |
+| Paper                                                                                  | Problem                              | Method/data                  | Result                                   | Limitation                             | Relevance/difference              |
+| -------------------------------------------------------------------------------------- | ------------------------------------ | ---------------------------- | ---------------------------------------- | -------------------------------------- | --------------------------------- |
+| Su et al., “EMVLight,” 2022/23, TR-C, [DOI](https://doi.org/10.1016/j.trc.2022.103955) | Emergency routing and signal control | Multi-agent RL + SUMO        | Reported simulated response improvements | Simulation, data/safety, signal access | Emergency priority is established |
+| Luan & Jiang, 2024, PLOS ONE, [DOI](https://doi.org/10.1371/journal.pone.0301637)      | Ambulance route under incidents      | Improved BPR + metaheuristic | Incident-aware ambulance optimization    | Highway/non-flood context              | Strong overlap subset             |
 
 ## What Has Already Been Done in Chennai?
 
@@ -1120,37 +1122,37 @@ Chennai evidence is strong in separate layers—flood observation, forecasting, 
 
 ## Evaluation
 
-| Metric | What It Proves |
-|---|---|
-| Average/median travel time | Typical realized mobility outcome |
-| Total vehicle/person delay | Network-wide cost and priority trade-off |
-| Emergency response/deadline success | Benefit to the priority scenario |
-| Blocked/severe-edge exposure | Safety/feasibility behavior |
-| \(x/c\), queue, spillback duration | Whether detours transfer congestion |
-| Load concentration across alternatives | Herding/diversification |
-| Reroute count and route churn | Stability of recommendations |
-| Maximum/percentile individual detour | Fairness/bounded disruption |
-| CCH preprocessing/customization/query time | Computational feasibility |
-| End-to-end decision latency | Whether the full update loop meets its epoch |
-| Changed edges/batch locality | Explains when each algorithm benefits |
-| Disconnected/no-route rate | Robustness under severe events |
-| Missing/stale-data degradation | Safe fallback behavior |
-| Sensitivity/confidence intervals | Dependence on uncertain assumptions |
+| Metric                                     | What It Proves                               |
+| ------------------------------------------ | -------------------------------------------- |
+| Average/median travel time                 | Typical realized mobility outcome            |
+| Total vehicle/person delay                 | Network-wide cost and priority trade-off     |
+| Emergency response/deadline success        | Benefit to the priority scenario             |
+| Blocked/severe-edge exposure               | Safety/feasibility behavior                  |
+| \(x/c\), queue, spillback duration         | Whether detours transfer congestion          |
+| Load concentration across alternatives     | Herding/diversification                      |
+| Reroute count and route churn              | Stability of recommendations                 |
+| Maximum/percentile individual detour       | Fairness/bounded disruption                  |
+| CCH preprocessing/customization/query time | Computational feasibility                    |
+| End-to-end decision latency                | Whether the full update loop meets its epoch |
+| Changed edges/batch locality               | Explains when each algorithm benefits        |
+| Disconnected/no-route rate                 | Robustness under severe events               |
+| Missing/stale-data degradation             | Safe fallback behavior                       |
+| Sensitivity/confidence intervals           | Dependence on uncertain assumptions          |
 
 Experiments will use paired scenarios/seeds, report uncertainty/effect size, and include negative results. Algorithm comparisons receive identical graph, edge weights, OD requests, and route-acceptance policy.
 
 ## Baseline Comparison
 
-| System | Purpose |
-|---|---|
+| System                                 | Purpose                                                                |
+| -------------------------------------- | ---------------------------------------------------------------------- |
 | Existing Stage 1 two-snapshot Dijkstra | Demonstrates controlled closure avoidance; not the route-once baseline |
-| Route-once static Dijkstra | Demonstrates no adaptation after conditions change |
-| Repeated snapshot Dijkstra | Isolates benefit of routing-index reuse |
-| ALT-guided bidirectional A* | Dependency-light accelerated full-workload comparator/backup |
-| D* Lite | Sparse local-update ablation for one active route |
-| CCH without stability/load policy | Isolates routing-engine effect |
-| CCH + stability only | Measures route-churn control |
-| Full CCH + stability + projected load | Measures proposed systems contribution |
+| Route-once static Dijkstra             | Demonstrates no adaptation after conditions change                     |
+| Repeated snapshot Dijkstra             | Isolates benefit of routing-index reuse                                |
+| ALT-guided bidirectional A*            | Dependency-light accelerated full-workload comparator/backup           |
+| D* Lite                                | Sparse local-update ablation for one active route                      |
+| CCH without stability/load policy      | Isolates routing-engine effect                                         |
+| CCH + stability only                   | Measures route-churn control                                           |
+| Full CCH + stability + projected load  | Measures proposed systems contribution                                 |
 
 The comparison must separate computation-time gains from realized traffic gains. A faster path query alone does not improve congestion.
 
@@ -1250,56 +1252,56 @@ The project remains viable without these optional feeds because its core evaluat
 
 ## Final Project Summary Table
 
-| Component | Final Choice | Why | Evidence |
-|---|---|---|---|
-| Problem | Routing under compound flood, incident, and congestion changes | More realistic than one blocked edge | Chennai/recent integrated studies |
-| Main factors | Topology, capacity, flow, susceptibility, rainfall, observations, incidents, freshness, stability/load, service class | Each has a defined role and source | Factor audit |
-| Core data | OSM, OpenCity, IMERG, SRTM/hydrology, SUMO | Public and reproducible | Official portals/docs |
-| Flood model | Susceptibility + rainfall + optional observation → explained state | Separates historical/current evidence | Chennai forecasting/mapping |
-| Traffic model | BPR estimator + SUMO dynamic outcomes | Interpretability plus queue dynamics | BPR, SUMO calibration |
-| Routing algorithm | Conditional CCH | Stable topology, changing metric, many queries | Dibbelt 2016; Buchhold 2019 |
-| Backup | ALT-guided bidirectional A* | Python-feasible full workload | Goldberg/Harrelson; Chennai 2020 |
-| Rerouting | Trigger + hysteresis + cooldown + sub-batch reservations | Limits churn/herding | Stability literature |
-| Emergency | Secondary lexicographic simulation scenario | Measures public-service trade-off | Emergency-routing literature |
-| Simulation | Calibrated SUMO scenarios | No open complete live traffic feed | Eclipse SUMO; Chennai calibration |
-| Evaluation | Paired baselines, ablations, stability, safety, runtime, network outcomes | Distinguishes engine from system effects | Research audit |
-| Main contribution | Chennai open-data integration and compound-disruption evaluation | Strongest defensible gap | Novelty audit, medium confidence |
+| Component         | Final Choice                                                                                                          | Why                                            | Evidence                          |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- | --------------------------------- |
+| Problem           | Routing under compound flood, incident, and congestion changes                                                        | More realistic than one blocked edge           | Chennai/recent integrated studies |
+| Main factors      | Topology, capacity, flow, susceptibility, rainfall, observations, incidents, freshness, stability/load, service class | Each has a defined role and source             | Factor audit                      |
+| Core data         | OSM, OpenCity, IMERG, SRTM/hydrology, SUMO                                                                            | Public and reproducible                        | Official portals/docs             |
+| Flood model       | Susceptibility + rainfall + optional observation → explained state                                                    | Separates historical/current evidence          | Chennai forecasting/mapping       |
+| Traffic model     | BPR estimator + SUMO dynamic outcomes                                                                                 | Interpretability plus queue dynamics           | BPR, SUMO calibration             |
+| Routing algorithm | Conditional CCH                                                                                                       | Stable topology, changing metric, many queries | Dibbelt 2016; Buchhold 2019       |
+| Backup            | ALT-guided bidirectional A*                                                                                           | Python-feasible full workload                  | Goldberg/Harrelson; Chennai 2020  |
+| Rerouting         | Trigger + hysteresis + cooldown + sub-batch reservations                                                              | Limits churn/herding                           | Stability literature              |
+| Emergency         | Secondary lexicographic simulation scenario                                                                           | Measures public-service trade-off              | Emergency-routing literature      |
+| Simulation        | Calibrated SUMO scenarios                                                                                             | No open complete live traffic feed             | Eclipse SUMO; Chennai calibration |
+| Evaluation        | Paired baselines, ablations, stability, safety, runtime, network outcomes                                             | Distinguishes engine from system effects       | Research audit                    |
+| Main contribution | Chennai open-data integration and compound-disruption evaluation                                                      | Strongest defensible gap                       | Novelty audit, medium confidence  |
 
 ## Master Resource Table
 
-| Resource | Type | Purpose | Provider | Chennai Relevant? | Historical/Live | Free/Open? | Direct Access | Documentation | Status |
-|---|---|---|---|---|---|---|---|---|---|
-| OpenStreetMap | Dataset/map | Road graph | OSMF/contributors | Yes | Mutable snapshot | ODbL | [Map](https://www.openstreetmap.org/#map=11/13.083/80.271) | [Licence](https://www.openstreetmap.org/copyright) | Primary |
-| Geofabrik India | Dataset download | Reproducible OSM extract | Geofabrik/OSM | Yes | Daily extract | ODbL | [India PBF](https://download.geofabrik.de/asia/india.html) | Same page | Primary option |
-| OSMnx | Software | Build/analyse graph | Geoff Boeing/project | Yes | N/A | MIT | [Repository](https://github.com/gboeing/osmnx) | [Docs](https://osmnx.readthedocs.io/) | Implemented |
-| OpenCity Flooding | Dataset | Flood history/hazard | OpenCity/GCC sources | Direct | Historical | Resource-specific | [Dataset](https://data.opencity.in/dataset/chennai-flooding-data) | [CKAN API](https://data.opencity.in/api/3/action/package_show?id=chennai-floods-2015-data) | Stage 1/primary |
-| Chennai drains | Dataset | Hydrological context | OpenCity/GCC | Direct | Static | Resource-specific | [SWD](https://data.opencity.in/dataset/chennai-stormwater-drain-swd-maps) | [Basin maps](https://data.opencity.in/dataset/chennai-basin-drainage-maps) | Planned/support |
-| Water-body census | Dataset | Permanent-water/context | OpenCity/original government source | Direct | Historical | Licence ambiguous | [Dataset](https://data.opencity.in/dataset/tamil-nadu-water-bodies-census-data) | Metadata on page | Conditional |
-| SRTMGL1 | Dataset | Elevation | NASA/USGS | Yes | Static 2000 | Free | [Catalogue](https://www.earthdata.nasa.gov/data/catalog/lpcloud-srtmgl1-003) | [Guidance](https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance) | Planned/support |
-| NASADEM | Dataset | Reprocessed elevation | NASA | Yes | Static | Free | [Catalogue](https://www.earthdata.nasa.gov/data/catalog/lpcloud-nasadem-hgt-001) | Catalogue | Alternative |
-| GPM IMERG | Dataset/service | Rainfall | NASA/JAXA | Yes | Historical/near-current | Free/account | [Directory](https://gpm.nasa.gov/data/directory) | [V07 docs](https://gpm.nasa.gov/resources/documents/imerg-v07-technical-documentation) | Planned/primary |
-| Giovanni | Viewer | Inspect rainfall | NASA | Yes | Product-dependent | Free/account | [Viewer](https://giovanni.gsfc.nasa.gov/giovanni/) | In viewer | Verification |
-| Sentinel-1 | Dataset | Optional area water evidence | EU/ESA | Yes | Acquisition scenes | Free/account | [Browser](https://browser.dataspace.copernicus.eu/) | [Mission](https://sentiwiki.copernicus.eu/web/s1-mission) | Optional |
-| OPERA DSWx-S1 | Dataset | Optional classified water | NASA PO.DAAC | Yes when available | 2024+ near-current | Free/account | [DOI](https://doi.org/10.5067/OPDSWS1-L3V1) | [Suite](https://www.jpl.nasa.gov/go/opera/products/dswx-product-suite/) | Optional |
-| India Flood Inventory | Dataset | Event context | IIT Delhi/IMD collaboration | Coarse | 1967–2023 | CC BY-NC 4.0 | [Zenodo](https://doi.org/10.5281/zenodo.4742142) | [Paper](https://doi.org/10.1007/s11069-021-04698-6) | Supporting |
-| SUMO | Software | Traffic/incident simulation | Eclipse | Constructed | Simulated | EPL/GPL | [Download](https://eclipse.dev/sumo/) | [Docs](https://eclipse.dev/sumo/docs/) | Planned/core |
-| Chennai SUMO calibration | Paper | Local behavior evidence | Sashank et al. | Direct | Historical experiment | Publisher access | [DOI](https://doi.org/10.1007/978-981-15-3742-4_13) | DOI page | Evidence |
-| Chennai Flood DSS | Dashboard | Local rainfall/water display | TN disaster authority | Direct | Near-current display | Public view; API unknown | [Dashboard](https://chennaifloodmonitor.tn.gov.in/HomePage/Dashboard) | [About](https://chennaifloodmonitor.tn.gov.in/Master/AboutUs) | Manual/optional |
-| OpenWeather | API | Optional forecast/current weather | OpenWeather | Yes | Current/forecast/history by product | Free + paid products | [API](https://openweathermap.org/api) | [Pricing](https://openweathermap.org/full-price) | Optional |
-| Open-Meteo | API | No-key forecast fallback | Open-Meteo | Yes | Forecast/reanalysis | CC BY 4.0; free non-commercial limits | [API](https://open-meteo.com/en/docs) | [Pricing/terms](https://open-meteo.com/en/pricing) | Optional |
-| IMD APIs | API | Official warnings/gauges | IMD | Direct/national | Current/forecast | Registration/controlled | [Portal](https://api.imd.gov.in/) | [Reference](https://api.imd.gov.in/public/api_reference.html) | Supporting |
-| Mappls | API | Optional India traffic | Mappls | Yes | Near-current | Key/terms | [API repository](https://github.com/mappls-api/mappls-rest-apis) | Repository | Optional |
-| RoutingKit | Repository/software | CCH engine | KIT | Network-independent | N/A | Open source | [Repository](https://github.com/RoutingKit/RoutingKit) | Repository docs | Planned feasibility |
-| routingkit-cch | Python binding | CCH integration | Package maintainers | Network-independent | N/A | Package licence | [PyPI](https://pypi.org/project/routingkit-cch/) | PyPI/API | Conditional |
-| CCH paper | Paper | Primary algorithm evidence | Dibbelt et al. | General roads | 2016 | Publisher | [DOI](https://doi.org/10.1145/2886843) | ACM DOI | Core evidence |
-| Engineered CCH | Paper | Traffic assignment evidence | Buchhold et al. | General/metropolitan | 2019 | Publisher | [DOI](https://doi.org/10.1145/3362693) | ACM DOI | Core evidence |
-| Chennai relief routing | Paper | Closest local routing prior art | Ganguly & Roy | Direct | 2015 case | Publisher | [DOI](https://doi.org/10.1109/ICT-DM.2017.8275694) | IEEE DOI | Novelty evidence |
-| Chennai TD routing | Paper | Closest local algorithm prior art | Kumar et al. | Direct | Time-dependent study | Publisher | [DOI](https://doi.org/10.18520/cs/v119/i4/680-690) | DOI page | Novelty evidence |
-| Chennai flood forecast | Paper/system | Upstream dynamic flood prior art | Ghosh et al. | Direct | Forecasting | Publisher | [DOI](https://doi.org/10.18520/cs/v117/i5/741-745) | DOI page | Novelty evidence |
-| Bahrami et al. | Paper | Flood+traffic capacity precedent | TR-E | Non-Chennai | 2026 | Publisher | [DOI](https://doi.org/10.1016/j.tre.2025.104645) | DOI page | Strong overlap |
-| Li et al. | Paper | Inundation+SUMO precedent | IJDRS | Non-Chennai | 2026 | Publisher | [DOI](https://doi.org/10.1007/s13753-026-00697-y) | DOI page | Strong overlap |
-| Sen1Floods11 | Benchmark | Flood segmentation | Cloud to Street | No Chennai | Historical | Official licence unresolved | [Paper](https://doi.org/10.1109/CVPRW50498.2020.00113) | [Repository](https://github.com/cloudtostreet/Sen1Floods11) | Rejected core |
-| STURM-Flood | Benchmark | Flood segmentation | STURM-WEO | Unverified | Historical | CC BY 4.0 | [Zenodo](https://doi.org/10.5281/zenodo.12748983) | [Paper](https://doi.org/10.1080/20964471.2025.2458714) | Rejected core |
+| Resource                 | Type                | Purpose                           | Provider                            | Chennai Relevant?    | Historical/Live                     | Free/Open?                            | Direct Access                                                                    | Documentation                                                                                            | Status              |
+| ------------------------ | ------------------- | --------------------------------- | ----------------------------------- | -------------------- | ----------------------------------- | ------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------- |
+| OpenStreetMap            | Dataset/map         | Road graph                        | OSMF/contributors                   | Yes                  | Mutable snapshot                    | ODbL                                  | [Map](https://www.openstreetmap.org/#map=11/13.083/80.271)                       | [Licence](https://www.openstreetmap.org/copyright)                                                       | Primary             |
+| Geofabrik India          | Dataset download    | Reproducible OSM extract          | Geofabrik/OSM                       | Yes                  | Daily extract                       | ODbL                                  | [India PBF](https://download.geofabrik.de/asia/india.html)                       | Same page                                                                                                | Primary option      |
+| OSMnx                    | Software            | Build/analyse graph               | Geoff Boeing/project                | Yes                  | N/A                                 | MIT                                   | [Repository](https://github.com/gboeing/osmnx)                                   | [Docs](https://osmnx.readthedocs.io/)                                                                    | Implemented         |
+| OpenCity Flooding        | Dataset             | Flood history/hazard              | OpenCity/GCC sources                | Direct               | Historical                          | Resource-specific                     | [Dataset](https://data.opencity.in/dataset/chennai-flooding-data)                | [CKAN API](https://data.opencity.in/api/3/action/package_show?id=chennai-floods-2015-data)               | Stage 1/primary     |
+| Chennai drains           | Dataset             | Hydrological context              | OpenCity/GCC                        | Direct               | Static                              | Resource-specific                     | [SWD](https://data.opencity.in/dataset/chennai-stormwater-drain-swd-maps)        | [Basin maps](https://data.opencity.in/dataset/chennai-basin-drainage-maps)                               | Planned/support     |
+| Water-body census        | Dataset             | Permanent-water/context           | OpenCity/original government source | Direct               | Historical                          | Licence ambiguous                     | [Dataset](https://data.opencity.in/dataset/tamil-nadu-water-bodies-census-data)  | Metadata on page                                                                                         | Conditional         |
+| SRTMGL1                  | Dataset             | Elevation                         | NASA/USGS                           | Yes                  | Static 2000                         | Free                                  | [Catalogue](https://www.earthdata.nasa.gov/data/catalog/lpcloud-srtmgl1-003)     | [Guidance](https://www.earthdata.nasa.gov/engage/open-data-services-software-policies/data-use-guidance) | Planned/support     |
+| NASADEM                  | Dataset             | Reprocessed elevation             | NASA                                | Yes                  | Static                              | Free                                  | [Catalogue](https://www.earthdata.nasa.gov/data/catalog/lpcloud-nasadem-hgt-001) | Catalogue                                                                                                | Alternative         |
+| GPM IMERG                | Dataset/service     | Rainfall                          | NASA/JAXA                           | Yes                  | Historical/near-current             | Free/account                          | [Directory](https://gpm.nasa.gov/data/directory)                                 | [V07 docs](https://gpm.nasa.gov/resources/documents/imerg-v07-technical-documentation)                   | Planned/primary     |
+| Giovanni                 | Viewer              | Inspect rainfall                  | NASA                                | Yes                  | Product-dependent                   | Free/account                          | [Viewer](https://giovanni.gsfc.nasa.gov/giovanni/)                               | In viewer                                                                                                | Verification        |
+| Sentinel-1               | Dataset             | Optional area water evidence      | EU/ESA                              | Yes                  | Acquisition scenes                  | Free/account                          | [Browser](https://browser.dataspace.copernicus.eu/)                              | [Mission](https://sentiwiki.copernicus.eu/web/s1-mission)                                                | Optional            |
+| OPERA DSWx-S1            | Dataset             | Optional classified water         | NASA PO.DAAC                        | Yes when available   | 2024+ near-current                  | Free/account                          | [DOI](https://doi.org/10.5067/OPDSWS1-L3V1)                                      | [Suite](https://www.jpl.nasa.gov/go/opera/products/dswx-product-suite/)                                  | Optional            |
+| India Flood Inventory    | Dataset             | Event context                     | IIT Delhi/IMD collaboration         | Coarse               | 1967–2023                           | CC BY-NC 4.0                          | [Zenodo](https://doi.org/10.5281/zenodo.4742142)                                 | [Paper](https://doi.org/10.1007/s11069-021-04698-6)                                                      | Supporting          |
+| SUMO                     | Software            | Traffic/incident simulation       | Eclipse                             | Constructed          | Simulated                           | EPL/GPL                               | [Download](https://eclipse.dev/sumo/)                                            | [Docs](https://eclipse.dev/sumo/docs/)                                                                   | Planned/core        |
+| Chennai SUMO calibration | Paper               | Local behavior evidence           | Sashank et al.                      | Direct               | Historical experiment               | Publisher access                      | [DOI](https://doi.org/10.1007/978-981-15-3742-4_13)                              | DOI page                                                                                                 | Evidence            |
+| Chennai Flood DSS        | Dashboard           | Local rainfall/water display      | TN disaster authority               | Direct               | Near-current display                | Public view; API unknown              | [Dashboard](https://chennaifloodmonitor.tn.gov.in/HomePage/Dashboard)            | [About](https://chennaifloodmonitor.tn.gov.in/Master/AboutUs)                                            | Manual/optional     |
+| OpenWeather              | API                 | Optional forecast/current weather | OpenWeather                         | Yes                  | Current/forecast/history by product | Free + paid products                  | [API](https://openweathermap.org/api)                                            | [Pricing](https://openweathermap.org/full-price)                                                         | Optional            |
+| Open-Meteo               | API                 | No-key forecast fallback          | Open-Meteo                          | Yes                  | Forecast/reanalysis                 | CC BY 4.0; free non-commercial limits | [API](https://open-meteo.com/en/docs)                                            | [Pricing/terms](https://open-meteo.com/en/pricing)                                                       | Optional            |
+| IMD APIs                 | API                 | Official warnings/gauges          | IMD                                 | Direct/national      | Current/forecast                    | Registration/controlled               | [Portal](https://api.imd.gov.in/)                                                | [Reference](https://api.imd.gov.in/public/api_reference.html)                                            | Supporting          |
+| Mappls                   | API                 | Optional India traffic            | Mappls                              | Yes                  | Near-current                        | Key/terms                             | [API repository](https://github.com/mappls-api/mappls-rest-apis)                 | Repository                                                                                               | Optional            |
+| RoutingKit               | Repository/software | CCH engine                        | KIT                                 | Network-independent  | N/A                                 | Open source                           | [Repository](https://github.com/RoutingKit/RoutingKit)                           | Repository docs                                                                                          | Planned feasibility |
+| routingkit-cch           | Python binding      | CCH integration                   | Package maintainers                 | Network-independent  | N/A                                 | Package licence                       | [PyPI](https://pypi.org/project/routingkit-cch/)                                 | PyPI/API                                                                                                 | Conditional         |
+| CCH paper                | Paper               | Primary algorithm evidence        | Dibbelt et al.                      | General roads        | 2016                                | Publisher                             | [DOI](https://doi.org/10.1145/2886843)                                           | ACM DOI                                                                                                  | Core evidence       |
+| Engineered CCH           | Paper               | Traffic assignment evidence       | Buchhold et al.                     | General/metropolitan | 2019                                | Publisher                             | [DOI](https://doi.org/10.1145/3362693)                                           | ACM DOI                                                                                                  | Core evidence       |
+| Chennai relief routing   | Paper               | Closest local routing prior art   | Ganguly & Roy                       | Direct               | 2015 case                           | Publisher                             | [DOI](https://doi.org/10.1109/ICT-DM.2017.8275694)                               | IEEE DOI                                                                                                 | Novelty evidence    |
+| Chennai TD routing       | Paper               | Closest local algorithm prior art | Kumar et al.                        | Direct               | Time-dependent study                | Publisher                             | [DOI](https://doi.org/10.18520/cs/v119/i4/680-690)                               | DOI page                                                                                                 | Novelty evidence    |
+| Chennai flood forecast   | Paper/system        | Upstream dynamic flood prior art  | Ghosh et al.                        | Direct               | Forecasting                         | Publisher                             | [Publisher PDF](https://currentscience.ac.in/Volumes/117/05/0741.pdf)            | No DOI found                                                                                             | Novelty evidence    |
+| Bahrami et al.           | Paper               | Flood+traffic capacity precedent  | TR-E                                | Non-Chennai          | 2026                                | Publisher                             | [DOI](https://doi.org/10.1016/j.tre.2025.104645)                                 | DOI page                                                                                                 | Strong overlap      |
+| Li et al.                | Paper               | Inundation+SUMO precedent         | IJDRS                               | Non-Chennai          | 2026                                | Publisher                             | [DOI](https://doi.org/10.1007/s13753-026-00697-y)                                | DOI page                                                                                                 | Strong overlap      |
+| Sen1Floods11             | Benchmark           | Flood segmentation                | Cloud to Street                     | No Chennai           | Historical                          | Official licence unresolved           | [Paper](https://doi.org/10.1109/CVPRW50498.2020.00113)                           | [Repository](https://github.com/cloudtostreet/Sen1Floods11)                                              | Rejected core       |
+| STURM-Flood              | Benchmark           | Flood segmentation                | STURM-WEO                           | Unverified           | Historical                          | CC BY 4.0                             | [Zenodo](https://doi.org/10.5281/zenodo.12748983)                                | [Paper](https://doi.org/10.1080/20964471.2025.2458714)                                                   | Rejected core       |
 
 ## Quality-Control Conclusion
 
