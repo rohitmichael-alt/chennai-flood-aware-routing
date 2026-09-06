@@ -114,7 +114,7 @@ Historical evidence can strengthen reproducibility because every method is evalu
 4. inject controlled 0/30/60/120-minute evidence lags and false-positive/false-negative road states;
 5. use repeated SUMO seeds and report confidence intervals;
 6. compare historical-evidence routing with perfect-information and no-flood baselines; and
-7. describe the architecture as **near-real-time capable**, not as a live Chennai service.
+7. describe the architecture as **designed for near-real-time operation**, not as a validated near-real-time or live Chennai service.
 
 The limitation is reduced operational external validity: the study cannot prove present-day live accuracy or deployment readiness. That limitation is acceptable for an applied methods/case-study paper when stated explicitly.
 
@@ -284,8 +284,8 @@ Five committed evaluation studies strengthen impact without becoming route weigh
 1. **Evidence freshness and uncertainty:** controlled lag and classification-error traces.
 2. **Critical-facility accessibility:** travel time/disconnection to hospitals, fire stations, and relief centres.
 3. **Population-weighted access loss:** distribution of access impact using WorldPop/ward weights; this is not socioeconomic equity.
-4. **Partial compliance:** 0%, 25%, 50%, 75%, and 100% of vehicles follow guidance.
-5. **Facility-oriented road criticality:** rank candidate roads by newly disconnected population and population-weighted added facility travel time.
+4. **Partial compliance:** exact seeded cohorts of 0%, 25%, 50%, 75%, and 100% of vehicles follow guidance.
+5. **Facility-oriented criticality:** rank directed keyed arcs by newly disconnected population and population-weighted added facility travel time; group both directions/parallel arcs by OSM way ID before physical-road reporting.
 
 Generic deterministic implementations for all five are present in `evaluation/metrics.py` and `evaluation/robustness.py`; Chennai data integration remains a later stage.
 

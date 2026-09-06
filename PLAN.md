@@ -155,8 +155,8 @@ Metrics:
 - p50/p90 nearest-facility travel time;
 - population-weighted access loss;
 - origins over 15/30-minute declared thresholds;
-- outcomes at 0%, 25%, 50%, 75%, and 100% compliance.
-- roads ranked by newly disconnected population and added facility travel time.
+- exact seeded cohorts at 0%, 25%, 50%, 75%, and 100% compliance;
+- directed arcs ranked by newly disconnected population and added facility travel time, then grouped by OSM way ID for physical-road reporting.
 
 **Current status:** Generic metrics, deterministic compliance selection, evidence perturbation, and facility-road-criticality ranking are implemented; Chennai data integration is pending.
 

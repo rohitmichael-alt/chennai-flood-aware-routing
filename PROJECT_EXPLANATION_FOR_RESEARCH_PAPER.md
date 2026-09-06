@@ -87,8 +87,8 @@ They are evaluation objectives, not arbitrary route penalties.
 Historical Chennai data is suitable for a retrospective event-replay paper.
 It reduces claims about present-day deployment, but improves repeatability when
 dates, provenance, lag/error sensitivity, and simulated traffic are reported
-honestly. The project must say “near-real-time capable,” not “live Chennai
-routing.”
+honestly. The project must say “designed for near-real-time operation,” not
+“validated live Chennai routing.”
 
 ## What Remains?
 

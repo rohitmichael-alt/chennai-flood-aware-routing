@@ -5,6 +5,7 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass
+from numbers import Real
 from typing import Collection, Hashable, Mapping, Sequence
 
 import networkx as nx
@@ -127,17 +128,18 @@ def seeded_compliance_mask(
     *,
     seed: int,
 ) -> dict[Hashable, bool]:
-    """Select compliant vehicles reproducibly for a sensitivity experiment."""
+    """Select an exact-size compliant cohort reproducibly."""
 
     if not 0 <= probability <= 1:
         raise ValueError("Compliance probability must lie in [0, 1].")
     if len(set(vehicle_ids)) != len(vehicle_ids):
         raise ValueError("Vehicle identifiers must be unique.")
     rng = random.Random(seed)
-    return {
-        vehicle_id: rng.random() < probability
-        for vehicle_id in vehicle_ids
-    }
+    shuffled = list(vehicle_ids)
+    rng.shuffle(shuffled)
+    compliant_count = math.floor(len(shuffled) * probability + 0.5)
+    compliant = set(shuffled[:compliant_count])
+    return {vehicle_id: vehicle_id in compliant for vehicle_id in vehicle_ids}
 
 
 def _nearest_facility_times(
@@ -186,6 +188,17 @@ def rank_facility_oriented_road_criticality(
         raise ValueError("At least one population weight must be positive.")
     if len(set(candidate_edges)) != len(candidate_edges):
         raise ValueError("Candidate edges must be unique.")
+    for _, _, _, data in graph.edges(keys=True, data=True):
+        edge_weight = data.get(weight)
+        if (
+            isinstance(edge_weight, bool)
+            or not isinstance(edge_weight, Real)
+            or not math.isfinite(float(edge_weight))
+            or edge_weight < 0
+        ):
+            raise ValueError(
+                f"Every edge must have a finite non-negative `{weight}` value."
+            )
     for u, v, key in candidate_edges:
         if not graph.has_edge(u, v, key):
             raise ValueError(f"Candidate edge {(u, v, key)!r} is not in the graph.")

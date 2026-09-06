@@ -44,7 +44,7 @@ def test_compliance_mask_is_reproducible_and_bounded() -> None:
     second = seeded_compliance_mask(vehicle_ids, 0.5, seed=8597)
 
     assert first == second
-    assert 30 <= sum(first.values()) <= 70
+    assert sum(first.values()) == 50
     assert all(
         seeded_compliance_mask(vehicle_ids, 0.0, seed=1)[vehicle] is False
         for vehicle in vehicle_ids
@@ -139,4 +139,19 @@ def test_facility_road_criticality_rejects_unknown_edges() -> None:
             origin_populations={"O": 1},
             facility_nodes={"F"},
             candidate_edges=[("missing", "F", 0)],
+        )
+
+
+@pytest.mark.parametrize("bad_weight", [None, -1, math.inf, math.nan])
+def test_facility_road_criticality_rejects_invalid_edge_weights(
+    bad_weight: object,
+) -> None:
+    graph = nx.MultiDiGraph()
+    graph.add_edge("O", "F", key=0, weight=bad_weight)
+    with pytest.raises(ValueError, match="finite non-negative"):
+        rank_facility_oriented_road_criticality(
+            graph,
+            origin_populations={"O": 1},
+            facility_nodes={"F"},
+            candidate_edges=[("O", "F", 0)],
         )
