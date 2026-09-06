@@ -313,7 +313,7 @@ def test_cch_safe_weight_bound_prevents_infinity_collision() -> None:
     assert result.path is not None
     assert result.path.cost == maximum * 2
 
-    with pytest.raises(ValueError, match="safe finite maximum"):
+    with pytest.raises(ValueError, match="conservative bound"):
         engine.synchronize(
             MetricSnapshot(
                 topology_id=engine.topology_id,
