@@ -5,7 +5,11 @@ from __future__ import annotations
 import math
 import random
 from dataclasses import dataclass
-from typing import Hashable, Sequence
+from typing import Collection, Hashable, Mapping, Sequence
+
+import networkx as nx
+
+from chennai_routing.routing.engine import EdgeId
 
 
 @dataclass(frozen=True)
@@ -21,6 +25,18 @@ class AccessibilitySummary:
     population_weighted_p90_time: float
     population_share_over_threshold: float
     threshold: float
+
+
+@dataclass(frozen=True)
+class RoadCriticalityResult:
+    """Facility-access impact caused by closing one directed keyed edge."""
+
+    edge: EdgeId
+    baseline_reachable_population: float
+    newly_disconnected_population: float
+    affected_population: float
+    population_weighted_added_time: float
+    maximum_added_time: float
 
 
 def _validate_accessibility_inputs(
@@ -122,3 +138,122 @@ def seeded_compliance_mask(
         vehicle_id: rng.random() < probability
         for vehicle_id in vehicle_ids
     }
+
+
+def _nearest_facility_times(
+    graph: nx.MultiDiGraph,
+    facilities: Collection[Hashable],
+    *,
+    weight: str,
+) -> dict[Hashable, float]:
+    reversed_graph = graph.reverse(copy=False)
+    return dict(
+        nx.multi_source_dijkstra_path_length(
+            reversed_graph,
+            facilities,
+            weight=weight,
+        )
+    )
+
+
+def rank_facility_oriented_road_criticality(
+    graph: nx.MultiDiGraph,
+    *,
+    origin_populations: Mapping[Hashable, float],
+    facility_nodes: Collection[Hashable],
+    candidate_edges: Sequence[EdgeId],
+    weight: str = "weight",
+) -> tuple[RoadCriticalityResult, ...]:
+    """Rank edges by population-weighted nearest-facility access loss.
+
+    This is an evaluation output, not an additional shortest-path penalty.
+    """
+
+    if not isinstance(graph, nx.MultiDiGraph):
+        raise TypeError("Road criticality requires a networkx.MultiDiGraph.")
+    if not origin_populations:
+        raise ValueError("At least one origin population is required.")
+    if not facility_nodes:
+        raise ValueError("At least one facility node is required.")
+    if any(node not in graph for node in origin_populations):
+        raise ValueError("Every population origin must exist in the graph.")
+    if any(node not in graph for node in facility_nodes):
+        raise ValueError("Every facility node must exist in the graph.")
+    for population in origin_populations.values():
+        if not math.isfinite(population) or population < 0:
+            raise ValueError("Population weights must be finite and non-negative.")
+    if sum(origin_populations.values()) <= 0:
+        raise ValueError("At least one population weight must be positive.")
+    if len(set(candidate_edges)) != len(candidate_edges):
+        raise ValueError("Candidate edges must be unique.")
+    for u, v, key in candidate_edges:
+        if not graph.has_edge(u, v, key):
+            raise ValueError(f"Candidate edge {(u, v, key)!r} is not in the graph.")
+
+    baseline = _nearest_facility_times(
+        graph,
+        facility_nodes,
+        weight=weight,
+    )
+    baseline_reachable_population = sum(
+        population
+        for origin, population in origin_populations.items()
+        if math.isfinite(baseline.get(origin, math.inf))
+    )
+    results: list[RoadCriticalityResult] = []
+    for edge in candidate_edges:
+        disrupted = graph.copy()
+        disrupted.remove_edge(*edge)
+        disrupted_times = _nearest_facility_times(
+            disrupted,
+            facility_nodes,
+            weight=weight,
+        )
+        newly_disconnected_population = 0.0
+        affected_population = 0.0
+        weighted_added_time = 0.0
+        maximum_added_time = 0.0
+        for origin, population in origin_populations.items():
+            baseline_time = float(baseline.get(origin, math.inf))
+            if not math.isfinite(baseline_time):
+                continue
+            disrupted_time = float(disrupted_times.get(origin, math.inf))
+            if not math.isfinite(disrupted_time):
+                newly_disconnected_population += population
+                affected_population += population
+                maximum_added_time = math.inf
+                continue
+            added_time = max(0.0, disrupted_time - baseline_time)
+            if added_time > 0:
+                affected_population += population
+                weighted_added_time += population * added_time
+                if math.isfinite(maximum_added_time):
+                    maximum_added_time = max(maximum_added_time, added_time)
+
+        results.append(
+            RoadCriticalityResult(
+                edge=edge,
+                baseline_reachable_population=float(
+                    baseline_reachable_population
+                ),
+                newly_disconnected_population=float(
+                    newly_disconnected_population
+                ),
+                affected_population=float(affected_population),
+                population_weighted_added_time=float(weighted_added_time),
+                maximum_added_time=float(maximum_added_time),
+            )
+        )
+
+    return tuple(
+        sorted(
+            results,
+            key=lambda result: (
+                result.newly_disconnected_population,
+                result.population_weighted_added_time,
+                result.affected_population,
+                repr(result.edge),
+            ),
+            reverse=True,
+        )
+    )
