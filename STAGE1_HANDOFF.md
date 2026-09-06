@@ -1,10 +1,16 @@
 # Stage 1 Handoff
 
+> **Historical handoff:** Stage 1 remains complete. The later certificate/CCH
+> research prototype is documented in `README.md`, `CONTEXT.md`, `PLAN.md`,
+> and `docs/PROJECT_RESEARCH_AND_EVIDENCE.md`. Do not use this historical
+> handoff to infer that Dijkstra remains the proposed final path engine.
+
 ## Current Status
 
 Stage 1 — Monday Proof of Concept is `DONE`.
 
-Stages 2-10 remain `PENDING`.
+The revised Stage 2 certificate/controller experiment is also complete.
+See `PLAN.md` for current Stages 2–10.
 
 This handoff records what was implemented, how to reproduce it, and what another AI agent should read before continuing.
 
@@ -16,7 +22,7 @@ Any future agent should read these files before changing code:
 2. `PLAN.md`
 3. `README.md`
 4. `STAGE1_HANDOFF.md`
-5. `PROJECT_EXPLANATION_FOR_CHATGPT_AND_MAAM.md`
+5. `PROJECT_EXPLANATION_FOR_RESEARCH_PAPER.md`
 6. `data/README.md`
 7. `scripts/README.md`
 8. `tests/README.md`
@@ -65,7 +71,7 @@ Docs/config:
 
 - `README.md`
 - `PLAN.md`
-- `PROJECT_EXPLANATION_FOR_CHATGPT_AND_MAAM.md`
+- `PROJECT_EXPLANATION_FOR_RESEARCH_PAPER.md`
 - `data/README.md`
 - `scripts/README.md`
 - `tests/README.md`
@@ -150,9 +156,9 @@ The latest successful Stage 1 run produced:
 - `NORMAL`, `DEGRADED`, `SEVERE`, and `BLOCKED` capacity multipliers are code parameters, not calibrated physical constants.
 - The demonstration is dynamic Dijkstra with refreshed edge costs, not a full time-dependent shortest-path algorithm.
 
-## Tests
+## Stage 1-Era Tests
 
-The test suite currently verifies:
+At the Stage 1 handoff, the suite verified:
 
 - Project paths and required root documents
 - CRS mismatch validation
@@ -161,7 +167,7 @@ The test suite currently verifies:
 - Blocked-edge exclusion
 - Before/after route change on a synthetic graph
 
-Last verified command:
+Stage 1-era verified command:
 
 ```powershell
 .\.venv\Scripts\python -m pytest
@@ -172,6 +178,9 @@ Result:
 ```text
 6 passed
 ```
+
+The current repository has a larger routing/CCH/evaluation suite; use
+`README.md` for the latest recorded result.
 
 ## Stage 1 Criteria Status
 
@@ -188,6 +197,8 @@ Passed:
 
 ## Next Work
 
-Start Stage 2 only after reading `CONTEXT.md`, `PLAN.md`, and this handoff.
-
-Stage 2 should turn the proof-of-concept road graph logic into a robust reusable Chennai road-network module. Do not start SRTM, GPM IMERG, drainage, SUMO, emergency routing, threshold/hysteresis, accidents, or full evaluation unless explicitly requested by the user and allowed by `PLAN.md`.
+Stage 2 (certificate/controller validation) is complete. Continue with revised
+Stage 3, the reproducible Chennai graph, only after reading `CONTEXT.md`,
+`PLAN.md`, and this historical handoff. Subsequent flood, rainfall, SUMO,
+stability, accessibility, and emergency work must follow the current stage
+gates in `PLAN.md`.

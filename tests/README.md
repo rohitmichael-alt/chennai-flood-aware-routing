@@ -2,4 +2,20 @@
 
 Tests should be added with each implementation stage.
 
-Current tests verify project structure plus Stage 1 CRS validation, flood-to-road mapping, BPR/capacity behavior, blocked-edge exclusion, and before/after route change on a synthetic graph.
+Current tests verify:
+
+- project structure;
+- Stage 1 CRS, flood-to-road, BPR/capacity, closure, and route change;
+- complete versioned metric snapshots;
+- monotone certificate pass/fail behavior;
+- mandatory refresh after a lower-bound-invalidating decrease;
+- closure and reopening;
+- keyed parallel-edge path identity;
+- native CCH equality with Dijkstra;
+- deterministic differential experiments;
+- population-weighted accessibility;
+- reproducible partial-compliance selection.
+- evidence lag and false-positive/false-negative perturbation;
+- facility-oriented road-criticality ranking.
+
+Latest recorded result: **45 passed**.

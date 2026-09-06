@@ -1,176 +1,151 @@
-# Flood- and Congestion-Aware Dynamic Traffic Routing for Chennai
+# Chennai Compound-Disruption Dynamic Routing
 
-## Objective
+Research prototype for flood-, incident-, and congestion-aware routing using:
 
-This repository contains the Stage 1 proof of concept for a Chennai-specific dynamic traffic routing project that will eventually combine flood evidence, congestion, incidents, road capacity, BPR travel-time costs, Dijkstra-based routing, controlled rerouting, and emergency-vehicle priority routing.
+- OpenStreetMap and Chennai flood evidence;
+- effective road capacity and BPR travel-time costs;
+- NetworkX Dijkstra and native Customizable Contraction Hierarchies;
+- certificate-gated metric synchronization;
+- planned stable projected-load rerouting and SUMO evaluation.
 
-Stage 1 implements a small reproducible demonstration only. It does not implement the complete robust Chennai road graph or later-stage dynamic routing system.
+## Research Claim
 
-## High-Level Architecture
+This project does not introduce a new shortest-path algorithm or a new route-certificate theorem. It evaluates a Chennai-oriented integration in which an established lower/upper-bound certificate decides when a stale CCH metric must be refreshed.
 
-The locked project architecture is:
+See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE.md) for the research gap, proof, three-road example, prior art, datasets, preliminary results, and limitations.
 
-```text
-DATA
--> road/environment/traffic conditions
--> road condition
--> effective capacity
--> BPR travel-time cost
--> dynamic edge cost
--> routing
--> controlled rerouting
--> evaluation
-```
+## Current Status
 
-Emergency vehicles use a separate priority-routing rule.
+| Stage | Status |
+|---|---|
+| Historical flood-to-road Dijkstra proof of concept | Implemented |
+| Certificate-gated synchronization controller | Implemented |
+| Exact NetworkX Dijkstra adapter | Implemented |
+| Native `routingkit-cch` adapter | Implemented for finite integer experimental metrics |
+| Eager baseline and deterministic experiments | Implemented |
+| Uncertainty, accessibility, compliance, and road-criticality methods | Implemented |
+| Chennai graph/flood/rainfall/SUMO integration | Planned |
+| Full publication evaluation | Planned |
 
-## Repository Structure
+Current tests: **45 passing** at the latest recorded verification.
 
-```text
-.
-├── CONTEXT.md
-├── PLAN.md
-├── CODEX_SETUP_PROMPT.md
-├── README.md
-├── pyproject.toml
-├── requirements.txt
-├── data/
-│   ├── raw/
-│   ├── processed/
-│   └── README.md
-├── src/chennai_routing/
-│   ├── config.py
-│   ├── data/
-│   ├── preprocessing/
-│   ├── models/
-│   ├── routing/
-│   ├── simulation/
-│   ├── evaluation/
-│   └── visualization/
-├── scripts/
-├── notebooks/
-├── tests/
-└── outputs/
-    ├── maps/
-    ├── figures/
-    └── tables/
-```
+## Install
 
-## Technology Overview
-
-Initial core dependencies are intentionally limited to the early-stage geospatial and graph stack:
-
-- OSMnx
-- NetworkX
-- GeoPandas
-- Shapely
-- pandas
-- NumPy
-- Matplotlib
-- pytest
-
-Later-stage tools such as SUMO, satellite/raster processing libraries, live API clients, and machine-learning frameworks are not required for Stage 1.
-
-## Environment Setup
-
-Python 3.11 or newer is recommended.
-
-Create a virtual environment:
+Python 3.11 or newer:
 
 ```bash
 python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[test,cch]"
 ```
 
-Activate it on Windows PowerShell:
+Windows PowerShell:
 
 ```powershell
+python -m venv .venv
 .\.venv\Scripts\Activate.ps1
-```
-
-Activate it on Linux/macOS:
-
-```bash
-source .venv/bin/activate
-```
-
-Install dependencies:
-
-```bash
 python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-python -m pip install -e .
+python -m pip install -e ".[test,cch]"
 ```
 
-Run tests:
+## Run Tests
 
 ```bash
 python -m pytest
 ```
 
-## Stage 1 Proof of Concept
+## Run the Certificate/CCH Experiment
 
-Run the Stage 1 pipeline:
-
-```powershell
-.\.venv\Scripts\python scripts\run_stage1_poc.py
+```bash
+python scripts/run_certified_lazy_experiment.py \
+  --engine both \
+  --mode both \
+  --seed 8597 \
+  --nodes 200 \
+  --extra-edges 600 \
+  --epochs 100 \
+  --updates-per-epoch 5 \
+  --queries-per-epoch 50 \
+  --epsilon-percent 5
 ```
 
-The script:
+The runner compares eager refresh with certificate-gated refresh using identical traces. It writes per-query CSV and summary JSON files under `outputs/tables/`.
 
-1. Downloads the public-domain OpenCity Chennai 2015 GCC flood hotspot KML.
-2. Parses historical flood hotspot points.
-3. Downloads a small OpenStreetMap driving graph around a real hotspot using OSMnx.
-4. Maps flood hotspot points to nearest road segments after CRS-safe metric projection.
-5. Applies a controlled Stage 1 model assumption: one real flood-mapped road edge is treated as `BLOCKED`.
-6. Recomputes effective capacity and BPR travel-time cost.
-7. Runs Dijkstra before and after the disruption.
-8. Writes affected-road, route-summary, graph, provenance, and map outputs.
+Regenerate the committed full main/sensitivity manifest:
 
-Generated outputs:
-
-```text
-data/raw/flood/chennai_2015_gcc_area_flood_hotspots.kml
-data/raw/flood/chennai_2015_gcc_area_flood_hotspots_provenance.json
-data/processed/roads/stage1_chennai_osm_graph.graphml
-outputs/tables/stage1_affected_roads.csv
-outputs/tables/stage1_route_summary.csv
-outputs/tables/stage1_summary.json
-outputs/maps/stage1_before_after_route.png
+```bash
+python scripts/run_certified_lazy_sweep.py
 ```
 
-## Data Sources
+Committed evidence from the recorded run is available at [`docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json`](docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json).
 
-- Road network: OpenStreetMap, queried with OSMnx for a small Chennai subarea.
-- Flood data: OpenCity, `Chennai Floods 2015 Data`, resource `Chennai 2015 GCC Area Flood Hotspots`, license `Other (Public Domain)`, source listed as `https://www.chennaifloodsdss.in/`.
+### Preliminary Result
 
-The flood data is historical. It is not live flooding and must not be interpreted as current road closure evidence.
+In one seeded 5,000-query CCH workload:
 
-## Stage 1 Assumptions and Limitations
+- monotone increases avoided 94 of 100 eager update refreshes;
+- mixed increases/decreases avoided 14 of 100;
+- no certificate violations or post-refresh exact mismatches were observed.
 
-- Historical flood hotspots are mapped to the nearest road within a documented tolerance.
-- The blocked-road state is a controlled proof-of-concept model assumption applied to a real flood-mapped road edge.
-- OSM missing speed data uses a visible Stage 1 fallback speed of `30 km/h`.
-- Synthetic flow and capacity values are model parameters used only to demonstrate the capacity-to-BPR-to-routing chain.
-- The selected origin and destination are the endpoints of the real affected road edge so the route-change demonstration is controlled and reproducible.
-- This is dynamic Dijkstra with refreshed edge costs, not a full time-dependent shortest-path formulation.
+These are synthetic functional/performance measurements, not Chennai traffic outcomes.
 
-## Staged Development Workflow
+## Run Stage 1
 
-Before implementing any stage, read:
-
-1. `CONTEXT.md`
-2. `PLAN.md`
-3. `STAGE1_HANDOFF.md` if continuing after Stage 1
-4. `PROJECT_EXPLANATION_FOR_CHATGPT_AND_MAAM.md` for a student-facing summary
-5. The stage-specific prompt or task description
-
-Follow the status tracker in `PLAN.md`. Do not mark a stage complete until its completion criteria are reproducible and documented.
-
-## Current Status
-
-```text
-Stage 1 — Monday Proof of Concept: DONE
-Stages 2 onward: PENDING
+```bash
+python scripts/run_stage1_poc.py
 ```
 
-Stage 1 is complete as a Monday proof of concept. Stage 2 remains pending and should turn this prototype into a robust reusable Chennai road-network module.
+Stage 1:
+
+1. downloads OpenCity 2015 historical flood hotspots;
+2. downloads a small Chennai OSM driving graph;
+3. maps historical points to nearby roads;
+4. applies a controlled hard closure to one real mapped edge;
+5. computes BPR weights;
+6. runs Dijkstra before and after closure;
+7. writes CSV, JSON, GraphML, and PNG outputs.
+
+Stage 1 proves controlled closure avoidance. It does not prove current flooding, calibrated congestion behaviour, or city-wide performance.
+
+## Routing Components
+
+| File | Responsibility |
+|---|---|
+| `routing/engine.py` | Engine-neutral snapshots, keyed paths, and protocol |
+| `routing/networkx_engine.py` | Exact Dijkstra reference engine |
+| `routing/cch_engine.py` | Native experimental CCH adapter |
+| `routing/dynamic.py` | Certificate and refresh controller |
+| `evaluation/baseline.py` | Eager-refresh oracle |
+| `evaluation/experiments.py` | Reproducible synthetic experiment |
+| `evaluation/metrics.py` | Population/facility access and compliance utilities |
+| `evaluation/robustness.py` | Evidence-lag and classification-error experiments |
+
+## Certificate in One Paragraph
+
+If every current represented edge weight is at least its synchronized value, the old exact shortest distance remains a lower bound. The old path evaluated with current weights supplies an upper bound. If:
+
+\[
+U\le(1+\epsilon)L,
+\]
+
+the path is within \(1+\epsilon\) of the current represented optimum and CCH refresh can be skipped for that query. Any decrease below the synchronized metric invalidates the lower bound and forces refresh.
+
+This principle has close prior art, especially [CPD-Search](https://doi.org/10.24963/ijcai.2019/167), and is not claimed as a new theorem.
+
+## Data and Simulation Rules
+
+- Historical flood data is not live flooding.
+- IMERG rainfall is not street flood depth.
+- SUMO output is simulated traffic.
+- Capacity multipliers and BPR parameters require calibration/sensitivity analysis.
+- CCH and Dijkstra must receive identical represented metrics in comparisons.
+- CCH speed does not itself improve traffic; route-adoption policy determines network effects.
+
+## Documentation
+
+- [`CONTEXT.md`](CONTEXT.md): authoritative project and claim boundary.
+- [`PLAN.md`](PLAN.md): revised stages and completion criteria.
+- [`STAGE1_HANDOFF.md`](STAGE1_HANDOFF.md): historical Stage 1 implementation.
+- [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE.md): compact research paper/document.
+- `docs/PROJECT_RESEARCH_AND_EVIDENCE.docx`: generated Word version.
