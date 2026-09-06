@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "chennai-routing"
 version = "0.1.0"
-description = "Setup scaffold for flood- and congestion-aware dynamic traffic routing for Chennai."
+description = "Certificate-gated flood and traffic routing research framework for Chennai."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [

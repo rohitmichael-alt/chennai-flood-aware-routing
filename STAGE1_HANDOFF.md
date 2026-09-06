@@ -1,10 +1,16 @@
 # Stage 1 Handoff
 
+> **Historical handoff:** Stage 1 remains complete. The later certificate/CCH
+> research prototype is documented in `README.md`, `CONTEXT.md`, `PLAN.md`,
+> and `docs/PROJECT_RESEARCH_AND_EVIDENCE.md`. Do not use this historical
+> handoff to infer that Dijkstra remains the proposed final path engine.
+
 ## Current Status
 
 Stage 1 — Monday Proof of Concept is `DONE`.
 
-Stages 2-10 remain `PENDING`.
+The revised Stage 2 certificate/controller experiment is also complete.
+See `PLAN.md` for current Stages 2–10.
 
 This handoff records what was implemented, how to reproduce it, and what another AI agent should read before continuing.
 
@@ -16,7 +22,7 @@ Any future agent should read these files before changing code:
 2. `PLAN.md`
 3. `README.md`
 4. `STAGE1_HANDOFF.md`
-5. `PROJECT_EXPLANATION_FOR_CHATGPT_AND_MAAM.md`
+5. `PROJECT_EXPLANATION_FOR_RESEARCH_PAPER.md`
 6. `data/README.md`
 7. `scripts/README.md`
 8. `tests/README.md`
@@ -65,7 +71,7 @@ Docs/config:
 
 - `README.md`
 - `PLAN.md`
-- `PROJECT_EXPLANATION_FOR_CHATGPT_AND_MAAM.md`
+- `PROJECT_EXPLANATION_FOR_RESEARCH_PAPER.md`
 - `data/README.md`
 - `scripts/README.md`
 - `tests/README.md`

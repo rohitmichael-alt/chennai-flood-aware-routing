@@ -1,5 +1,10 @@
 # CODEX_SETUP_PROMPT.md
 
+> **Historical setup prompt:** This file records the initial Stage 1 setup and
+> is no longer the routing-method authority. The current architecture, claim
+> boundary, and revised stages are defined in `CONTEXT.md`, `PLAN.md`, and
+> `docs/PROJECT_RESEARCH_AND_EVIDENCE.md`.
+
 ## Purpose
 
 This prompt is for the **initial repository/setup stage only** of the Chennai flood- and congestion-aware dynamic traffic routing project.
