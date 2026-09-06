@@ -25,6 +25,11 @@ def _parse_args() -> argparse.Namespace:
         choices=("increases_only", "mixed", "both"),
         default="both",
     )
+    parser.add_argument(
+        "--engine",
+        choices=("networkx", "cch", "both"),
+        default="both",
+    )
     parser.add_argument("--seed", type=int, default=8597)
     parser.add_argument("--nodes", type=int, default=100)
     parser.add_argument("--extra-edges", type=int, default=250)
@@ -42,24 +47,34 @@ def main() -> int:
         if args.mode == "both"
         else (args.mode,)
     )
+    engines = (
+        ("networkx", "cch")
+        if args.engine == "both"
+        else (args.engine,)
+    )
     output_dir = get_project_paths().output_tables
     failed = False
-    for mode in modes:
-        config = LazySyncExperimentConfig(
-            seed=args.seed,
-            node_count=args.nodes,
-            extra_edge_count=args.extra_edges,
-            epochs=args.epochs,
-            updates_per_epoch=args.updates_per_epoch,
-            queries_per_epoch=args.queries_per_epoch,
-            update_mode=mode,
-            epsilon_numerator=args.epsilon_percent,
-            epsilon_denominator=100,
-        )
-        summary = run_certified_lazy_experiment(config, output_dir)
-        print(json.dumps(asdict(summary), indent=2, sort_keys=True))
-        failed = failed or summary.certificate_violation_count != 0
-        failed = failed or summary.exact_after_refresh_mismatch_count != 0
+    for engine in engines:
+        for mode in modes:
+            config = LazySyncExperimentConfig(
+                seed=args.seed,
+                node_count=args.nodes,
+                extra_edge_count=args.extra_edges,
+                epochs=args.epochs,
+                updates_per_epoch=args.updates_per_epoch,
+                queries_per_epoch=args.queries_per_epoch,
+                update_mode=mode,
+                engine=engine,
+                epsilon_numerator=args.epsilon_percent,
+                epsilon_denominator=100,
+            )
+            summary = run_certified_lazy_experiment(config, output_dir)
+            print(json.dumps(asdict(summary), indent=2, sort_keys=True))
+            failed = failed or summary.certificate_violation_count != 0
+            failed = (
+                failed
+                or summary.exact_after_refresh_mismatch_count != 0
+            )
     return int(failed)
 
 

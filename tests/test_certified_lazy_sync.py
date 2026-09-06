@@ -220,6 +220,7 @@ def test_seeded_experiment_has_no_certificate_or_exact_mismatch(
                 updates_per_epoch=2,
                 queries_per_epoch=10,
                 update_mode=mode,
+                engine="networkx",
             ),
             tmp_path,
         )
@@ -227,5 +228,62 @@ def test_seeded_experiment_has_no_certificate_or_exact_mismatch(
         assert summary.exact_after_refresh_mismatch_count == 0
         assert summary.query_count == 50
         assert (
-            tmp_path / f"lazy_sync_summary_{mode}.json"
+            tmp_path / f"lazy_sync_summary_networkx_{mode}.json"
         ).is_file()
+
+
+def test_native_cch_matches_dijkstra_on_keyed_parallel_edges() -> None:
+    pytest.importorskip("routingkit_cch")
+    from chennai_routing.routing.cch_engine import RoutingKitCCHEngine
+
+    graph = nx.MultiDiGraph()
+    graph.add_nodes_from(("S", "M", "T"))
+    graph.add_edge("S", "T", key="slow")
+    graph.add_edge("S", "M", key="first")
+    graph.add_edge("M", "T", key="second")
+    weights = {
+        ("S", "T", "slow"): 20,
+        ("S", "M", "first"): 5,
+        ("M", "T", "second"): 6,
+    }
+    cch = RoutingKitCCHEngine(graph)
+    dijkstra = NetworkXDijkstraEngine(graph)
+    for engine in (cch, dijkstra):
+        engine.synchronize(
+            MetricSnapshot(
+                topology_id=engine.topology_id,
+                version=0,
+                weights=weights,
+            )
+        )
+
+    cch_result = cch.query("S", "T")
+    dijkstra_result = dijkstra.query("S", "T")
+
+    assert cch_result == dijkstra_result
+    assert cch_result.path is not None
+    assert cch_result.path.edges == (
+        ("S", "M", "first"),
+        ("M", "T", "second"),
+    )
+
+
+def test_native_cch_experiment_has_no_certificate_violation(
+    tmp_path: Path,
+) -> None:
+    pytest.importorskip("routingkit_cch")
+    summary = run_certified_lazy_experiment(
+        LazySyncExperimentConfig(
+            seed=19,
+            node_count=20,
+            extra_edge_count=30,
+            epochs=4,
+            updates_per_epoch=2,
+            queries_per_epoch=10,
+            update_mode="increases_only",
+            engine="cch",
+        ),
+        tmp_path,
+    )
+    assert summary.certificate_violation_count == 0
+    assert summary.exact_after_refresh_mismatch_count == 0

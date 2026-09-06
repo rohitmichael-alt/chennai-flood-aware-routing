@@ -21,6 +21,7 @@ from chennai_routing.routing.dynamic import (
     CertifiedLazySynchronizer,
     WeightUpdateBatch,
 )
+from chennai_routing.routing.cch_engine import RoutingKitCCHEngine
 from chennai_routing.routing.engine import EdgeId, MetricSnapshot
 from chennai_routing.routing.networkx_engine import NetworkXDijkstraEngine
 
@@ -34,6 +35,7 @@ class LazySyncExperimentConfig:
     updates_per_epoch: int = 4
     queries_per_epoch: int = 25
     update_mode: Literal["increases_only", "mixed"] = "increases_only"
+    engine: Literal["networkx", "cch"] = "networkx"
     epsilon_numerator: int = 5
     epsilon_denominator: int = 100
 
@@ -48,6 +50,8 @@ class LazySyncExperimentConfig:
             raise ValueError("queries_per_epoch must be positive.")
         if self.update_mode not in {"increases_only", "mixed"}:
             raise ValueError("Unsupported update mode.")
+        if self.engine not in {"networkx", "cch"}:
+            raise ValueError("Unsupported routing engine.")
 
 
 @dataclass(frozen=True)
@@ -64,6 +68,10 @@ class ExperimentSummary:
     eager_synchronization_count: int
     refreshes_avoided: int
     certificate_hit_rate: float
+    lazy_engine_build_duration_ns: int
+    eager_engine_build_duration_ns: int
+    lazy_synchronization_duration_ns: int
+    eager_synchronization_duration_ns: int
     lazy_total_duration_ns: int
     eager_total_duration_ns: int
     python_version: str
@@ -118,8 +126,19 @@ def run_certified_lazy_experiment(
     rng = random.Random(config.seed)
     graph, initial_weights = _build_graph(config, rng)
     edge_ids = tuple(initial_weights)
+    engine_type = (
+        RoutingKitCCHEngine
+        if config.engine == "cch"
+        else NetworkXDijkstraEngine
+    )
+    lazy_build_started = perf_counter_ns()
+    lazy_engine = engine_type(graph)
+    lazy_build_duration = perf_counter_ns() - lazy_build_started
+    eager_build_started = perf_counter_ns()
+    eager_engine = engine_type(graph)
+    eager_build_duration = perf_counter_ns() - eager_build_started
     initial_snapshot = MetricSnapshot(
-        topology_id=NetworkXDijkstraEngine(graph).topology_id,
+        topology_id=lazy_engine.topology_id,
         version=0,
         weights=MappingProxyType(dict(initial_weights)),
     )
@@ -128,12 +147,12 @@ def run_certified_lazy_experiment(
         denominator=config.epsilon_denominator,
     )
     lazy = CertifiedLazySynchronizer(
-        NetworkXDijkstraEngine(graph),
+        lazy_engine,
         initial_snapshot,
         tolerance=tolerance,
     )
     eager = EagerRefreshRouter(
-        NetworkXDijkstraEngine(graph),
+        eager_engine,
         initial_snapshot,
     )
 
@@ -189,7 +208,10 @@ def run_certified_lazy_experiment(
             lazy_result = lazy.route(source, target)
 
             eager_total_ns += eager_duration
-            lazy_total_ns += lazy_result.total_duration_ns
+            lazy_total_ns += (
+                lazy_result.query_duration_ns
+                + lazy_result.path_evaluation_duration_ns
+            )
             events.append(
                 {
                     "epoch": epoch,
@@ -238,6 +260,7 @@ def run_certified_lazy_experiment(
             )
 
     state = lazy.state()
+    eager_state = eager.state()
     query_count = len(rows)
     stale_count = state.certified_stale_query_count
     hit_rate = stale_count / query_count if query_count else 0.0
@@ -251,30 +274,41 @@ def run_certified_lazy_experiment(
         certified_stale_query_count=stale_count,
         certified_unreachable_count=state.certified_unreachable_count,
         lazy_refresh_count=state.refresh_count,
-        eager_synchronization_count=eager.state().synchronization_count,
+        eager_synchronization_count=eager_state.synchronization_count,
         refreshes_avoided=max(
             0,
-            eager.state().synchronization_count - 1 - state.refresh_count,
+            eager_state.synchronization_count - 1 - state.refresh_count,
         ),
         certificate_hit_rate=hit_rate,
-        lazy_total_duration_ns=lazy_total_ns,
-        eager_total_duration_ns=eager_total_ns,
+        lazy_engine_build_duration_ns=lazy_build_duration,
+        eager_engine_build_duration_ns=eager_build_duration,
+        lazy_synchronization_duration_ns=state.synchronization_duration_ns,
+        eager_synchronization_duration_ns=(
+            eager_state.synchronization_duration_ns
+        ),
+        lazy_total_duration_ns=(
+            lazy_total_ns + state.synchronization_duration_ns
+        ),
+        eager_total_duration_ns=(
+            eager_total_ns + eager_state.synchronization_duration_ns
+        ),
         python_version=platform.python_version(),
         networkx_version=nx.__version__,
         qualification=(
-            "Synthetic NetworkX functional experiment. It validates the "
-            "certificate and synchronization behavior, not CCH performance "
-            "or Chennai traffic outcomes."
+            "Synthetic fixed-topology functional experiment. NetworkX results "
+            "validate controller correctness; CCH results measure this binding "
+            "with degree ordering. Neither establishes Chennai traffic outcomes."
         ),
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    query_path = output_dir / f"lazy_sync_queries_{config.update_mode}.csv"
+    suffix = f"{config.engine}_{config.update_mode}"
+    query_path = output_dir / f"lazy_sync_queries_{suffix}.csv"
     with query_path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
         writer.writeheader()
         writer.writerows(rows)
-    summary_path = output_dir / f"lazy_sync_summary_{config.update_mode}.json"
+    summary_path = output_dir / f"lazy_sync_summary_{suffix}.json"
     summary_path.write_text(
         json.dumps(asdict(summary), indent=2, sort_keys=True),
         encoding="utf-8",

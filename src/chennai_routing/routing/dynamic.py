@@ -78,6 +78,7 @@ class SynchronizerState:
     refresh_count: int
     certified_stale_query_count: int
     certified_unreachable_count: int
+    synchronization_duration_ns: int
 
 
 RouteDecision = Literal[
@@ -167,12 +168,16 @@ class CertifiedLazySynchronizer:
         self._refresh_count = 0
         self._certified_stale_query_count = 0
         self._certified_unreachable_count = 0
+        synchronization_started = perf_counter_ns()
         engine.synchronize(
             _snapshot(
                 engine.topology_id,
                 initial_metric.version,
                 self._current_weights,
             )
+        )
+        self._synchronization_duration_ns = (
+            perf_counter_ns() - synchronization_started
         )
 
     @property
@@ -195,6 +200,7 @@ class CertifiedLazySynchronizer:
                 refresh_count=self._refresh_count,
                 certified_stale_query_count=self._certified_stale_query_count,
                 certified_unreachable_count=self._certified_unreachable_count,
+                synchronization_duration_ns=self._synchronization_duration_ns,
             )
 
     def apply_updates(self, batch: WeightUpdateBatch) -> UpdateReceipt:
@@ -253,6 +259,7 @@ class CertifiedLazySynchronizer:
             )
         )
         duration = perf_counter_ns() - started
+        self._synchronization_duration_ns += duration
         self._synchronized_weights = dict(self._current_weights)
         self._synchronized_version = self._current_version
         self._pending_edges.clear()

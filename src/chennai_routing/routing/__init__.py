@@ -1,5 +1,6 @@
 """Public routing APIs for static and snapshot-dynamic experiments."""
 
+from chennai_routing.routing.cch_engine import RoutingKitCCHEngine
 from chennai_routing.routing.dynamic import (
     CertificateTolerance,
     CertifiedLazySynchronizer,
@@ -31,6 +32,7 @@ __all__ = [
     "NetworkXDijkstraEngine",
     "RefreshReport",
     "RouteResult",
+    "RoutingKitCCHEngine",
     "ShortestPathEngine",
     "SyncReport",
     "SynchronizerState",

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from time import perf_counter_ns
 from types import MappingProxyType
 
 from chennai_routing.routing.dynamic import WeightUpdateBatch
@@ -19,6 +20,7 @@ from chennai_routing.routing.engine import (
 class EagerBaselineState:
     metric_version: int
     synchronization_count: int
+    synchronization_duration_ns: int
 
 
 class EagerRefreshRouter:
@@ -35,7 +37,9 @@ class EagerRefreshRouter:
         self._weights: dict[EdgeId, Weight] = dict(initial_metric.weights)
         self._version = initial_metric.version
         self._synchronization_count = 1
+        started = perf_counter_ns()
         engine.synchronize(initial_metric)
+        self._synchronization_duration_ns = perf_counter_ns() - started
 
     @property
     def weights(self) -> MappingProxyType:
@@ -45,6 +49,7 @@ class EagerRefreshRouter:
         return EagerBaselineState(
             metric_version=self._version,
             synchronization_count=self._synchronization_count,
+            synchronization_duration_ns=self._synchronization_duration_ns,
         )
 
     def apply_updates(self, batch: WeightUpdateBatch) -> None:
@@ -67,7 +72,9 @@ class EagerRefreshRouter:
             version=batch.version,
             weights=MappingProxyType(candidate),
         )
+        started = perf_counter_ns()
         self._engine.synchronize(snapshot)
+        self._synchronization_duration_ns += perf_counter_ns() - started
         self._weights = candidate
         self._version = batch.version
         self._synchronization_count += 1
