@@ -33,6 +33,8 @@ class CertificateTolerance:
     denominator: int = 100
 
     def __post_init__(self) -> None:
+        if type(self.numerator) is not int or type(self.denominator) is not int:
+            raise TypeError("Tolerance numerator and denominator must be integers.")
         if self.numerator < 0:
             raise ValueError("Tolerance numerator must be non-negative.")
         if self.denominator <= 0:
@@ -126,6 +128,27 @@ def _validate_certifiable_weight(weight: Weight) -> None:
     )
 
 
+def _validate_engine_weight(
+    engine: ShortestPathEngine,
+    weight: Weight,
+) -> None:
+    capabilities = engine.capabilities
+    if isinstance(weight, float) and weight == math.inf:
+        if not capabilities.supports_positive_infinity:
+            raise ValueError(
+                f"{capabilities.name} does not support positive-infinity closures."
+            )
+        return
+    if (
+        capabilities.max_finite_weight is not None
+        and int(weight) > capabilities.max_finite_weight
+    ):
+        raise ValueError(
+            f"Weight {weight} exceeds {capabilities.name}'s safe finite maximum "
+            f"{capabilities.max_finite_weight}."
+        )
+
+
 def _snapshot(
     topology_id: str,
     version: int,
@@ -154,6 +177,7 @@ class CertifiedLazySynchronizer:
             raise ValueError("Initial metric topology does not match the engine.")
         for weight in initial_metric.weights.values():
             _validate_certifiable_weight(weight)
+            _validate_engine_weight(engine, weight)
 
         self._engine = engine
         self._tolerance = tolerance or CertificateTolerance()
@@ -221,6 +245,7 @@ class CertifiedLazySynchronizer:
                 if edge not in candidate:
                     raise ValueError(f"Update contains unknown edge {edge!r}.")
                 _validate_certifiable_weight(weight)
+                _validate_engine_weight(self._engine, weight)
                 seen.add(edge)
                 candidate[edge] = weight
 

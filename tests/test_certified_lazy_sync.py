@@ -226,10 +226,11 @@ def test_seeded_experiment_has_no_certificate_or_exact_mismatch(
         )
         assert summary.certificate_violation_count == 0
         assert summary.exact_after_refresh_mismatch_count == 0
+        assert summary.engine_oracle_mismatch_count == 0
         assert summary.query_count == 50
-        assert (
-            tmp_path / f"lazy_sync_summary_networkx_{mode}.json"
-        ).is_file()
+        assert list(
+            tmp_path.glob(f"lazy_sync_summary_networkx_{mode}_*.json")
+        )
 
 
 def test_native_cch_matches_dijkstra_on_keyed_parallel_edges() -> None:
@@ -240,10 +241,12 @@ def test_native_cch_matches_dijkstra_on_keyed_parallel_edges() -> None:
     graph.add_nodes_from(("S", "M", "T"))
     graph.add_edge("S", "T", key="slow")
     graph.add_edge("S", "M", key="first")
+    graph.add_edge("S", "M", key="slower_parallel")
     graph.add_edge("M", "T", key="second")
     weights = {
         ("S", "T", "slow"): 20,
         ("S", "M", "first"): 5,
+        ("S", "M", "slower_parallel"): 9,
         ("M", "T", "second"): 6,
     }
     cch = RoutingKitCCHEngine(graph)
@@ -287,3 +290,111 @@ def test_native_cch_experiment_has_no_certificate_violation(
     )
     assert summary.certificate_violation_count == 0
     assert summary.exact_after_refresh_mismatch_count == 0
+    assert summary.engine_oracle_mismatch_count == 0
+
+
+def test_cch_safe_weight_bound_prevents_infinity_collision() -> None:
+    pytest.importorskip("routingkit_cch")
+    from chennai_routing.routing.cch_engine import RoutingKitCCHEngine
+
+    graph = nx.MultiDiGraph()
+    graph.add_edge(0, 1, key=0)
+    graph.add_edge(1, 2, key=0)
+    engine = RoutingKitCCHEngine(graph)
+    maximum = engine.capabilities.max_finite_weight
+    assert maximum is not None
+    valid = MetricSnapshot(
+        topology_id=engine.topology_id,
+        version=0,
+        weights={(0, 1, 0): maximum, (1, 2, 0): maximum},
+    )
+    engine.synchronize(valid)
+    result = engine.query(0, 2)
+    assert result.path is not None
+    assert result.path.cost == maximum * 2
+
+    with pytest.raises(ValueError, match="safe finite maximum"):
+        engine.synchronize(
+            MetricSnapshot(
+                topology_id=engine.topology_id,
+                version=1,
+                weights={(0, 1, 0): maximum + 1, (1, 2, 0): 1},
+            )
+        )
+
+
+def test_cch_closure_update_is_rejected_before_state_commit() -> None:
+    pytest.importorskip("routingkit_cch")
+    from chennai_routing.routing.cch_engine import RoutingKitCCHEngine
+
+    graph = nx.MultiDiGraph()
+    graph.add_edge("S", "T", key=0)
+    engine = RoutingKitCCHEngine(graph)
+    edge = ("S", "T", 0)
+    router = CertifiedLazySynchronizer(
+        engine,
+        MetricSnapshot(
+            topology_id=engine.topology_id,
+            version=0,
+            weights={edge: 10},
+        ),
+    )
+
+    with pytest.raises(ValueError, match="does not support"):
+        router.apply_updates(_batch(0, edge, math.inf))
+
+    assert router.state().current_version == 0
+    assert router.current_weights[edge] == 10
+
+
+@pytest.mark.parametrize(
+    "numerator,denominator",
+    [(5.0, 100), (5, 100.0), (True, 100), (5, False)],
+)
+def test_certificate_tolerance_requires_exact_integers(
+    numerator: object,
+    denominator: object,
+) -> None:
+    with pytest.raises(TypeError):
+        CertificateTolerance(numerator, denominator)  # type: ignore[arg-type]
+
+
+def test_engine_rejects_metric_version_rollback() -> None:
+    graph = nx.MultiDiGraph()
+    graph.add_edge(1, 2, key=0)
+    engine = NetworkXDijkstraEngine(graph)
+    for version in (2, 1):
+        metric = MetricSnapshot(
+            topology_id=engine.topology_id,
+            version=version,
+            weights={(1, 2, 0): 5},
+        )
+        if version == 2:
+            engine.synchronize(metric)
+        else:
+            with pytest.raises(ValueError, match="backwards"):
+                engine.synchronize(metric)
+
+
+def test_topology_identifier_is_insertion_order_independent() -> None:
+    first = nx.MultiDiGraph()
+    first.add_nodes_from((1, "1", ("zone", 2)))
+    first.add_edge(1, "1", key="road")
+    second = nx.MultiDiGraph()
+    second.add_nodes_from((("zone", 2), "1", 1))
+    second.add_edge(1, "1", key="road")
+
+    assert (
+        NetworkXDijkstraEngine(first).topology_id
+        == NetworkXDijkstraEngine(second).topology_id
+    )
+
+
+def test_topology_identifier_rejects_unstable_custom_objects() -> None:
+    class UnstableId:
+        pass
+
+    graph = nx.MultiDiGraph()
+    graph.add_node(UnstableId())
+    with pytest.raises(TypeError, match="stable primitive"):
+        NetworkXDijkstraEngine(graph)

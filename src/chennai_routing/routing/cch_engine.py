@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 from numbers import Integral
 
 import networkx as nx
@@ -15,6 +14,7 @@ from chennai_routing.routing.engine import (
     MetricSnapshot,
     NodeId,
     SyncReport,
+    topology_digest,
 )
 
 try:
@@ -23,14 +23,7 @@ except ImportError:  # pragma: no cover - exercised on installations without ext
     routingkit_cch = None
 
 
-_MAX_ARC_WEIGHT = 2**31 - 1
-
-
-def _topology_digest(graph: nx.MultiDiGraph) -> str:
-    nodes = sorted(repr(node) for node in graph.nodes)
-    edges = sorted(repr((u, v, key)) for u, v, key in graph.edges(keys=True))
-    payload = "\n".join(["nodes", *nodes, "edges", *edges]).encode()
-    return hashlib.sha256(payload).hexdigest()
+_ROUTINGKIT_INFINITY = 2**31 - 1
 
 
 class RoutingKitCCHEngine:
@@ -49,6 +42,8 @@ class RoutingKitCCHEngine:
             )
         if not isinstance(graph, nx.MultiDiGraph):
             raise TypeError("RoutingKitCCHEngine requires a networkx.MultiDiGraph.")
+        if not graph.nodes:
+            raise ValueError("RoutingKitCCHEngine requires at least one node.")
 
         self._nodes = tuple(graph.nodes)
         self._node_to_index = {
@@ -69,7 +64,11 @@ class RoutingKitCCHEngine:
         self._metric = None
         self._weights: dict[EdgeId, int] = {}
         self._metric_version: int | None = None
-        self._topology_id = _topology_digest(graph)
+        self._topology_id = topology_digest(self._nodes, self._edge_ids)
+        self._max_safe_arc_weight = (
+            (_ROUTINGKIT_INFINITY - 1)
+            // max(1, len(self._nodes) - 1)
+        )
 
     @property
     def topology_id(self) -> str:
@@ -84,11 +83,20 @@ class RoutingKitCCHEngine:
         return EngineCapabilities(
             name="routingkit-cch",
             exact_for_represented_metric=True,
+            supports_positive_infinity=False,
+            max_finite_weight=self._max_safe_arc_weight,
         )
 
     def synchronize(self, metric: MetricSnapshot) -> SyncReport:
         if metric.topology_id != self._topology_id:
             raise ValueError("Metric topology does not match the CCH topology.")
+        if metric.version < 0 or (
+            self._metric_version is not None
+            and metric.version < self._metric_version
+        ):
+            raise ValueError(
+                "Metric version must be non-negative and cannot move backwards."
+            )
         if set(metric.weights) != set(self._edge_set):
             raise ValueError("Metric must contain exactly the CCH topology edges.")
 
@@ -99,10 +107,12 @@ class RoutingKitCCHEngine:
             if isinstance(weight, bool) or not isinstance(weight, Integral):
                 raise TypeError("The CCH represented metric requires integer weights.")
             integer_weight = int(weight)
-            if not 0 <= integer_weight <= _MAX_ARC_WEIGHT:
+            if not 0 <= integer_weight <= self._max_safe_arc_weight:
                 raise ValueError(
                     "CCH weights must be finite integers between 0 and "
-                    f"{_MAX_ARC_WEIGHT}; closures need a validated finite sentinel."
+                    f"{self._max_safe_arc_weight}. This conservative bound keeps "
+                    "every simple-path sum below RoutingKit's infinity sentinel; "
+                    "closures are unsupported until separately validated."
                 )
             weights[edge] = integer_weight
             vector.append(integer_weight)

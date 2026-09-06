@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from dataclasses import dataclass
 from typing import Hashable, Literal, Mapping, Protocol, TypeAlias
 
@@ -43,6 +45,8 @@ class EngineCapabilities:
 
     name: str
     exact_for_represented_metric: bool
+    supports_positive_infinity: bool
+    max_finite_weight: int | None
 
 
 @dataclass(frozen=True)
@@ -74,3 +78,64 @@ class ShortestPathEngine(Protocol):
 
     def query(self, source: NodeId, target: NodeId) -> EngineQuery:
         """Return an exact path for the synchronized metric."""
+
+
+def _canonical_identifier(value: Hashable) -> object:
+    if value is None:
+        return ["none", None]
+    if isinstance(value, bool):
+        return ["bool", value]
+    if isinstance(value, int):
+        return ["int", str(value)]
+    if isinstance(value, float):
+        if value != value or value in {float("inf"), float("-inf")}:
+            raise TypeError("Node and edge identifiers cannot be NaN or infinite.")
+        return ["float", value.hex()]
+    if isinstance(value, str):
+        return ["str", value]
+    if isinstance(value, bytes):
+        return ["bytes", value.hex()]
+    if isinstance(value, tuple):
+        return ["tuple", [_canonical_identifier(item) for item in value]]
+    raise TypeError(
+        "Node and edge identifiers must be stable primitive values or tuples "
+        f"of stable primitive values; received {type(value).__name__}."
+    )
+
+
+def topology_digest(
+    nodes: tuple[NodeId, ...],
+    edges: tuple[EdgeId, ...],
+) -> str:
+    """Return a process-stable, type-tagged topology identifier."""
+
+    canonical_nodes = sorted(
+        (
+            json.dumps(
+                _canonical_identifier(node),
+                separators=(",", ":"),
+                ensure_ascii=True,
+            )
+            for node in nodes
+        )
+    )
+    canonical_edges = sorted(
+        (
+            json.dumps(
+                [
+                    _canonical_identifier(u),
+                    _canonical_identifier(v),
+                    _canonical_identifier(key),
+                ],
+                separators=(",", ":"),
+                ensure_ascii=True,
+            )
+            for u, v, key in edges
+        )
+    )
+    payload = json.dumps(
+        {"nodes": canonical_nodes, "edges": canonical_edges},
+        separators=(",", ":"),
+        sort_keys=True,
+    ).encode()
+    return hashlib.sha256(payload).hexdigest()

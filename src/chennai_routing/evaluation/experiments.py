@@ -62,6 +62,7 @@ class ExperimentSummary:
     query_count: int
     certificate_violation_count: int
     exact_after_refresh_mismatch_count: int
+    engine_oracle_mismatch_count: int
     certified_stale_query_count: int
     certified_unreachable_count: int
     lazy_refresh_count: int
@@ -110,11 +111,13 @@ def _trace_digest(events: list[dict[str, object]]) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _topology_digest(graph: nx.MultiDiGraph) -> str:
+def _config_digest(config: LazySyncExperimentConfig) -> str:
     payload = json.dumps(
-        sorted(repr((u, v, key)) for u, v, key in graph.edges(keys=True))
+        asdict(config),
+        sort_keys=True,
+        separators=(",", ":"),
     ).encode()
-    return hashlib.sha256(payload).hexdigest()
+    return hashlib.sha256(payload).hexdigest()[:12]
 
 
 def run_certified_lazy_experiment(
@@ -137,6 +140,7 @@ def run_certified_lazy_experiment(
     eager_build_started = perf_counter_ns()
     eager_engine = engine_type(graph)
     eager_build_duration = perf_counter_ns() - eager_build_started
+    oracle_engine = NetworkXDijkstraEngine(graph)
     initial_snapshot = MetricSnapshot(
         topology_id=lazy_engine.topology_id,
         version=0,
@@ -155,11 +159,16 @@ def run_certified_lazy_experiment(
         eager_engine,
         initial_snapshot,
     )
+    oracle = EagerRefreshRouter(
+        oracle_engine,
+        initial_snapshot,
+    )
 
     events: list[dict[str, object]] = []
     rows: list[dict[str, object]] = []
     certificate_violations = 0
     exact_mismatches = 0
+    engine_oracle_mismatches = 0
     lazy_total_ns = 0
     eager_total_ns = 0
     version = 0
@@ -184,8 +193,21 @@ def run_certified_lazy_experiment(
             replacements=tuple(replacements),
         )
         version += 1
-        lazy.apply_updates(batch)
-        eager.apply_updates(batch)
+        if epoch % 2 == 0:
+            lazy_update_started = perf_counter_ns()
+            lazy.apply_updates(batch)
+            lazy_total_ns += perf_counter_ns() - lazy_update_started
+            eager_update_started = perf_counter_ns()
+            eager.apply_updates(batch)
+            eager_total_ns += perf_counter_ns() - eager_update_started
+        else:
+            eager_update_started = perf_counter_ns()
+            eager.apply_updates(batch)
+            eager_total_ns += perf_counter_ns() - eager_update_started
+            lazy_update_started = perf_counter_ns()
+            lazy.apply_updates(batch)
+            lazy_total_ns += perf_counter_ns() - lazy_update_started
+        oracle.apply_updates(batch)
         events.append(
             {
                 "epoch": epoch,
@@ -202,16 +224,23 @@ def run_certified_lazy_experiment(
             while target == source:
                 target = rng.randrange(config.node_count)
 
-            eager_started = perf_counter_ns()
-            eager_result = eager.route(source, target)
-            eager_duration = perf_counter_ns() - eager_started
-            lazy_result = lazy.route(source, target)
-
+            if (epoch + query_index) % 2 == 0:
+                lazy_started = perf_counter_ns()
+                lazy_result = lazy.route(source, target)
+                lazy_duration = perf_counter_ns() - lazy_started
+                eager_started = perf_counter_ns()
+                eager_result = eager.route(source, target)
+                eager_duration = perf_counter_ns() - eager_started
+            else:
+                eager_started = perf_counter_ns()
+                eager_result = eager.route(source, target)
+                eager_duration = perf_counter_ns() - eager_started
+                lazy_started = perf_counter_ns()
+                lazy_result = lazy.route(source, target)
+                lazy_duration = perf_counter_ns() - lazy_started
+            oracle_result = oracle.route(source, target)
             eager_total_ns += eager_duration
-            lazy_total_ns += (
-                lazy_result.query_duration_ns
-                + lazy_result.path_evaluation_duration_ns
-            )
+            lazy_total_ns += lazy_duration
             events.append(
                 {
                     "epoch": epoch,
@@ -221,24 +250,32 @@ def run_certified_lazy_experiment(
                 }
             )
 
+            oracle_cost = (
+                oracle_result.path.cost if oracle_result.path else None
+            )
             eager_cost = eager_result.path.cost if eager_result.path else None
             lazy_cost = lazy_result.path.cost if lazy_result.path else None
             violation = False
             exact_mismatch = False
-            if eager_result.status != lazy_result.status:
+            engine_oracle_mismatch = (
+                eager_result.status != oracle_result.status
+                or eager_cost != oracle_cost
+            )
+            if oracle_result.status != lazy_result.status:
                 violation = True
                 exact_mismatch = lazy_result.decision.startswith("REFRESHED")
-            elif eager_cost is not None and lazy_cost is not None:
+            elif oracle_cost is not None and lazy_cost is not None:
                 violation = (
                     lazy_cost * tolerance.denominator
-                    > eager_cost
+                    > oracle_cost
                     * (tolerance.denominator + tolerance.numerator)
                 )
                 if lazy_result.decision.startswith("REFRESHED"):
-                    exact_mismatch = lazy_cost != eager_cost
+                    exact_mismatch = lazy_cost != oracle_cost
 
             certificate_violations += int(violation)
             exact_mismatches += int(exact_mismatch)
+            engine_oracle_mismatches += int(engine_oracle_mismatch)
             rows.append(
                 {
                     "epoch": epoch,
@@ -247,6 +284,7 @@ def run_certified_lazy_experiment(
                     "source": source,
                     "target": target,
                     "decision": lazy_result.decision,
+                    "oracle_cost": oracle_cost,
                     "eager_cost": eager_cost,
                     "lazy_cost": lazy_cost,
                     "lower_bound": lazy_result.lower_bound,
@@ -254,7 +292,8 @@ def run_certified_lazy_experiment(
                     "pending_edges_before": lazy_result.pending_edge_count_before,
                     "certificate_violation": violation,
                     "exact_after_refresh_mismatch": exact_mismatch,
-                    "lazy_total_duration_ns": lazy_result.total_duration_ns,
+                    "engine_oracle_mismatch": engine_oracle_mismatch,
+                    "lazy_wall_duration_ns": lazy_duration,
                     "eager_query_duration_ns": eager_duration,
                 }
             )
@@ -266,11 +305,12 @@ def run_certified_lazy_experiment(
     hit_rate = stale_count / query_count if query_count else 0.0
     summary = ExperimentSummary(
         config=asdict(config),
-        topology_digest=_topology_digest(graph),
+        topology_digest=lazy_engine.topology_id,
         trace_digest=_trace_digest(events),
         query_count=query_count,
         certificate_violation_count=certificate_violations,
         exact_after_refresh_mismatch_count=exact_mismatches,
+        engine_oracle_mismatch_count=engine_oracle_mismatches,
         certified_stale_query_count=stale_count,
         certified_unreachable_count=state.certified_unreachable_count,
         lazy_refresh_count=state.refresh_count,
@@ -286,23 +326,24 @@ def run_certified_lazy_experiment(
         eager_synchronization_duration_ns=(
             eager_state.synchronization_duration_ns
         ),
-        lazy_total_duration_ns=(
-            lazy_total_ns + state.synchronization_duration_ns
-        ),
-        eager_total_duration_ns=(
-            eager_total_ns + eager_state.synchronization_duration_ns
-        ),
+        lazy_total_duration_ns=lazy_total_ns,
+        eager_total_duration_ns=eager_total_ns,
         python_version=platform.python_version(),
         networkx_version=nx.__version__,
         qualification=(
             "Synthetic fixed-topology functional experiment. NetworkX results "
-            "validate controller correctness; CCH results measure this binding "
-            "with degree ordering. Neither establishes Chennai traffic outcomes."
+            "are the independent correctness oracle; CCH results measure this "
+            "binding with degree ordering. Total durations use symmetric "
+            "wall-clock boundaries for updates and routes, exclude engine "
+            "construction/initial synchronization, and are single-run values. "
+            "Neither establishes Chennai traffic outcomes."
         ),
     )
 
     output_dir.mkdir(parents=True, exist_ok=True)
-    suffix = f"{config.engine}_{config.update_mode}"
+    suffix = (
+        f"{config.engine}_{config.update_mode}_{_config_digest(config)}"
+    )
     query_path = output_dir / f"lazy_sync_queries_{suffix}.csv"
     with query_path.open("w", newline="", encoding="utf-8") as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))

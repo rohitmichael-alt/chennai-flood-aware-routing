@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import hashlib
 import math
 from numbers import Real
 
@@ -17,14 +16,8 @@ from chennai_routing.routing.engine import (
     NodeId,
     SyncReport,
     Weight,
+    topology_digest,
 )
-
-
-def _topology_digest(graph: nx.MultiDiGraph) -> str:
-    nodes = sorted(repr(node) for node in graph.nodes)
-    edges = sorted(repr((u, v, key)) for u, v, key in graph.edges(keys=True))
-    payload = "\n".join(["nodes", *nodes, "edges", *edges]).encode()
-    return hashlib.sha256(payload).hexdigest()
 
 
 def _validate_weight(weight: Weight) -> None:
@@ -47,7 +40,10 @@ class NetworkXDijkstraEngine:
         self._edge_ids = frozenset(
             (u, v, key) for u, v, key in graph.edges(keys=True)
         )
-        self._topology_id = _topology_digest(graph)
+        self._topology_id = topology_digest(
+            self._nodes,
+            tuple(self._edge_ids),
+        )
         self._metric_version: int | None = None
         self._weights: dict[EdgeId, Weight] = {}
         self._weighted_graph = nx.MultiDiGraph()
@@ -66,6 +62,8 @@ class NetworkXDijkstraEngine:
         return EngineCapabilities(
             name="networkx-dijkstra",
             exact_for_represented_metric=True,
+            supports_positive_infinity=True,
+            max_finite_weight=None,
         )
 
     @property
@@ -75,8 +73,13 @@ class NetworkXDijkstraEngine:
     def synchronize(self, metric: MetricSnapshot) -> SyncReport:
         if metric.topology_id != self._topology_id:
             raise ValueError("Metric topology does not match the engine topology.")
-        if metric.version < 0:
-            raise ValueError("Metric version must be non-negative.")
+        if metric.version < 0 or (
+            self._metric_version is not None
+            and metric.version < self._metric_version
+        ):
+            raise ValueError(
+                "Metric version must be non-negative and cannot move backwards."
+            )
         if set(metric.weights) != set(self._edge_ids):
             missing = self._edge_ids.difference(metric.weights)
             extra = set(metric.weights).difference(self._edge_ids)
