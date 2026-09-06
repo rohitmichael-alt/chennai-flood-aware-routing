@@ -1,9 +1,5 @@
 # Certificate-Gated Dynamic Routing under Compound Urban Disruptions
 
-**A reproducible Chennai-oriented research framework**  
-**Research and implementation status:** Stage 1 and the preliminary routing-method experiment are implemented; Chennai-wide flood, traffic, and SUMO evaluation remains planned.  
-**Evidence reviewed through:** 6 September 2026
-
 ## 1. Problem Statement
 
 Road conditions in Chennai can change during monsoon flooding, incidents, and congestion. A road may remain physically connected while losing speed or capacity; redirected vehicles may then overload the remaining alternatives. Recomputing every route after every small update is expensive, but using stale road costs for too long can produce poor routes.
