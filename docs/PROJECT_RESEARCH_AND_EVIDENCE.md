@@ -339,7 +339,7 @@ No secret, password, or bearer token is committed to the repository.
 **Repository:** [OSMnx](https://github.com/gboeing/osmnx)  
 **Viewer:** [Chennai map](https://www.openstreetmap.org/#map=11/13.083/80.271)
 
-The facility query will be sent to `https://overpass-api.de/api/interpreter`, cached with retrieval time/checksum, and limited to the declared Chennai study boundary. It will request `amenity=hospital|clinic|fire_station` and relevant emergency/shelter tags. A descriptive User-Agent and public-instance rate limits are mandatory.
+The facility query will be sent to `https://overpass-api.de/api/interpreter`, cached with retrieval time/checksum, and limited to the declared Chennai study boundary. A descriptive User-Agent is mandatory. The research job will use one non-parallel request, avoid large repeated queries, and treat the public instance as best-effort with no SLA.
 
 ```text
 [out:json][timeout:120];
@@ -350,7 +350,9 @@ The facility query will be sent to `https://overpass-api.de/api/interpreter`, ca
 out center tags;
 ```
 
-The bounding box is a provisional acquisition envelope and must be replaced by the final Stage 3 study boundary. Relief-address geocoding will use cached, rate-limited Nominatim results under its usage policy, followed by manual coordinate/name verification; unverified entries will be excluded.
+The bounding box is a provisional acquisition envelope and must be replaced by the final Stage 3 study boundary. `social_facility=shelter` is exploratory OSM tagging and must not be equated with an activated GCC relief centre. The official GCC PDF remains authoritative for the declared 2024 list.
+
+Relief-address geocoding will follow the [Nominatim usage policy](https://operations.osmfoundation.org/policies/nominatim/): maximum one request/second, one thread on one machine, valid identifying User-Agent, local caching, attribution, and no recurring bulk job. Coordinates/names will be manually verified; unverified entries will be excluded.
 
 ### 6.4 OpenCity Chennai Flood Data
 
@@ -424,6 +426,17 @@ If no Earthdata credentials are available, the no-key [Open-Meteo Historical Wea
 **Repository:** `src/chennai_routing/evaluation/metrics.py` provides array/graph utilities; ingestion and graph snapping are unimplemented.  
 **Viewer:** OpenCity resource previews and [WorldPop STAC Browser](https://stac.worldpop.org/).
 
+Selected OpenCity resources were downloaded and verified on 6 September 2026:
+
+| Selected resource | CKAN resource ID | Format/size | SHA-256 |
+|---|---|---:|---|
+| [UPHC map](https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/5a81427f-0aa1-4270-8df4-5d4cef250912/download/a33b403b-f341-4214-8613-88e2ec227359.kml) | `5a81427f-0aa1-4270-8df4-5d4cef250912` | KML, 100,497 B | `a700d7e837a5466d38e99a6ed1b67a2ff27be9638605f77b5051fef3b85055eb` |
+| [UCHC map](https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/cd4effee-997f-4fe0-b376-8801080c6962/download/a604ea86-6bed-45ab-89cf-074fb5a59bfc.kml) | `cd4effee-997f-4fe0-b376-8801080c6962` | KML, 14,155 B | `45e31b7dc026f54dd4e03191c2b91278a9722af5ace5425ebeb44de5c1c637ed` |
+| [Fire-station locations](https://data.opencity.in/dataset/ea5bb2ae-3fa7-46cd-8af6-9e8da42810bb/resource/39d3601b-cd42-4c11-a6c3-8fc4b057b38a/download/9097a4c9-cd79-4df1-8552-1c67f280ede3.kml) | `39d3601b-cd42-4c11-a6c3-8fc4b057b38a` | KML, 13,664 B | `f41a5afb44e316aea26403f8403b08e14fcac9f13c2d5947d3e5ba859736dad9` |
+| [GCC 2024 relief-centre list](https://data.opencity.in/dataset/df93544a-b5b8-445e-b29f-cf6a5a24dfa7/resource/ee9f087a-dc6c-41fa-8810-954a9f5887ac/download/23cf4489-bcb9-4f34-b69c-f99e1cedd296.pdf) | `ee9f087a-dc6c-41fa-8810-954a9f5887ac` | PDF, 247,507 B | `9d68bb27098d81b161badb721a12d7cd36ba5e856a6a033590876b61cf16ac57` |
+
+These resources identify primary/community health centres, fire stations, and a relief-centre list; they do not establish trauma capability, facility capacity, opening status, or emergency readiness.
+
 ## 7. Data Classification and Temporal Meaning
 
 | Source | Classification | Historical/current meaning |
@@ -431,14 +444,15 @@ If no Earthdata credentials are available, the no-key [Open-Meteo Historical Wea
 | OSM | Primary input | Mutable map snapshot |
 | OpenCity flood | Historical evidence | Past observation/modelled hazard |
 | SRTM/NASADEM | Supporting input | Static 2000-era terrain |
-| IMERG Early | Primary dynamic input | Delayed satellite rainfall estimate |
-| IMERG Final | Calibration input | Historical gauge-adjusted rainfall |
+| Open-Meteo ERA5 | No-key core rainfall input | Retrospective reanalysis, not contemporaneous sensing |
+| IMERG Final | Optional credentialed calibration input | Historical gauge-adjusted satellite rainfall |
+| IMERG Early | Optional credentialed near-current input | Delayed satellite rainfall estimate |
 | SUMO | Experimental generator | Simulated traffic |
 | Facility data | Evaluation input | Catalogue snapshot |
 | WorldPop | Evaluation input | Modelled population |
 | Processed edge metric | Derived dataset | Project calculation with version/time |
 
-Optional OpenWeather/Open-Meteo forecasts may support demonstrations, but the core does not depend on paid APIs. No verified public live Chennai road-speed, accident, signal, or closure API is assumed.
+Optional forecasts may support demonstrations, but the historical core uses no-key Open-Meteo ERA5 reanalysis and does not depend on paid APIs. No verified public live Chennai road-speed, accident, signal, or closure API is assumed.
 
 ## 8. Data-to-Routing Mapping
 
@@ -446,7 +460,7 @@ Optional OpenWeather/Open-Meteo forecasts may support demonstrations, but the co
 |---|---|---|---|
 | OSM | Topology, free-flow time, capacity assumption | Base graph | Feasible paths/lower cost |
 | Flood history + terrain + drains | Susceptibility | Static prior | Modifies rainfall response |
-| IMERG | Rolling rainfall | Road-state evidence | Capacity/availability update |
+| Open-Meteo ERA5 or optional IMERG | Rolling rainfall | Scenario-conditioning evidence | Capacity/availability assumption |
 | Verified closure/incident | Edge state | Capacity zero/reduction | Remove/raise edge cost |
 | Assigned SUMO demand | PCE/time entering flow | BPR \(x/c\) | Metric update |
 | Accepted compliant routes | Projected edge-entry load | Future BPR metric | Reduces herding |
@@ -460,14 +474,15 @@ flowchart TD
     State --> Capacity[Effective_Capacity]
     Demand[SUMO_and_Projected_Demand] --> BPR[BPR_Integer_Metric]
     Capacity --> BPR
-    OD[Origin_Destination_Query] --> StaleQuery[Query_Synchronized_CCH]
+    BPR --> Monotonicity[Check_Current_Weights_ge_Synchronized]
+    OD[Origin_Destination_Query] --> Monotonicity
+    Monotonicity -->|Nondecrease| StaleQuery[Query_Synchronized_CCH]
+    Monotonicity -->|Any_Decrease| Customize[Customize_CCH_with_Current_Metric]
     StaleQuery --> PathEval[Evaluate_Old_Path_on_Current_Metric]
     BPR --> PathEval
-    BPR --> Monotonicity[Check_Current_Weights_ge_Synchronized]
     PathEval --> Gate[LB_UB_Certificate_Gate]
-    Monotonicity --> Gate
     Gate -->|Pass| Candidate[Certified_Candidate_Route]
-    Gate -->|Fail_or_Decrease| Customize[Customize_CCH_with_Current_Metric]
+    Gate -->|Certificate_Fail| Customize
     BPR --> Customize
     Customize --> FreshQuery[Query_Refreshed_CCH]
     FreshQuery --> Candidate

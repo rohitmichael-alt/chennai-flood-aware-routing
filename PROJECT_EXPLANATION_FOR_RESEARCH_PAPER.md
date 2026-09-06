@@ -8,6 +8,10 @@ The project studies how Chennai road routes should change when flooding, inciden
 
 ### Stage 1
 
+This was a previously executed controlled demo. Its dated remote inputs,
+checksums, configuration, and outputs are not versioned, and current tests use
+fixtures; it is therefore not publication-grade Chennai evidence yet.
+
 - small Chennai OSM road graph;
 - OpenCity 2015 historical flood hotspots;
 - CRS-safe road mapping;
@@ -17,12 +21,12 @@ The project studies how Chennai road routes should change when flooding, inciden
 ### Preliminary Routing-Method Experiment
 
 - exact NetworkX Dijkstra reference engine;
-- native RoutingKit CCH engine;
+- prototype native-binding RoutingKit CCH adapter;
 - versioned integer metrics and keyed-edge paths;
 - certificate-gated refresh controller;
 - eager-refresh baseline;
 - synthetic monotone and mixed-update experiments;
-- uncertainty, critical-facility/population, partial-compliance, and road-criticality methods;
+- partial generic utilities for uncertainty, accessibility/population, compliance, and directed-edge criticality; no Chennai factor-level experiment;
 - 45 passing tests.
 
 ## What Finds the Path?
@@ -55,7 +59,8 @@ The proof works because all pending weights increased. A decrease or reopening c
 
 The certificate principle is not new. CPD-Search, truncated/lazy incremental search, and CERT-FLOW contain close lower/upper-bound ideas.
 
-The defensible contribution is:
+The provisional contribution, pending a systematic database search and
+completed Chennai experiments, is:
 
 > A reproducible Chennai-oriented evaluation designed to apply the certificate as a CCH refresh gate and separate routing computation from the traffic effects of stable, projected-load-aware route adoption under compound disruption.
 
@@ -72,9 +77,14 @@ In one synthetic experiment with 5,000 CCH queries:
 
 These results are not yet Chennai/SUMO outcomes.
 
+The adapter constructs a fresh metric and query object rather than benchmarking
+optimized reset, partial customization, parallel customization, or query reuse.
+The result therefore validates prototype behavior, not optimized CCH
+performance.
+
 ## Additional Evaluation Factors
 
-The paper adds:
+The paper commits to evaluate:
 
 1. uncertainty and data-freshness sensitivity;
 2. critical-facility accessibility;
