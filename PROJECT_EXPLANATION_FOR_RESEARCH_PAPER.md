@@ -57,7 +57,7 @@ The certificate principle is not new. CPD-Search, truncated/lazy incremental sea
 
 The defensible contribution is:
 
-> A reproducible Chennai-oriented evaluation that applies the certificate as a CCH refresh gate and separates routing computation from the traffic effects of stable, projected-load-aware route adoption under compound disruption.
+> A reproducible Chennai-oriented evaluation designed to apply the certificate as a CCH refresh gate and separate routing computation from the traffic effects of stable, projected-load-aware route adoption under compound disruption.
 
 This is integration/evaluation novelty, not a new shortest-path algorithm.
 

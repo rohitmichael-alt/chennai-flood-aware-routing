@@ -57,7 +57,7 @@ The following are established:
 
 The strongest defensible contribution is:
 
-> A reproducible Chennai-oriented compound-disruption framework that applies an established monotone lower/upper-bound certificate as a query-level CCH refresh gate, and experimentally separates routing-index performance from the traffic effects of stable, projected-load-aware route adoption.
+> A reproducible Chennai-oriented compound-disruption framework that applies an established monotone lower/upper-bound certificate as a query-level CCH refresh gate, and is designed to experimentally separate routing-index performance from the traffic effects of stable, projected-load-aware route adoption.
 
 **Novelty confidence: Medium for integration/evaluation; Low for algorithmic novelty.**
 
@@ -488,9 +488,9 @@ Paired scenarios, baselines, ablations, uncertainty, statistical reporting, repr
 | CCH/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 120 ms | 203 ms |
 | CCH/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 209 ms | 202 ms |
 
-There were zero certificate violations, zero exact post-refresh mismatches, and zero CCH-versus-independent-Dijkstra oracle mismatches. The monotone workload produced the largest reduction because the lower bound remained valid. Mixed decreases correctly forced frequent refreshes; in this single run, certificate overhead made mixed CCH slightly slower than eager CCH.
+There were zero certificate violations, zero exact post-refresh mismatches, and zero CCH-versus-independent-Dijkstra oracle mismatches. The monotone workload produced the largest reduction because the lower bound remained valid. Mixed decreases correctly forced frequent refreshes; in this single run, lazy CCH was slightly slower than eager CCH.
 
-These are one-machine, single-run synthetic measurements with degree ordering. “Total” uses symmetric wall-clock boundaries for all post-initialization updates and route requests; engine construction and initial synchronization are reported separately in the JSON. The values validate implementation behavior, not Chennai travel outcomes or general performance.
+These are one-machine, single-run synthetic measurements with degree ordering. “Total” uses symmetric wall-clock boundaries for all post-initialization updates and route requests. Engine construction is reported separately; synchronization diagnostics combine initial and later synchronizations and should not be added to “Total.” The values validate implementation behavior, not Chennai travel outcomes or general performance.
 
 ### 11.3 Epsilon Sensitivity
 
@@ -600,29 +600,7 @@ The core remains feasible using historical replay and labelled simulation withou
 | Current evidence | Stage 1 plus tested synthetic CCH/Dijkstra method experiment |
 | Required next evidence | Chennai graph, flood/rain pipeline, SUMO calibration and full ablations |
 
-## 17. Master Resource Table
-
-| Resource | Purpose | Access | Status |
-|---|---|---|---|
-| [OpenStreetMap](https://www.openstreetmap.org/) | Road topology | Open/ODbL | Stage 1/core |
-| [OpenCity Floods 2015](https://data.opencity.in/dataset/chennai-floods-2015-data) | Historical flood evidence | Public KML | Stage 1/core |
-| [OpenCity flooding](https://data.opencity.in/dataset/chennai-flooding-data) | Depth/hazard evidence | Public KML | Planned |
-| [GPM IMERG](https://gpm.nasa.gov/data/directory) | Rainfall | Free Earthdata account | Planned |
-| [SRTMGL1](https://www.earthdata.nasa.gov/data/catalog/lpcloud-srtmgl1-003) | Terrain | Free Earthdata account | Supporting |
-| [Chennai drains](https://data.opencity.in/dataset/chennai-stormwater-drain-swd-maps) | Hydrological context | Public | Supporting |
-| [SUMO](https://eclipse.dev/sumo/) | Traffic simulation | Open source | Planned |
-| [RoutingKit CCH binding](https://pypi.org/project/routingkit-cch/) | CCH path engine | Open package | Implemented experiment |
-| [Facility datasets](https://data.opencity.in/dataset/chennai-healthcare-uphcs-and-uchcs) | Accessibility evaluation | Public | Planned |
-| [WorldPop India](https://data.humdata.org/dataset/worldpop-population-counts-2015-2030-ind) | Population weighting | Public | Planned |
-| [CPD-Search](https://doi.org/10.24963/ijcai.2019/167) | Closest certificate prior art | DOI/paper | Required citation |
-| [CCH](https://doi.org/10.1145/2886843) | Routing algorithm | DOI/paper | Required citation |
-| [Engineered CCH](https://doi.org/10.1145/3362693) | BPR traffic assignment | DOI/paper | Required citation |
-| [Dynamic CCH rerouting](https://doi.org/10.1145/3579842) | Closest routing-system overlap | DOI/paper | Required citation |
-| [CERT-FLOW](https://doi.org/10.31224/7306) | Certificate-gated stale routing | Preprint | Required caution |
-| [Chennai relief routing](https://doi.org/10.1109/ICT-DM.2017.8275694) | Local flood-routing prior art | DOI/paper | Required citation |
-| [Chennai time-dependent routing](https://doi.org/10.18520/cs/v119/i4/680-690) | Local Dijkstra/A*/ALT prior art | DOI/paper | Required citation |
-
-## 18. Research Claim Boundary
+## 17. Research Claim Boundary
 
 The completed implementation supports this statement:
 
