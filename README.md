@@ -27,7 +27,7 @@ See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE
 | Chennai graph/flood/rainfall/SUMO integration | Planned |
 | Full publication evaluation | Planned |
 
-Current tests: **41 passing** at the latest recorded verification.
+Current tests: **45 passing** at the latest recorded verification.
 
 ## Install
 

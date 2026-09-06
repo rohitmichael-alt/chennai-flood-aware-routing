@@ -447,7 +447,7 @@ OSM and OpenCity historical hotspots are joined to roads; one real mapped edge i
 - eager baseline and deterministic experiment runner;
 - accessibility/compliance evaluation utilities;
 - uncertainty and facility-road-criticality utilities;
-- 41 passing tests.
+- 45 passing tests.
 
 ### Stage 3 — Reproducible Chennai Graph
 

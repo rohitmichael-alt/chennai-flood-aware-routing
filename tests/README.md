@@ -18,4 +18,4 @@ Current tests verify:
 - evidence lag and false-positive/false-negative perturbation;
 - facility-oriented road-criticality ranking.
 
-Latest recorded result: **41 passed**.
+Latest recorded result: **45 passed**.

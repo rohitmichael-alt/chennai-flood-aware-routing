@@ -23,7 +23,7 @@ The project studies how Chennai road routes should change when flooding, inciden
 - eager-refresh baseline;
 - synthetic monotone and mixed-update experiments;
 - uncertainty, critical-facility/population, partial-compliance, and road-criticality methods;
-- 41 passing tests.
+- 45 passing tests.
 
 ## What Finds the Path?
 

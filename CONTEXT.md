@@ -102,7 +102,7 @@ The implemented controller uses complete fixed-topology snapshots and non-negati
 
 The main synthetic experiment used 200 nodes, 600 extra arcs, 100 update epochs, 5 updates and 50 queries per epoch.
 
-- 41 tests pass.
+- 45 tests pass.
 - 20,000 main route queries across Dijkstra/CCH and monotone/mixed workloads produced zero certificate violations.
 - Monotone CCH workload avoided 94 of 100 eager update refreshes.
 - Mixed CCH workload avoided 14 of 100 because decreases invalidated the lower bound.
