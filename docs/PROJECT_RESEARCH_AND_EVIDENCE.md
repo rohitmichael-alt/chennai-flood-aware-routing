@@ -291,7 +291,34 @@ Generic deterministic implementations for all five are present in `evaluation/me
 
 ## 6. Dataset and Data Access
 
-### 6.1 OpenStreetMap
+### 6.1 Factor-to-Data, Credential, and Implementation Matrix
+
+| Factor | Required data | Chennai source | Access method | API key/account | No-credential path | Implemented now | Remaining experiment work |
+|---|---|---|---|---|---|---|---|
+| Evidence freshness and uncertainty | Dated flood/rain/road evidence plus generated lag/error traces | [OpenCity flood records](https://data.opencity.in/dataset/chennai-floods-2015-data); [Open-Meteo historical reanalysis](https://open-meteo.com/en/docs/historical-weather-api); optional [IMERG](https://gpm.nasa.gov/data/directory) | CKAN download and HTTPS JSON; optional GES DISC download | **No key** for OpenCity/Open-Meteo; Earthdata account and bearer token only for optional IMERG | OpenCity + Open-Meteo | Deterministic lag, false-positive/false-negative perturbation and summaries | Align historical dates, map evidence to Chennai edges, run lag/error scenarios |
+| Critical-facility accessibility | Geolocated health, fire, and relief facilities | OpenCity [health](https://data.opencity.in/dataset/chennai-healthcare-uphcs-and-uchcs), [fire](https://data.opencity.in/dataset/chennai-fire-stations-), and [relief](https://data.opencity.in/dataset/gcc-relief-centres) datasets; [OSM POIs](https://overpass-turbo.eu/) | CSV/KML/PDF download; OSM Overpass query | **No key or account** | OSM hospitals/fire stations plus public OpenCity resources | Population-weighted access/disconnection summaries | Download, validate facility type, geocode relief PDF where necessary, snap to graph |
+| Population impact | Population count raster or documented ward population | [WorldPop India R2025A](https://data.humdata.org/dataset/worldpop-population-counts-2015-2030-ind); [WorldPop STAC](https://stac.worldpop.org/); optional GCC ward data | HDX GeoTIFF download or WorldPop STAC API | **No key or account** for public download/STAC | Download 1 km India GeoTIFF and clip locally | Weighted mean, p90, disconnection, and threshold metrics | Clip Chennai cells, validate year/version, map cells to graph origins |
+| Partial compliance | Vehicle IDs and declared compliance level; no observed dataset is required | [SUMO automatic routing](https://eclipse.dev/sumo/docs/Demand/Automatic_Routing.html) scenario generated from Chennai demand | Local SUMO configuration, TraCI/libsumo | **No key or account** | Exact seeded cohorts at 0/25/50/75/100% | Exact-size reproducible cohort selection | Build/calibrate Chennai demand and execute repeated SUMO seeds |
+| Facility-oriented criticality | Chennai graph + facilities + population; no separate dataset | Derived from [OSM](https://www.openstreetmap.org/), OpenCity facilities, and WorldPop | Local reverse multi-source shortest-path analysis | **No additional key or account** | Reuse the three public inputs above | Directed keyed-arc impact ranking | Group directions/parallel arcs by OSM way ID and run Chennai scenarios |
+
+**Feasibility conclusion:** all five factors can be completed without user-supplied credentials by using the no-credential path. Optional IMERG/SRTM acquisition cannot be automated without a user-created Earthdata account, so those sources are enhancements rather than dependencies.
+
+### 6.2 API and Authentication Checklist
+
+| Source/service | Cost for research core | Key required? | Account required? | Access/authentication detail | Important restriction |
+|---|---|---:|---:|---|---|
+| [OpenCity Chennai](https://data.opencity.in/) | Free public data | No | No | Dataset page and CKAN resource download | Resources vary between CSV, KML, and PDF; validate dates/schema |
+| [Public OSM Overpass](https://wiki.openstreetmap.org/wiki/Overpass_API) | Free community service | No | No | `https://overpass-api.de/api/interpreter`; use caching and a descriptive user agent | Rate/size limits; dated extracts are preferable for reproducibility |
+| [Geofabrik India OSM extract](https://download.geofabrik.de/asia/india.html) | Free public download | No | No | Download dated `.osm.pbf`; a separate importer is required | India-wide file is large; ODbL attribution applies |
+| [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) | Free for rate-limited non-commercial use | No | No | HTTPS GET returning JSON | CC BY 4.0 attribution; free-service limits and no uptime guarantee |
+| [NASA GPM IMERG/GES DISC](https://github.com/nasa/gesdisc-tutorials/blob/main/notebooks/How_to_Access_GES_DISC_Data_Using_Python.ipynb) | Free | No conventional key | **Yes** | Authorize NASA GES DISC and use Earthdata credentials or `Authorization: Bearer <token>` | Optional because the user must create/maintain the account/token |
+| [WorldPop India via HDX](https://data.humdata.org/dataset/worldpop-population-counts-2015-2030-ind)/[STAC](https://api.stac.worldpop.org) | Free public download | No | No | GeoTIFF from HDX or discovery through STAC | R2025A is model-derived/alpha; prefer 1 km file initially |
+| [Eclipse SUMO/TraCI](https://eclipse.dev/sumo/) | Free open-source software | No | No | Local installation and Python/TraCI interface | Output is simulation, not observed traffic |
+| [RoutingKit CCH](https://pypi.org/project/routingkit-cch/) | Free open-source package | No | No | Install `routingkit-cch` Python package | Native finite-integer/turn/closure assumptions require validation |
+
+No secret, password, or bearer token is committed to the repository.
+
+### 6.3 OpenStreetMap
 
 **Purpose:** Directed Chennai road topology and road attributes.  
 **Contains:** Nodes, ways, geometry, road class, direction, and incomplete lanes/speeds/turn data.  
@@ -305,7 +332,7 @@ Generic deterministic implementations for all five are present in `evaluation/me
 **Repository:** [OSMnx](https://github.com/gboeing/osmnx)  
 **Viewer:** [Chennai map](https://www.openstreetmap.org/#map=11/13.083/80.271)
 
-### 6.2 OpenCity Chennai Flood Data
+### 6.4 OpenCity Chennai Flood Data
 
 **Purpose:** Historical flood evidence and susceptibility validation.  
 **Contains:** The 2015 dataset has hotspots/stagnation points and a 2015 inundation zone; the separate Chennai Flooding Data collection has inundation points/depth and return-period hazards.  
@@ -319,7 +346,7 @@ Generic deterministic implementations for all five are present in `evaluation/me
 **Repository:** [`flood.py`](../src/chennai_routing/data/flood.py)  
 **Viewer:** Resource previews on the OpenCity page.
 
-### 6.3 NASA GPM IMERG
+### 6.5 NASA GPM IMERG
 
 **Purpose:** Historical and delayed near-current rainfall forcing.  
 **Contains:** Half-hourly satellite precipitation in Early, Late, and Final runs.  
@@ -335,7 +362,7 @@ Generic deterministic implementations for all five are present in `evaluation/me
 
 If no Earthdata credentials are available, the no-key [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) provides an ERA5/ERA5-Land-derived rainfall fallback. It must be labelled reanalysis and must not be presented as road-level observation.
 
-### 6.4 NASA SRTM/NASADEM and Chennai Hydrology
+### 6.6 NASA SRTM/NASADEM and Chennai Hydrology
 
 **Purpose:** Static flood-susceptibility context.  
 **Contains:** Approximately 30 m elevation plus separate drain, canal, river, and water-body vectors.  
@@ -349,7 +376,7 @@ If no Earthdata credentials are available, the no-key [Open-Meteo Historical Wea
 **Repository:** `src/chennai_routing/data/elevation.py`, `hydrology.py`  
 **Viewer:** [Earthdata Search](https://search.earthdata.nasa.gov/search?q=SRTMGL1)
 
-### 6.5 Eclipse SUMO
+### 6.7 Eclipse SUMO
 
 **Purpose:** Dynamic traffic, queues, incidents, vehicle classes, and realized outcomes.  
 **Contains:** Software-generated vehicle/edge simulation output—not observed Chennai traffic.  
@@ -359,11 +386,11 @@ If no Earthdata credentials are available, the no-key [Open-Meteo Historical Wea
 
 **Limitations:** Requires Chennai demand/behaviour calibration.  
 **Direct access:** [SUMO](https://eclipse.dev/sumo/)  
-**Documentation:** [SUMO documentation](https://eclipse.dev/sumo/docs/)  
+**Documentation:** [SUMO documentation](https://eclipse.dev/sumo/docs/), [automatic-routing/compliance options](https://eclipse.dev/sumo/docs/Demand/Automatic_Routing.html)  
 **Repository:** [Eclipse SUMO](https://github.com/eclipse-sumo/sumo)  
 **Viewer:** SUMO-GUI, not a web data viewer.
 
-### 6.6 Critical Facilities and Population
+### 6.8 Critical Facilities and Population
 
 **Purpose:** Evaluate public-service accessibility and population-weighted impact.  
 **Contains:** Health-centre/fire-station/relief-centre locations and modelled population counts.  
@@ -372,10 +399,10 @@ If no Earthdata credentials are available, the no-key [Open-Meteo Historical Wea
 **Access:** Public OpenCity downloads and HDX/WorldPop raster download.
 
 **Limitations:** Health centres are not necessarily trauma hospitals; population exposure is not socioeconomic equity.  
-**Direct access:** [Health centres](https://data.opencity.in/dataset/chennai-healthcare-uphcs-and-uchcs), [fire stations](https://data.opencity.in/dataset/chennai-fire-stations-), [relief centres](https://data.opencity.in/dataset/gcc-relief-centres)  
-**Documentation:** [WorldPop India 2015–2030](https://data.humdata.org/dataset/worldpop-population-counts-2015-2030-ind)  
+**Direct access:** [Health centres](https://data.opencity.in/dataset/chennai-healthcare-uphcs-and-uchcs), [fire stations](https://data.opencity.in/dataset/chennai-fire-stations-), [relief centres](https://data.opencity.in/dataset/gcc-relief-centres), [WorldPop India](https://data.humdata.org/dataset/worldpop-population-counts-2015-2030-ind)  
+**Documentation:** [WorldPop dataset DOI](https://doi.org/10.5258/SOTON/WP00839), [WorldPop STAC](https://api.stac.worldpop.org)  
 **Repository:** `src/chennai_routing/evaluation/metrics.py`  
-**Viewer:** OpenCity resource previews where provided.
+**Viewer:** OpenCity resource previews and [WorldPop STAC Browser](https://stac.worldpop.org/).
 
 ## 7. Data Classification and Temporal Meaning
 
