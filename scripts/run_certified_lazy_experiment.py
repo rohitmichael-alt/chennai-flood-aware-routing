@@ -75,6 +75,7 @@ def main() -> int:
                 failed
                 or summary.exact_after_refresh_mismatch_count != 0
             )
+            failed = failed or summary.engine_oracle_mismatch_count != 0
     return int(failed)
 
 

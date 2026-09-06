@@ -16,4 +16,4 @@ Current tests verify:
 - population-weighted accessibility;
 - reproducible partial-compliance selection.
 
-Latest recorded result: **28 passed**.
+Latest recorded result: **37 passed**.

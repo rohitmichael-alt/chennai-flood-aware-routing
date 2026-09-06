@@ -69,8 +69,8 @@ The strongest defensible contribution is:
 | [Aine and Likhachev, 2016](https://doi.org/10.1016/j.artint.2016.01.009) | Truncated incremental repair with bounded suboptimality | Query-specific incremental search, not batched CCH customization |
 | [Dibbelt et al., CCH, 2016](https://doi.org/10.1145/2886843) | Metric-independent preprocessing, customization, fast exact queries, partial propagation | No per-query certificate for deferring refresh |
 | [Buchhold et al., 2019](https://doi.org/10.1145/3362693) | CCH with BPR traffic assignment and batched queries | No flood state, stability controller, or certificate gate |
-| [Chan et al., 2023](https://doi.org/10.1145/3579842) | CCH metropolitan rerouting, congestion, recheck periods, and improvement thresholds | No flood evidence or query-level stale-metric certificate |
-| [CERT-FLOW, 2026 preprint](https://doi.org/10.31224/7306) | Certificate-gated route planning under drifting costs and stale CH/oracle concepts | Probabilistic conformal bounds and dual search, not the deterministic monotone specialization |
+| [Chan et al., 2023](https://doi.org/10.1145/3579842) | CCH customization/query costs, recheck periods, improvement thresholds, compliance/penetration, and congestion redistribution | No flood evidence or deterministic monotone per-query stale-metric certificate |
+| [CERT-FLOW, 2026 preprint](https://doi.org/10.31224/7306) | Implemented proof-gated CH/oracle routing under drifting costs | Probabilistic conformal bounds and dual search, not the deterministic monotone specialization |
 | [Li et al., 2026](https://doi.org/10.1007/s13753-026-00697-y) | Hydrodynamic flooding, SUMO, rerouting, and emergency vehicles | No CCH certificate or explicit projected-load/stability evaluation |
 | [Pan et al., 2012](https://doi.org/10.1109/DCOSS.2012.29) | Proactive projected vehicle footprints and sequential rerouting | No flood evidence or CCH |
 
@@ -86,7 +86,7 @@ Chennai work already includes:
 - flood forecasting through C-FLOWS ([publisher PDF](https://currentscience.ac.in/Volumes/117/05/0741.pdf));
 - flood susceptibility mapping ([Alabdan et al., 2025](https://doi.org/10.1038/s41598-025-08912-4));
 - SUMO calibration for heterogeneous Chennai traffic ([Sashank et al., 2020](https://doi.org/10.1007/978-981-15-3742-4_13));
-- Chennai BPR-family calibration ([Chowdhury and Chakraborty, 2023](https://doi.org/10.1177/03611981221138511)); and
+- Chennai BPR-family calibration ([Gore, Arkatkar, Joshi, and Antoniou, 2023](https://doi.org/10.1177/03611981221138511)); and
 - a recent flood/traffic/safety navigation concept ([2026 paper](https://doi.org/10.47392/IRJAEH.2026.0595)).
 
 No verified Chennai study was found that jointly evaluates flood-dependent effective capacity, CCH refresh behavior, projected route load, route stability, partial compliance, and population-weighted critical-facility access. This is an evidence-based search result, not proof of universal absence.
@@ -136,6 +136,8 @@ t_{e,t}=t^0_e\left[
 \]
 
 where adjacency denotes multiplication. For software and CCH, seconds are quantized to non-negative integer milliseconds. Flow and capacity use the same interval and units. Discharged throughput is retained as an outcome, not substituted for assigned entering demand.
+
+When \(c^{eff}_{e,t}=0\), the edge is excluded and its routing cost is \(+\infty\); the finite BPR expression is not evaluated. The native CCH experiment currently rejects closures until a finite sentinel and overflow bound are validated.
 
 ### 5.2 Which Algorithm Finds the Path?
 
@@ -286,13 +288,13 @@ Three low-scope evaluation additions strengthen impact without becoming route we
 ### 6.2 OpenCity Chennai Flood Data
 
 **Purpose:** Historical flood evidence and susceptibility validation.  
-**Contains:** 2015 hotspots/stagnation points, inundation points/depth, zones, and return-period hazards.  
+**Contains:** The 2015 dataset has hotspots/stagnation points and a 2015 inundation zone; the separate Chennai Flooding Data collection has inundation points/depth and return-period hazards.  
 **Chennai coverage:** Direct.  
 **Global coverage:** No.  
 **Access:** Public CKAN resource download in KML.
 
 **Limitations:** Historical/modelled evidence is not a current road closure.  
-**Direct access:** [Chennai Floods 2015](https://data.opencity.in/dataset/chennai-floods-2015-data)  
+**Direct access:** [Chennai Floods 2015](https://data.opencity.in/dataset/chennai-floods-2015-data), [Chennai Flooding Data](https://data.opencity.in/dataset/chennai-flooding-data)  
 **Documentation:** [CKAN API metadata](https://data.opencity.in/api/3/action/package_show?id=chennai-floods-2015-data)  
 **Repository:** [`flood.py`](../src/chennai_routing/data/flood.py)  
 **Viewer:** Resource previews on the OpenCity page.
@@ -422,7 +424,7 @@ OSM and OpenCity historical hotspots are joined to roads; one real mapped edge i
 - mandatory refresh after lower-bound invalidation;
 - eager baseline and deterministic experiment runner;
 - accessibility/compliance evaluation utilities;
-- 28 passing tests.
+- 37 passing tests.
 
 ### Stage 3 — Reproducible Chennai Graph
 
@@ -481,14 +483,14 @@ Paired scenarios, baselines, ablations, uncertainty, statistical reporting, repr
 
 | Engine/workload | Queries | Certified stale | Lazy refreshes | Eager update refreshes | Avoided | Bound violations | Lazy total | Eager total |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Dijkstra/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 538 ms | 702 ms |
-| Dijkstra/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 656 ms | 708 ms |
-| CCH/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 77 ms | 199 ms |
-| CCH/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 170 ms | 199 ms |
+| Dijkstra/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 587 ms | 705 ms |
+| Dijkstra/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 707 ms | 736 ms |
+| CCH/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 120 ms | 203 ms |
+| CCH/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 209 ms | 202 ms |
 
-There were zero certificate violations and zero exact post-refresh mismatches. The monotone workload produced the largest reduction because the lower bound remained valid. Mixed decreases correctly forced frequent refreshes.
+There were zero certificate violations, zero exact post-refresh mismatches, and zero CCH-versus-independent-Dijkstra oracle mismatches. The monotone workload produced the largest reduction because the lower bound remained valid. Mixed decreases correctly forced frequent refreshes; in this single run, certificate overhead made mixed CCH slightly slower than eager CCH.
 
-These are one-machine synthetic measurements with degree ordering. They validate implementation behavior, not Chennai travel outcomes or general performance.
+These are one-machine, single-run synthetic measurements with degree ordering. “Total” uses symmetric wall-clock boundaries for all post-initialization updates and route requests; engine construction and initial synchronization are reported separately in the JSON. The values validate implementation behavior, not Chennai travel outcomes or general performance.
 
 ### 11.3 Epsilon Sensitivity
 

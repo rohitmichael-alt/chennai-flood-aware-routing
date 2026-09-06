@@ -40,7 +40,7 @@
 - mandatory refresh when the stale lower bound is invalid;
 - eager-refresh baseline;
 - deterministic experiment traces and machine-readable results;
-- 28 tests.
+- 37 tests.
 
 **Status:** **DONE as preliminary synthetic evidence.**
 

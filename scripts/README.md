@@ -14,3 +14,9 @@ python scripts/run_certified_lazy_experiment.py --engine both --mode both
 ```
 
 The experiment is synthetic. Its timing and synchronization results must not be described as Chennai traffic outcomes.
+
+`run_certified_lazy_sweep.py` regenerates the complete committed main and
+epsilon-sensitivity manifest in
+`docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json`. Per-run CSV/JSON filenames
+include a configuration digest, so parameter sweeps do not overwrite one
+another.

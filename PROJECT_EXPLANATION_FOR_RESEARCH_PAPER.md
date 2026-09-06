@@ -23,7 +23,7 @@ The project studies how Chennai road routes should change when flooding, inciden
 - eager-refresh baseline;
 - synthetic monotone and mixed-update experiments;
 - critical-facility/population and partial-compliance metrics;
-- 28 passing tests.
+- 37 passing tests.
 
 ## What Finds the Path?
 

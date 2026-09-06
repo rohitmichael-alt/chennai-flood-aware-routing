@@ -27,7 +27,7 @@ See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE
 | Chennai graph/flood/rainfall/SUMO integration | Planned |
 | Full publication evaluation | Planned |
 
-Current tests: **28 passing** at the latest recorded verification.
+Current tests: **37 passing** at the latest recorded verification.
 
 ## Install
 
@@ -71,6 +71,12 @@ python scripts/run_certified_lazy_experiment.py \
 ```
 
 The runner compares eager refresh with certificate-gated refresh using identical traces. It writes per-query CSV and summary JSON files under `outputs/tables/`.
+
+Regenerate the committed full main/sensitivity manifest:
+
+```bash
+python scripts/run_certified_lazy_sweep.py
+```
 
 Committed evidence from the recorded run is available at [`docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json`](docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json).
 
