@@ -23,11 +23,11 @@ See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE
 | Exact NetworkX Dijkstra adapter | Implemented |
 | Native `routingkit-cch` adapter | Implemented for finite integer experimental metrics |
 | Eager baseline and deterministic experiments | Implemented |
-| Accessibility and partial-compliance metrics | Implemented |
+| Uncertainty, accessibility, compliance, and road-criticality methods | Implemented |
 | Chennai graph/flood/rainfall/SUMO integration | Planned |
 | Full publication evaluation | Planned |
 
-Current tests: **37 passing** at the latest recorded verification.
+Current tests: **41 passing** at the latest recorded verification.
 
 ## Install
 
@@ -119,6 +119,7 @@ Stage 1 proves controlled closure avoidance. It does not prove current flooding,
 | `evaluation/baseline.py` | Eager-refresh oracle |
 | `evaluation/experiments.py` | Reproducible synthetic experiment |
 | `evaluation/metrics.py` | Population/facility access and compliance utilities |
+| `evaluation/robustness.py` | Evidence-lag and classification-error experiments |
 
 ## Certificate in One Paragraph
 

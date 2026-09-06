@@ -15,5 +15,7 @@ Current tests verify:
 - deterministic differential experiments;
 - population-weighted accessibility;
 - reproducible partial-compliance selection.
+- evidence lag and false-positive/false-negative perturbation;
+- facility-oriented road-criticality ranking.
 
-Latest recorded result: **37 passed**.
+Latest recorded result: **41 passed**.

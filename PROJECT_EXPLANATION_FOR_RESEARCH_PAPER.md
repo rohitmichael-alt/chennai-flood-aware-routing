@@ -22,8 +22,8 @@ The project studies how Chennai road routes should change when flooding, inciden
 - certificate-gated refresh controller;
 - eager-refresh baseline;
 - synthetic monotone and mixed-update experiments;
-- critical-facility/population and partial-compliance metrics;
-- 37 passing tests.
+- uncertainty, critical-facility/population, partial-compliance, and road-criticality methods;
+- 41 passing tests.
 
 ## What Finds the Path?
 
@@ -76,12 +76,19 @@ These results are not yet Chennai/SUMO outcomes.
 
 The paper adds:
 
-1. critical-facility accessibility;
-2. population-weighted access loss;
-3. partial route-guidance compliance;
-4. uncertainty and data-freshness sensitivity.
+1. uncertainty and data-freshness sensitivity;
+2. critical-facility accessibility;
+3. population-weighted access loss;
+4. partial route-guidance compliance;
+5. facility-oriented road criticality.
 
 They are evaluation objectives, not arbitrary route penalties.
+
+Historical Chennai data is suitable for a retrospective event-replay paper.
+It reduces claims about present-day deployment, but improves repeatability when
+dates, provenance, lag/error sensitivity, and simulated traffic are reported
+honestly. The project must say “near-real-time capable,” not “live Chennai
+routing.”
 
 ## What Remains?
 

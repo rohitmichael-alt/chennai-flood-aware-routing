@@ -102,6 +102,22 @@ The paper should be positioned as an **integration, systems, and experimental ev
 - ablations isolating the certificate, CCH, stability, projected load, and priority;
 - public experiment configurations and negative results.
 
+### 4.5 Historical Data and Publication Validity
+
+The absence of a public live Chennai traffic/closure feed does not prevent publication. The study must be framed as a **retrospective historical-event replay with simulated traffic**, not an operational live deployment.
+
+Historical evidence can strengthen reproducibility because every method is evaluated against the same dated event. The evaluation will:
+
+1. replay documented Chennai flood conditions and rainfall for declared dates;
+2. preserve source versions, retrieval dates, checksums, and spatial resolution;
+3. separate model calibration/sensitivity from held-out scenario evaluation;
+4. inject controlled 0/30/60/120-minute evidence lags and false-positive/false-negative road states;
+5. use repeated SUMO seeds and report confidence intervals;
+6. compare historical-evidence routing with perfect-information and no-flood baselines; and
+7. describe the architecture as **near-real-time capable**, not as a live Chennai service.
+
+The limitation is reduced operational external validity: the study cannot prove present-day live accuracy or deployment readiness. That limitation is acceptable for an applied methods/case-study paper when stated explicitly.
+
 ## 5. Proposed Method
 
 ### 5.1 Network and Cost Model
@@ -263,11 +279,15 @@ Emergency routing remains a secondary scenario:
 - delay imposed on ordinary traffic is reported;
 - no signal preemption or live ambulance tracking is claimed.
 
-Three low-scope evaluation additions strengthen impact without becoming route weights:
+Five committed evaluation studies strengthen impact without becoming route weights:
 
-1. **Critical-facility accessibility:** travel time/disconnection to hospitals, fire stations, and relief centres.
-2. **Population-weighted access loss:** distribution of access impact using WorldPop/ward weights; this is not socioeconomic equity.
-3. **Partial compliance:** 0%, 25%, 50%, 75%, and 100% of vehicles follow guidance.
+1. **Evidence freshness and uncertainty:** controlled lag and classification-error traces.
+2. **Critical-facility accessibility:** travel time/disconnection to hospitals, fire stations, and relief centres.
+3. **Population-weighted access loss:** distribution of access impact using WorldPop/ward weights; this is not socioeconomic equity.
+4. **Partial compliance:** 0%, 25%, 50%, 75%, and 100% of vehicles follow guidance.
+5. **Facility-oriented road criticality:** rank candidate roads by newly disconnected population and population-weighted added facility travel time.
+
+Generic deterministic implementations for all five are present in `evaluation/metrics.py` and `evaluation/robustness.py`; Chennai data integration remains a later stage.
 
 ## 6. Dataset and Data Access
 
@@ -312,6 +332,8 @@ Three low-scope evaluation additions strengthen impact without becoming route we
 **Documentation:** [IMERG V07](https://gpm.nasa.gov/resources/documents/imerg-v07-technical-documentation)  
 **Repository:** Planned rainfall module in `src/chennai_routing/data/rainfall.py`  
 **Viewer:** [NASA Giovanni](https://giovanni.gsfc.nasa.gov/giovanni/)
+
+If no Earthdata credentials are available, the no-key [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) provides an ERA5/ERA5-Land-derived rainfall fallback. It must be labelled reanalysis and must not be presented as road-level observation.
 
 ### 6.4 NASA SRTM/NASADEM and Chennai Hydrology
 
@@ -424,7 +446,8 @@ OSM and OpenCity historical hotspots are joined to roads; one real mapped edge i
 - mandatory refresh after lower-bound invalidation;
 - eager baseline and deterministic experiment runner;
 - accessibility/compliance evaluation utilities;
-- 37 passing tests.
+- uncertainty and facility-road-criticality utilities;
+- 41 passing tests.
 
 ### Stage 3 — Reproducible Chennai Graph
 
@@ -433,8 +456,8 @@ Dated OSM extract, stable arc IDs, validated directions/turns/parallel arcs, fre
 
 ### Stage 4 — Flood and Road-State Evidence
 
-**Status:** Planned.  
-Historical susceptibility, IMERG rolling rainfall, optional current evidence, source freshness, confidence, and explained `NORMAL/DEGRADED/SEVERE/BLOCKED` states.
+**Status:** Generic lag/error perturbation implemented; Chennai evidence integration planned.  
+Historical susceptibility, IMERG or no-key reanalysis rainfall, optional current evidence, source freshness, confidence, and explained `NORMAL/DEGRADED/SEVERE/BLOCKED` states.
 
 ### Stage 5 — Chennai Traffic and SUMO Calibration
 
@@ -451,10 +474,10 @@ Geometry-aware ordering, turn-expanded topology, finite closure sentinel, intege
 **Status:** Planned.  
 Threshold, minimum gain, cooldown, time-indexed route reservations, and compliance sensitivity.
 
-### Stage 8 — Accessibility and Population Evaluation
+### Stage 8 — Accessibility, Population, Compliance, and Road Criticality
 
-**Status:** Planned data integration; generic metrics implemented.  
-Hospitals, fire stations, relief centres, disconnection, p90 access, and population-weighted loss.
+**Status:** Generic metrics implemented; Chennai data integration planned.  
+Hospitals, fire stations, relief centres, disconnection, p90 access, population-weighted loss, partial compliance, and facility-oriented road criticality.
 
 ### Stage 9 — Emergency Scenario
 
@@ -595,7 +618,7 @@ The core remains feasible using historical replay and labelled simulation withou
 | Flood model | Susceptibility + rainfall + optional observation → explained state |
 | Traffic model | BPR route estimate + SUMO realized outcome |
 | Stability | Trigger, minimum gain, cooldown, projected time-indexed load |
-| Additional factors | Facility access, population-weighted loss, partial compliance |
+| Additional factors | Uncertainty, facility access, population-weighted loss, partial compliance, road criticality |
 | Emergency | Secondary scenario with external-delay reporting |
 | Current evidence | Stage 1 plus tested synthetic CCH/Dijkstra method experiment |
 | Required next evidence | Chennai graph, flood/rain pipeline, SUMO calibration and full ablations |

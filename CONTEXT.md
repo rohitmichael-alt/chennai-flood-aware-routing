@@ -95,14 +95,14 @@ The implemented controller uses complete fixed-topology snapshots and non-negati
 4. Certificate-gated synchronizer with atomic versioned updates.
 5. Eager-refresh baseline.
 6. Deterministic synthetic experiment runner.
-7. Population-weighted accessibility and partial-compliance utilities.
+7. Population-weighted accessibility, partial-compliance, evidence-robustness, and facility-road-criticality utilities.
 8. Differential, certificate, closure/recovery, parallel-edge, and CCH tests.
 
 ### Preliminary Evidence
 
 The main synthetic experiment used 200 nodes, 600 extra arcs, 100 update epochs, 5 updates and 50 queries per epoch.
 
-- 37 tests pass.
+- 41 tests pass.
 - 20,000 main route queries across Dijkstra/CCH and monotone/mixed workloads produced zero certificate violations.
 - Monotone CCH workload avoided 94 of 100 eager update refreshes.
 - Mixed CCH workload avoided 14 of 100 because decreases invalidated the lower bound.
@@ -127,6 +127,7 @@ Retain:
 2. population-weighted access loss;
 3. partial-guidance compliance;
 4. uncertainty and data-freshness sensitivity.
+5. facility-oriented road criticality.
 
 Do not add unsupported vehicle-specific flood depth or invented physical recovery rates to the core.
 

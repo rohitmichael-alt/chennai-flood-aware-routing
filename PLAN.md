@@ -13,7 +13,7 @@
 | 5 | Chennai traffic and SUMO calibration | PENDING |
 | 6 | Production Chennai CCH integration | PENDING |
 | 7 | Stable projected-load rerouting | PENDING |
-| 8 | Facility/population/compliance evaluation | PARTIAL — metrics implemented |
+| 8 | Facility/population/compliance/criticality evaluation | PARTIAL — generic methods implemented |
 | 9 | Emergency scenario | PENDING |
 | 10 | Full experiments and publication package | PENDING |
 
@@ -40,7 +40,7 @@
 - mandatory refresh when the stale lower bound is invalid;
 - eager-refresh baseline;
 - deterministic experiment traces and machine-readable results;
-- 37 tests.
+- 41 tests.
 
 **Status:** **DONE as preliminary synthetic evidence.**
 
@@ -65,6 +65,9 @@ Completion requires a graph that loads without a live OSM query and passes struc
 ## Stage 4 — Flood and Road-State Evidence
 
 **Objective:** Produce explained, timestamped road states.
+
+**Current status:** Generic lag/false-positive/false-negative perturbation and
+summary methods are implemented; Chennai evidence ingestion is pending.
 
 Inputs:
 
@@ -136,7 +139,7 @@ Tasks:
 
 Do not claim equilibrium or optimal fleet assignment.
 
-## Stage 8 — Accessibility, Population, and Compliance
+## Stage 8 — Accessibility, Population, Compliance, and Road Criticality
 
 **Objective:** Measure public-service impact.
 
@@ -153,8 +156,9 @@ Metrics:
 - population-weighted access loss;
 - origins over 15/30-minute declared thresholds;
 - outcomes at 0%, 25%, 50%, 75%, and 100% compliance.
+- roads ranked by newly disconnected population and added facility travel time.
 
-**Current status:** Generic metrics and deterministic compliance selection are implemented; Chennai data integration is pending.
+**Current status:** Generic metrics, deterministic compliance selection, evidence perturbation, and facility-road-criticality ranking are implemented; Chennai data integration is pending.
 
 ## Stage 9 — Emergency Scenario
 
