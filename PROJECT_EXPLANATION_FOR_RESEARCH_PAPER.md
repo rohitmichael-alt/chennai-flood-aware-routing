@@ -2,7 +2,7 @@
 
 ## Short Explanation
 
-The project studies how Chennai road routes should change when flooding, incidents, and congestion alter road capacity. CCH finds paths, while a certificate decides whether its synchronized edge metric remains accurate enough for a query or must be refreshed.
+The project studies how Chennai road routes should change when flooding, incidents, and congestion alter road capacity. Stage 1 uses Dijkstra; a synthetic prototype can use CCH. The planned Chennai implementation will use CCH only after Stage 6 validation, while the certificate decides whether its synchronized metric must be refreshed.
 
 ## What Is Implemented?
 
@@ -27,10 +27,10 @@ The project studies how Chennai road routes should change when flooding, inciden
 
 ## What Finds the Path?
 
-**CCH finds the proposed path.**
+Stage 1 uses Dijkstra. The preliminary synthetic experiment supports either Dijkstra or CCH. CCH is the planned Chennai path engine after topology, turn, closure, and quantization validation.
 
 - Dijkstra is the correctness baseline.
-- ALT-guided bidirectional A* is the backup/comparator.
+- ALT-guided bidirectional A* is an unimplemented planned comparator.
 - The certificate is not another path algorithm; it controls CCH metric refresh.
 
 ## Three-Road Example
@@ -84,11 +84,12 @@ The paper adds:
 
 They are evaluation objectives, not arbitrary route penalties.
 
-Historical Chennai data is suitable for a retrospective event-replay paper.
-It reduces claims about present-day deployment, but improves repeatability when
-dates, provenance, lag/error sensitivity, and simulated traffic are reported
-honestly. The project must say “designed for near-real-time operation,” not
-“validated live Chennai routing.”
+Historical Chennai evidence can support a retrospective methods submission,
+depending on validation and venue. Existing hotspot/hazard layers do not form
+an observed road-state replay, so the correct framing is
+historical-evidence-conditioned scenario reconstruction with simulated traffic.
+The project must say “designed for near-real-time operation,” not “validated
+live Chennai routing.”
 
 ## What Remains?
 

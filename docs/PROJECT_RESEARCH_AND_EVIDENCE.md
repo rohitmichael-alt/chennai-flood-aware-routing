@@ -59,7 +59,7 @@ The strongest defensible contribution is:
 
 > A reproducible Chennai-oriented compound-disruption framework that applies an established monotone lower/upper-bound certificate as a query-level CCH refresh gate, and is designed to experimentally separate routing-index performance from the traffic effects of stable, projected-load-aware route adoption.
 
-**Novelty confidence: Medium for integration/evaluation; Low for algorithmic novelty.**
+**Provisional novelty assessment:** Medium for the proposed integration/evaluation and Low for algorithmic novelty, pending a systematic database search and completed Chennai experiments.
 
 ### 4.2 Closest Prior Art
 
@@ -75,6 +75,12 @@ The strongest defensible contribution is:
 | [Pan et al., 2012](https://doi.org/10.1109/DCOSS.2012.29) | Proactive projected vehicle footprints and sequential rerouting | No flood evidence or CCH |
 
 No “first certificate,” “first CCH traffic assignment,” or “first flood-aware Chennai router” claim is supportable.
+
+#### Search Protocol and Limit
+
+The audit used targeted English-language searches through 6 September 2026 across scholarly web indexes, DOI/publisher records, surveys, reference chains, and Google Patents. Search concepts included `CCH dynamic rerouting`, `lazy/partial customization`, `stale metric shortest path certificate`, `monotone edge-weight increase`, `bounded suboptimal replanning`, `BPR route reservation`, `flood SUMO routing`, and `Chennai flood routing`. Candidate work was screened for certificate logic, routing index, traffic assignment, flood evidence, stability, and emergency/accessibility evaluation.
+
+This was a focused prior-art audit, not a registered systematic review. The claimed gap is therefore provisional and must be rechecked using venue-specific databases and documented inclusion/exclusion counts before submission.
 
 ### 4.3 Chennai-Specific Gap
 
@@ -104,19 +110,19 @@ The paper should be positioned as an **integration, systems, and experimental ev
 
 ### 4.5 Historical Data and Publication Validity
 
-The absence of a public live Chennai traffic/closure feed does not prevent publication. The study must be framed as a **retrospective historical-event replay with simulated traffic**, not an operational live deployment.
+The absence of a public live Chennai traffic/closure feed does not by itself preclude a retrospective methods submission; suitability depends on validation quality and venue. The study must be framed as a **retrospective historical-evidence-conditioned simulation/scenario reconstruction**, not an observed road-state replay or operational live deployment.
 
 Historical evidence can strengthen reproducibility because every method is evaluated against the same dated event. The evaluation will:
 
-1. replay documented Chennai flood conditions and rainfall for declared dates;
+1. condition scenarios on documented Chennai flood evidence and rainfall for declared dates;
 2. preserve source versions, retrieval dates, checksums, and spatial resolution;
 3. separate model calibration/sensitivity from held-out scenario evaluation;
-4. inject controlled 0/30/60/120-minute evidence lags and false-positive/false-negative road states;
+4. inject controlled 0/30/60/120-minute lags and false-positive/false-negative states into derived/simulated road-state traces;
 5. use repeated SUMO seeds and report confidence intervals;
 6. compare historical-evidence routing with perfect-information and no-flood baselines; and
 7. describe the architecture as **designed for near-real-time operation**, not as a validated near-real-time or live Chennai service.
 
-The limitation is reduced operational external validity: the study cannot prove present-day live accuracy or deployment readiness. That limitation is acceptable for an applied methods/case-study paper when stated explicitly.
+OpenCity hotspot/hazard layers do not provide authoritative timestamped road-state trajectories. Until such observations are obtained, lag/error tests measure robustness to controlled assumptions rather than empirical sensing accuracy. The study cannot prove present-day live accuracy or deployment readiness.
 
 ## 5. Proposed Method
 
@@ -157,10 +163,11 @@ When \(c^{eff}_{e,t}=0\), the edge is excluded and its routing cost is \(+\infty
 
 ### 5.2 Which Algorithm Finds the Path?
 
-**CCH finds the proposed path.** It preprocesses fixed topology once, customizes integer edge weights when the metric changes, and then answers exact shortest-path queries for that represented metric.
+Stage 1 uses Dijkstra. Stage 2 can select Dijkstra or the native CCH adapter on synthetic graphs. The planned Chennai implementation will use CCH only after Stage 6 validates topology conversion, turns, closures, quantization, ordering, and path equality.
 
-- **Dijkstra:** correctness oracle and baseline.
-- **ALT-guided bidirectional A\*:** lightweight backup/comparator.
+- **Dijkstra:** implemented correctness oracle and Stage 1 baseline.
+- **CCH:** implemented prototype adapter; planned final Chennai path engine after validation.
+- **ALT-guided bidirectional A\*:** unimplemented planned comparator/backup.
 - **Certificate gate:** decides whether CCH must be refreshed; it is not a path-finding replacement.
 
 The repository now contains:
@@ -284,10 +291,10 @@ Five committed evaluation studies strengthen impact without becoming route weigh
 1. **Evidence freshness and uncertainty:** controlled lag and classification-error traces.
 2. **Critical-facility accessibility:** travel time/disconnection to hospitals, fire stations, and relief centres.
 3. **Population-weighted access loss:** distribution of access impact using WorldPop/ward weights; this is not socioeconomic equity.
-4. **Partial compliance:** exact seeded cohorts of 0%, 25%, 50%, 75%, and 100% of vehicles follow guidance.
-5. **Facility-oriented criticality:** rank directed keyed arcs by newly disconnected population and population-weighted added facility travel time; group both directions/parallel arcs by OSM way ID before physical-road reporting.
+4. **Partial compliance:** nearest-integer seeded cohorts target 0%, 25%, 50%, 75%, and 100%; exact percentages require a compatible fleet size.
+5. **Facility-oriented criticality:** rank directed keyed arcs by newly disconnected population and unnormalised person-time added to facility access; group both directions/parallel arcs by OSM way ID before physical-road reporting.
 
-Generic deterministic implementations for all five are present in `evaluation/metrics.py` and `evaluation/robustness.py`; Chennai data integration remains a later stage.
+Generic utility functions exist for portions of all five factors in `evaluation/metrics.py` and `evaluation/robustness.py`. None of the five has yet been integrated with Chennai inputs or executed as a factor-level experiment.
 
 ## 6. Dataset and Data Access
 
@@ -295,13 +302,13 @@ Generic deterministic implementations for all five are present in `evaluation/me
 
 | Factor | Required data | Chennai source | Access method | API key/account | No-credential path | Implemented now | Remaining experiment work |
 |---|---|---|---|---|---|---|---|
-| Evidence freshness and uncertainty | Dated flood/rain/road evidence plus generated lag/error traces | [OpenCity flood records](https://data.opencity.in/dataset/chennai-floods-2015-data); [Open-Meteo historical reanalysis](https://open-meteo.com/en/docs/historical-weather-api); optional [IMERG](https://gpm.nasa.gov/data/directory) | CKAN download and HTTPS JSON; optional GES DISC download | **No key** for OpenCity/Open-Meteo; Earthdata account and bearer token only for optional IMERG | OpenCity + Open-Meteo | Deterministic lag, false-positive/false-negative perturbation and summaries | Align historical dates, map evidence to Chennai edges, run lag/error scenarios |
-| Critical-facility accessibility | Geolocated health, fire, and relief facilities | OpenCity [health](https://data.opencity.in/dataset/chennai-healthcare-uphcs-and-uchcs), [fire](https://data.opencity.in/dataset/chennai-fire-stations-), and [relief](https://data.opencity.in/dataset/gcc-relief-centres) datasets; [OSM POIs](https://overpass-turbo.eu/) | CSV/KML/PDF download; OSM Overpass query | **No key or account** | OSM hospitals/fire stations plus public OpenCity resources | Population-weighted access/disconnection summaries | Download, validate facility type, geocode relief PDF where necessary, snap to graph |
-| Population impact | Population count raster or documented ward population | [WorldPop India R2025A](https://data.humdata.org/dataset/worldpop-population-counts-2015-2030-ind); [WorldPop STAC](https://stac.worldpop.org/); optional GCC ward data | HDX GeoTIFF download or WorldPop STAC API | **No key or account** for public download/STAC | Download 1 km India GeoTIFF and clip locally | Weighted mean, p90, disconnection, and threshold metrics | Clip Chennai cells, validate year/version, map cells to graph origins |
-| Partial compliance | Vehicle IDs and declared compliance level; no observed dataset is required | [SUMO automatic routing](https://eclipse.dev/sumo/docs/Demand/Automatic_Routing.html) scenario generated from Chennai demand | Local SUMO configuration, TraCI/libsumo | **No key or account** | Exact seeded cohorts at 0/25/50/75/100% | Exact-size reproducible cohort selection | Build/calibrate Chennai demand and execute repeated SUMO seeds |
-| Facility-oriented criticality | Chennai graph + facilities + population; no separate dataset | Derived from [OSM](https://www.openstreetmap.org/), OpenCity facilities, and WorldPop | Local reverse multi-source shortest-path analysis | **No additional key or account** | Reuse the three public inputs above | Directed keyed-arc impact ranking | Group directions/parallel arcs by OSM way ID and run Chennai scenarios |
+| Evidence freshness and uncertainty | A derived/simulated binary road-state truth trace plus rainfall/flood evidence | [OpenCity flood records](https://data.opencity.in/dataset/chennai-floods-2015-data); [Open-Meteo reanalysis](https://open-meteo.com/en/docs/historical-weather-api); optional [IMERG Final V07](https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGHH_07/summary) | CKAN download, HTTPS JSON, or credentialed GES DISC download | **No key** for OpenCity/Open-Meteo; Earthdata account authorization plus credentials/token for optional IMERG | OpenCity + Open-Meteo | Synthetic binary step-lag and false-positive/false-negative utility only | Create and justify road-state truth, timestamp alignment, multiclass/confidence mapping, then run scenarios |
+| Critical-facility accessibility | Geolocated health, fire, and relief facilities | OpenCity [health](https://data.opencity.in/dataset/chennai-healthcare-uphcs-and-uchcs), [fire](https://data.opencity.in/dataset/chennai-fire-stations-), and [relief](https://data.opencity.in/dataset/gcc-relief-centres); [OSM POIs](https://overpass-api.de/api/interpreter) | Health CSV/selected KML, fire CSV/KML, relief-centre PDF, and cached Overpass response | **No key or account** for the listed sources | Use coordinate-bearing KML/OSM; geocode relief addresses sequentially through no-key Nominatim, then cache and manually verify | Summaries from precomputed travel-time arrays only | Acquire/cache, verify type and emergency capability, geocode relief addresses, snap facilities, compute routes |
+| Population impact | Population count raster | Exact [2015 India 1 km R2025A STAC item](https://api.stac.worldpop.org/collections/IND/items/ind_pop_2015_CN_1km_R2025A_UA_v1) | Public STAC asset/GeoTIFF download | **No key or account** | Use the 1 km 2015 asset to match the 2015 flood scenario | Array-level weighted mean, p90, disconnection, and threshold summaries only | Download/clip raster, verify count conservation, map cells to graph origins |
+| Partial compliance | Vehicle IDs and declared compliance level; no observed compliance dataset | [SUMO automatic-routing options](https://eclipse.dev/sumo/docs/Demand/Automatic_Routing.html) | Local SUMO configuration and TraCI/libsumo | **No key or account** | Seeded cohort; size is \(\lfloor np+0.5\rfloor\), so exact percentages require a compatible fleet size | Reproducible nearest-integer cohort selection only | Wire selected IDs to rerouting devices/TraCI, define non-compliant behaviour, calibrate demand, repeat seeds |
+| Facility-oriented criticality | Chennai graph + facilities + population; no separate dataset | Derived from [OSM](https://www.openstreetmap.org/), OpenCity facilities, and WorldPop | Local reverse multi-source shortest-path analysis | **No additional key or account** | Reuse the three public inputs above | Toy-tested single directed keyed-edge ranking; added cost is unnormalised person-time and disconnection is separate | Select candidates, group/close all physical-road arcs by OSM way ID, and run Chennai-scale analysis |
 
-**Feasibility conclusion:** all five factors can be completed without user-supplied credentials by using the no-credential path. Optional IMERG/SRTM acquisition cannot be automated without a user-created Earthdata account, so those sources are enhancements rather than dependencies.
+**Feasibility conclusion:** a public-source acquisition path exists for all five factors without user-supplied credentials, but the complete Chennai pipeline has not yet been demonstrated. Official NASA IMERG/SRTM data cannot be acquired in a no-credential run; Open-Meteo reanalysis and non-elevation susceptibility inputs are the declared fallbacks.
 
 ### 6.2 API and Authentication Checklist
 
@@ -310,9 +317,9 @@ Generic deterministic implementations for all five are present in `evaluation/me
 | [OpenCity Chennai](https://data.opencity.in/) | Free public data | No | No | Dataset page and CKAN resource download | Resources vary between CSV, KML, and PDF; validate dates/schema |
 | [Public OSM Overpass](https://wiki.openstreetmap.org/wiki/Overpass_API) | Free community service | No | No | `https://overpass-api.de/api/interpreter`; use caching and a descriptive user agent | Rate/size limits; dated extracts are preferable for reproducibility |
 | [Geofabrik India OSM extract](https://download.geofabrik.de/asia/india.html) | Free public download | No | No | Download dated `.osm.pbf`; a separate importer is required | India-wide file is large; ODbL attribution applies |
-| [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) | Free for rate-limited non-commercial use | No | No | HTTPS GET returning JSON | CC BY 4.0 attribution; free-service limits and no uptime guarantee |
+| [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) | Free for rate-limited non-commercial use | No | No | `https://archive-api.open-meteo.com/v1/archive` returns JSON | CC BY 4.0 attribution; 600 calls/min, 5,000/hour, 10,000/day, 300,000/month; no uptime guarantee |
 | [NASA GPM IMERG/GES DISC](https://github.com/nasa/gesdisc-tutorials/blob/main/notebooks/How_to_Access_GES_DISC_Data_Using_Python.ipynb) | Free | No conventional key | **Yes** | Authorize NASA GES DISC and use Earthdata credentials or `Authorization: Bearer <token>` | Optional because the user must create/maintain the account/token |
-| [WorldPop India via HDX](https://data.humdata.org/dataset/worldpop-population-counts-2015-2030-ind)/[STAC](https://api.stac.worldpop.org) | Free public download | No | No | GeoTIFF from HDX or discovery through STAC | R2025A is model-derived/alpha; prefer 1 km file initially |
+| [WorldPop India 2015 1 km STAC item](https://api.stac.worldpop.org/collections/IND/items/ind_pop_2015_CN_1km_R2025A_UA_v1) | Free public download | No | No | Select the GeoTIFF asset from the fixed item ID; do not discover by `datetime` alone | R2025A is model-derived/alpha; verify version and pixel-count conservation |
 | [Eclipse SUMO/TraCI](https://eclipse.dev/sumo/) | Free open-source software | No | No | Local installation and Python/TraCI interface | Output is simulation, not observed traffic |
 | [RoutingKit CCH](https://pypi.org/project/routingkit-cch/) | Free open-source package | No | No | Install `routingkit-cch` Python package | Native finite-integer/turn/closure assumptions require validation |
 
@@ -328,9 +335,22 @@ No secret, password, or bearer token is committed to the repository.
 
 **Limitations:** Mutable community data; missing attributes and turn restrictions.  
 **Direct access:** [Geofabrik India](https://download.geofabrik.de/asia/india.html)  
-**Documentation:** [OSM licence](https://www.openstreetmap.org/copyright)  
+**Documentation:** [OSM licence](https://www.openstreetmap.org/copyright), [Overpass API policy](https://wiki.openstreetmap.org/wiki/Overpass_API)  
 **Repository:** [OSMnx](https://github.com/gboeing/osmnx)  
 **Viewer:** [Chennai map](https://www.openstreetmap.org/#map=11/13.083/80.271)
+
+The facility query will be sent to `https://overpass-api.de/api/interpreter`, cached with retrieval time/checksum, and limited to the declared Chennai study boundary. It will request `amenity=hospital|clinic|fire_station` and relevant emergency/shelter tags. A descriptive User-Agent and public-instance rate limits are mandatory.
+
+```text
+[out:json][timeout:120];
+(
+  nwr["amenity"~"^(hospital|clinic|fire_station)$"](12.85,80.05,13.25,80.40);
+  nwr["social_facility"="shelter"](12.85,80.05,13.25,80.40);
+);
+out center tags;
+```
+
+The bounding box is a provisional acquisition envelope and must be replaced by the final Stage 3 study boundary. Relief-address geocoding will use cached, rate-limited Nominatim results under its usage policy, followed by manual coordinate/name verification; unverified entries will be excluded.
 
 ### 6.4 OpenCity Chennai Flood Data
 
@@ -349,18 +369,18 @@ No secret, password, or bearer token is committed to the repository.
 ### 6.5 NASA GPM IMERG
 
 **Purpose:** Historical and delayed near-current rainfall forcing.  
-**Contains:** Half-hourly satellite precipitation in Early, Late, and Final runs.  
+**Contains:** Half-hourly satellite precipitation; historical evaluation selects Final V07 collection `GPM_3IMERGHH_07`.  
 **Chennai coverage:** Yes, at approximately 0.1° cells.  
 **Global coverage:** Near-global.  
-**Access:** Free Earthdata/GES DISC account and product download/subset services.
+**Access:** Free Earthdata account, NASA GES DISC application authorization, and `.netrc` credentials or bearer-token authentication.
 
 **Limitations:** Approximately 10 km cells; rainfall does not prove street flooding.  
-**Direct access:** [IMERG directory](https://gpm.nasa.gov/data/directory)  
-**Documentation:** [IMERG V07](https://gpm.nasa.gov/resources/documents/imerg-v07-technical-documentation)  
-**Repository:** Planned rainfall module in `src/chennai_routing/data/rainfall.py`  
+**Direct access:** [GPM_3IMERGHH_07 summary](https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGHH_07/summary)  
+**Documentation:** [IMERG V07](https://gpm.nasa.gov/resources/documents/imerg-v07-technical-documentation), [DOI 10.5067/GPM/IMERG/3B-HH/07](https://doi.org/10.5067/GPM/IMERG/3B-HH/07)  
+**Repository:** `src/chennai_routing/data/rainfall.py` is currently a placeholder; acquisition is unimplemented.  
 **Viewer:** [NASA Giovanni](https://giovanni.gsfc.nasa.gov/giovanni/)
 
-If no Earthdata credentials are available, the no-key [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) provides an ERA5/ERA5-Land-derived rainfall fallback. It must be labelled reanalysis and must not be presented as road-level observation.
+If no Earthdata credentials are available, the no-key [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) provides an ERA5-derived fallback. A [tested Chennai request](https://archive-api.open-meteo.com/v1/archive?latitude=13.0827&longitude=80.2707&start_date=2015-11-01&end_date=2015-11-02&hourly=precipitation&models=era5&timezone=Asia%2FKolkata) uses `latitude=13.0827`, `longitude=80.2707`, declared dates, `hourly=precipitation`, `models=era5`, and `timezone=Asia/Kolkata`. It must be labelled retrospective reanalysis—not contemporaneous sensing or road-level observation.
 
 ### 6.6 NASA SRTM/NASADEM and Chennai Hydrology
 
@@ -373,7 +393,7 @@ If no Earthdata credentials are available, the no-key [Open-Meteo Historical Wea
 **Limitations:** Terrain is not road-level flood depth; drain maps do not prove capacity or maintenance.  
 **Direct access:** [SRTMGL1](https://www.earthdata.nasa.gov/data/catalog/lpcloud-srtmgl1-003)  
 **Documentation:** [OpenCity drains](https://data.opencity.in/dataset/chennai-stormwater-drain-swd-maps)  
-**Repository:** `src/chennai_routing/data/elevation.py`, `hydrology.py`  
+**Repository:** `src/chennai_routing/data/elevation.py` and `hydrology.py` are currently placeholders.  
 **Viewer:** [Earthdata Search](https://search.earthdata.nasa.gov/search?q=SRTMGL1)
 
 ### 6.7 Eclipse SUMO
@@ -393,15 +413,15 @@ If no Earthdata credentials are available, the no-key [Open-Meteo Historical Wea
 ### 6.8 Critical Facilities and Population
 
 **Purpose:** Evaluate public-service accessibility and population-weighted impact.  
-**Contains:** Health-centre/fire-station/relief-centre locations and modelled population counts.  
+**Contains:** Health-centre CSV/selected KML, fire-station CSV/KML, a 2024 relief-centre PDF, and modelled population counts.  
 **Chennai coverage:** Direct for OpenCity facilities; WorldPop covers Chennai.  
 **Global coverage:** WorldPop is global; facility catalogues are local.  
-**Access:** Public OpenCity downloads and HDX/WorldPop raster download.
+**Access:** Public OpenCity downloads and the fixed WorldPop STAC item/GeoTIFF asset.
 
-**Limitations:** Health centres are not necessarily trauma hospitals; population exposure is not socioeconomic equity.  
-**Direct access:** [Health centres](https://data.opencity.in/dataset/chennai-healthcare-uphcs-and-uchcs), [fire stations](https://data.opencity.in/dataset/chennai-fire-stations-), [relief centres](https://data.opencity.in/dataset/gcc-relief-centres), [WorldPop India](https://data.humdata.org/dataset/worldpop-population-counts-2015-2030-ind)  
-**Documentation:** [WorldPop dataset DOI](https://doi.org/10.5258/SOTON/WP00839), [WorldPop STAC](https://api.stac.worldpop.org)  
-**Repository:** `src/chennai_routing/evaluation/metrics.py`  
+**Limitations:** UPHC/UCHC data is not a comprehensive emergency-hospital inventory; the relief PDF does not provide validated graph-ready coordinates or current activation; population exposure is not socioeconomic equity.  
+**Direct access:** [Health metadata/API](https://data.opencity.in/api/3/action/package_show?id=chennai-healthcare-uphcs-and-uchcs), [fire metadata/API](https://data.opencity.in/api/3/action/package_show?id=chennai-fire-stations-), [relief metadata/API](https://data.opencity.in/api/3/action/package_show?id=gcc-relief-centres), [WorldPop 2015 India 1 km item](https://api.stac.worldpop.org/collections/IND/items/ind_pop_2015_CN_1km_R2025A_UA_v1), [15.48 MB GeoTIFF asset](https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/2015/IND/v1/1km_ua/constrained/ind_pop_2015_CN_1km_R2025A_UA_v1.tif)  
+**Documentation:** [WorldPop 1 km dataset DOI](https://doi.org/10.5258/SOTON/WP00840), [WorldPop STAC](https://api.stac.worldpop.org)  
+**Repository:** `src/chennai_routing/evaluation/metrics.py` provides array/graph utilities; ingestion and graph snapping are unimplemented.  
 **Viewer:** OpenCity resource previews and [WorldPop STAC Browser](https://stac.worldpop.org/).
 
 ## 7. Data Classification and Temporal Meaning
@@ -440,11 +460,17 @@ flowchart TD
     State --> Capacity[Effective_Capacity]
     Demand[SUMO_and_Projected_Demand] --> BPR[BPR_Integer_Metric]
     Capacity --> BPR
-    BPR --> Gate[Certificate_Gate]
-    Gate -->|Pass| CCHOld[Reuse_Synchronized_CCH]
-    Gate -->|Fail_or_Decrease| CCHNew[Customize_CCH]
-    CCHOld --> Candidate[Candidate_Route]
-    CCHNew --> Candidate
+    OD[Origin_Destination_Query] --> StaleQuery[Query_Synchronized_CCH]
+    StaleQuery --> PathEval[Evaluate_Old_Path_on_Current_Metric]
+    BPR --> PathEval
+    BPR --> Monotonicity[Check_Current_Weights_ge_Synchronized]
+    PathEval --> Gate[LB_UB_Certificate_Gate]
+    Monotonicity --> Gate
+    Gate -->|Pass| Candidate[Certified_Candidate_Route]
+    Gate -->|Fail_or_Decrease| Customize[Customize_CCH_with_Current_Metric]
+    BPR --> Customize
+    Customize --> FreshQuery[Query_Refreshed_CCH]
+    FreshQuery --> Candidate
     Candidate --> Policy[Stability_Priority_Compliance]
     Policy --> Reservation[Projected_Load_Reservation]
     Reservation --> Demand
@@ -455,10 +481,10 @@ flowchart TD
 
 ## 10. Implementation Status and Revised Stages
 
-### Stage 1 — Historical Flood Closure Proof of Concept
+### Stage 1 — Previously Executed Historical-Hotspot-Seeded Controlled Demo
 
-**Status:** Implemented.  
-OSM and OpenCity historical hotspots are joined to roads; one real mapped edge is controlled as blocked; BPR weights and two Dijkstra snapshots demonstrate closure avoidance. Finite congestion response is not validated.
+**Status:** Previously executed; implementation remains, but publication-grade evidence is not versioned.  
+OSM and OpenCity historical hotspots were joined to roads; one real mapped edge was controlled as blocked; BPR weights and two Dijkstra snapshots demonstrated closure avoidance. Inputs/outputs are ignored and current tests use fixtures. This becomes publication evidence only after dated inputs, checksums, configuration, and a compact result manifest are preserved. Finite congestion response is not validated.
 
 ### Stage 2 — Certificate and Routing-Engine Validation
 
@@ -483,7 +509,7 @@ Dated OSM extract, stable arc IDs, validated directions/turns/parallel arcs, fre
 
 ### Stage 4 — Flood and Road-State Evidence
 
-**Status:** Generic lag/error perturbation implemented; Chennai evidence integration planned.  
+**Status:** Synthetic binary lag/error utility implemented; dated Chennai road-state truth and temporal integration are unimplemented.  
 Historical susceptibility, IMERG or no-key reanalysis rainfall, optional current evidence, source freshness, confidence, and explained `NORMAL/DEGRADED/SEVERE/BLOCKED` states.
 
 ### Stage 5 — Chennai Traffic and SUMO Calibration
@@ -503,7 +529,7 @@ Threshold, minimum gain, cooldown, time-indexed route reservations, and complian
 
 ### Stage 8 — Accessibility, Population, Compliance, and Road Criticality
 
-**Status:** Generic metrics implemented; Chennai data integration planned.  
+**Status:** Generic utility portions implemented; no Chennai factor-level experiment has run.  
 Hospitals, fire stations, relief centres, disconnection, p90 access, population-weighted loss, partial compliance, and facility-oriented road criticality.
 
 ### Stage 9 — Emergency Scenario
@@ -531,7 +557,7 @@ Paired scenarios, baselines, ablations, uncertainty, statistical reporting, repr
 
 ### 11.2 Main Results
 
-| Engine/workload | Queries | Certified stale | Lazy refreshes | Eager update refreshes | Avoided | Bound violations | Lazy total | Eager total |
+| Prototype adapter/workload | Queries | Certified stale | Lazy refreshes | Eager update refreshes | Avoided | Bound violations | Lazy total | Eager total |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | Dijkstra/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 587 ms | 705 ms |
 | Dijkstra/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 707 ms | 736 ms |
@@ -540,7 +566,9 @@ Paired scenarios, baselines, ablations, uncertainty, statistical reporting, repr
 
 There were zero certificate violations, zero exact post-refresh mismatches, and zero CCH-versus-independent-Dijkstra oracle mismatches. The monotone workload produced the largest reduction because the lower bound remained valid. Mixed decreases correctly forced frequent refreshes; in this single run, lazy CCH was slightly slower than eager CCH.
 
-These are one-machine, single-run synthetic measurements with degree ordering. “Total” uses symmetric wall-clock boundaries for all post-initialization updates and route requests. Engine construction is reported separately; synchronization diagnostics combine initial and later synchronizations and should not be added to “Total.” The values validate implementation behavior, not Chennai travel outcomes or general performance.
+These are one-machine, single-run synthetic prototype-adapter measurements with degree ordering. “Total” uses symmetric wall-clock boundaries for all post-initialization updates and route requests. Engine construction is reported separately; synchronization diagnostics combine initial and later synchronizations and should not be added to “Total.”
+
+The CCH adapter constructs a fresh `CCHMetric` on synchronization and a fresh `CCHQuery` for each request; metric reset, partial/parallel customization, and query reuse are not benchmarked. The eager Dijkstra adapter similarly rebuilds its represented weighted graph. Therefore, these values validate prototype behavior only and do not establish an optimized CCH-versus-Dijkstra break-even point or Chennai performance.
 
 ### 11.3 Epsilon Sensitivity
 
@@ -609,11 +637,11 @@ Remote OSM/OpenCity inputs remain mutable until dated snapshots and checksums ar
 
 ## 14. Feasibility and Remaining Uncertainty
 
-**Available:** OSM, OpenCity, IMERG, SRTM/NASADEM, facility catalogues, WorldPop, SUMO, NetworkX, native CCH binding, and tested Python controller.
+**Public/no-key inputs and tools:** OSM, OpenCity, Open-Meteo reanalysis, facility catalogues, WorldPop, SUMO, NetworkX, native CCH binding, and the tested Python utilities. **Credentialed optional inputs:** official IMERG and SRTM/NASADEM through Earthdata.
 
 **Uncertain/optional:** public live Chennai speeds, machine-readable closures/incidents, signal-controller data, ambulance AVL, street-level satellite flood depth, and facility capacity.
 
-The core remains feasible using historical replay and labelled simulation without paid APIs.
+The proposed core remains feasible as historical-evidence-conditioned scenario reconstruction and labelled simulation without paid APIs; end-to-end acquisition and Chennai execution are not yet demonstrated.
 
 ## 15. Limitations
 
@@ -633,13 +661,15 @@ The core remains feasible using historical replay and labelled simulation withou
 14. Partial compliance is a sensitivity assumption, not observed behaviour.
 15. Projected greedy reservations do not guarantee equilibrium.
 16. A literature audit cannot prove universal novelty.
+17. All five strengthening factors currently have only generic utility portions, not completed Chennai experiments.
+18. OpenCity historical layers do not provide authoritative timestamped road-state truth.
 
 ## 16. Final Project Summary
 
 | Component | Final decision |
 |---|---|
 | Problem | Repeated routing under compound flood, incident, and congestion updates |
-| Path engine | Native CCH; Dijkstra correctness baseline; ALT backup |
+| Path engine | Dijkstra implemented; prototype CCH implemented; Chennai CCH planned after Stage 6; ALT unimplemented comparator |
 | Certificate | Established LB/UB principle used as a CCH refresh gate |
 | Defensible novelty | Chennai integration, workload characterization, and compound-disruption evaluation |
 | Flood model | Susceptibility + rainfall + optional observation → explained state |
@@ -647,7 +677,7 @@ The core remains feasible using historical replay and labelled simulation withou
 | Stability | Trigger, minimum gain, cooldown, projected time-indexed load |
 | Additional factors | Uncertainty, facility access, population-weighted loss, partial compliance, road criticality |
 | Emergency | Secondary scenario with external-delay reporting |
-| Current evidence | Stage 1 plus tested synthetic CCH/Dijkstra method experiment |
+| Current evidence | Tested synthetic CCH/Dijkstra method experiment; Stage 1 demo was previously run but lacks versioned publication evidence |
 | Required next evidence | Chennai graph, flood/rain pipeline, SUMO calibration and full ablations |
 
 ## 17. Research Claim Boundary
