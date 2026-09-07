@@ -511,12 +511,20 @@ OSM and OpenCity historical hotspots were joined to roads; one real mapped edge 
 - eager baseline and deterministic experiment runner;
 - accessibility/compliance evaluation utilities;
 - uncertainty and facility-road-criticality utilities;
-- 45 passing tests.
+- GCC 2022 boundary acquisition, provenance, validity-repair audit, and exact-source archive;
+- deterministic road-arc normalization and graph missingness reporting;
+- 53 passing tests.
 
 ### Stage 3 — Reproducible Chennai Graph
 
-**Status:** Planned.  
-Dated OSM extract, stable arc IDs, validated directions/turns/parallel arcs, free-flow times, and documented capacity assumptions.
+**Status:** In progress; study-boundary substage passed with documented source repair.
+The pinned OpenCity/GCC 2022 KML contains 200 uniquely named wards. Nine
+self-intersecting source geometries were repaired deterministically and
+reported; the processed polygons and union are valid. The source is archived
+with its provider metadata and SHA-256. Deterministic arc-ID, strict
+explicit-speed, and graph-audit utilities are implemented. A dated OSM
+extract, city-scale structural run, turn validation, and unresolved speed/lane
+report remain required; no capacity value will be silently assigned.
 
 ### Stage 4 — Flood and Road-State Evidence
 

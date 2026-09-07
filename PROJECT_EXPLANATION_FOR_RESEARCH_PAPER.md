@@ -27,7 +27,17 @@ fixtures; it is therefore not publication-grade Chennai evidence yet.
 - eager-refresh baseline;
 - synthetic monotone and mixed-update experiments;
 - partial generic utilities for uncertainty, accessibility/population, compliance, and directed-edge criticality; no Chennai factor-level experiment;
-- 45 passing tests.
+- pinned GCC 2022 boundary acquisition, repair audit, and exact-source archive;
+- deterministic road-arc normalization and missingness reporting;
+- 53 passing tests.
+
+### Stage 3 Boundary Checkpoint
+
+The exact study boundary is now fixed to the OpenCity/GCC 2022 200-ward KML.
+Nine invalid source polygons were repaired deterministically and each repair is
+recorded in `docs/evidence/STAGE3_BOUNDARY_RESULTS.json`. This completes only
+the boundary substage. The dated OSM graph and its city-scale topology, turn,
+speed, and lane audit remain incomplete.
 
 ## What Finds the Path?
 

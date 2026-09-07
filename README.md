@@ -24,10 +24,12 @@ See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE
 | Native `routingkit-cch` adapter | Implemented for finite integer experimental metrics |
 | Eager baseline and deterministic experiments | Implemented |
 | Uncertainty, accessibility, compliance, and road-criticality methods | Implemented |
-| Chennai graph/flood/rainfall/SUMO integration | Planned |
+| GCC 2022 study-boundary acquisition and validation | Implemented; 9 source geometries repaired and reported |
+| Deterministic road-arc normalization and missingness audit | Implemented; full Chennai graph run pending |
+| Dated Chennai OSM graph/flood/rainfall/SUMO integration | Planned |
 | Full publication evaluation | Planned |
 
-Current tests: **45 passing** at the latest recorded verification.
+Current tests: **53 passing** at the latest recorded verification.
 
 ## Install
 
@@ -108,10 +110,26 @@ Stage 1:
 
 Stage 1 proves controlled closure avoidance. It does not prove current flooding, calibrated congestion behaviour, or city-wide performance.
 
+## Run the Stage 3 Boundary Substage
+
+```bash
+python scripts/run_stage3_boundary.py
+```
+
+This pins the OpenCity/GCC 2022 200-ward resource, downloads and checksums the
+unchanged KML, explicitly repairs and reports invalid source geometries, writes
+offline processed boundaries, and updates
+[`docs/evidence/STAGE3_BOUNDARY_RESULTS.json`](docs/evidence/STAGE3_BOUNDARY_RESULTS.json).
+The exact source is preserved as a deterministic gzip archive. This completes
+only the study-boundary substage; a dated OSM road extract and full structural
+audit are still required.
+
 ## Routing Components
 
 | File | Responsibility |
 |---|---|
+| `data/boundary.py` | Pinned GCC boundary acquisition, provenance, repair audit, and archive |
+| `preprocessing/roads.py` | Deterministic Stage 3 arc IDs, explicit-speed parsing, and graph audit |
 | `routing/engine.py` | Engine-neutral snapshots, keyed paths, and protocol |
 | `routing/networkx_engine.py` | Exact Dijkstra reference engine |
 | `routing/cch_engine.py` | Native experimental CCH adapter |

@@ -1,0 +1,142 @@
+{
+  "artifacts": {
+    "archived_source": "docs/evidence/sources/gcc_wards_2022.kml.gz",
+    "processed_union": "data/processed/boundary/gcc_boundary_2022.geojson",
+    "processed_wards": "data/processed/boundary/gcc_wards_2022.geojson"
+  },
+  "audit": {
+    "area_measurement_crs": "EPSG:32644",
+    "bounds_wgs84": [
+      80.13409479076076,
+      12.85209293883966,
+      80.3314935303818,
+      13.23504905520032
+    ],
+    "crs": "EPSG:4326",
+    "duplicate_name_count": 0,
+    "empty_geometry_count": 0,
+    "expected_feature_count": 200,
+    "feature_count": 200,
+    "maximum_absolute_repair_area_change_square_metres": 1.8690520357340574,
+    "non_polygon_geometry_count": 0,
+    "post_repair_invalid_geometry_count": 0,
+    "repair_records": [
+      {
+        "absolute_area_change_square_metres": 4.656612873077393e-10,
+        "feature_index": "24",
+        "feature_name": "183",
+        "repaired_area_square_metres": 1540080.0002649543,
+        "repaired_geometry_type": "Polygon",
+        "source_area_square_metres": 1540080.0002649548,
+        "source_geometry_type": "MultiPolygon",
+        "source_validity_error": "Ring Self-intersection[80.2522005200892 12.9677120247118]"
+      },
+      {
+        "absolute_area_change_square_metres": 4.656612873077393e-10,
+        "feature_index": "31",
+        "feature_name": "115",
+        "repaired_area_square_metres": 851942.7257589855,
+        "repaired_geometry_type": "Polygon",
+        "source_area_square_metres": 851942.725758986,
+        "source_geometry_type": "MultiPolygon",
+        "source_validity_error": "Ring Self-intersection[80.2736156910137 13.0529070850229]"
+      },
+      {
+        "absolute_area_change_square_metres": 1.8690520357340574,
+        "feature_index": "96",
+        "feature_name": "69",
+        "repaired_area_square_metres": 1048770.2796428548,
+        "repaired_geometry_type": "MultiPolygon",
+        "source_area_square_metres": 1048772.1486948906,
+        "source_geometry_type": "MultiPolygon",
+        "source_validity_error": "Self-intersection[80.2187964406329 13.1111077424758]"
+      },
+      {
+        "absolute_area_change_square_metres": 4.6566128730773926e-09,
+        "feature_index": "135",
+        "feature_name": "129",
+        "repaired_area_square_metres": 1898934.7522710722,
+        "repaired_geometry_type": "Polygon",
+        "source_area_square_metres": 1898934.7522710676,
+        "source_geometry_type": "MultiPolygon",
+        "source_validity_error": "Ring Self-intersection[80.1970510234224 13.0548323120931]"
+      },
+      {
+        "absolute_area_change_square_metres": 4.656612873077393e-10,
+        "feature_index": "149",
+        "feature_name": "42",
+        "repaired_area_square_metres": 1083663.2234439063,
+        "repaired_geometry_type": "Polygon",
+        "source_area_square_metres": 1083663.2234439058,
+        "source_geometry_type": "MultiPolygon",
+        "source_validity_error": "Ring Self-intersection[80.2865138896145 13.1211615372455]"
+      },
+      {
+        "absolute_area_change_square_metres": 2.7939677238464355e-09,
+        "feature_index": "188",
+        "feature_name": "65",
+        "repaired_area_square_metres": 1881123.6650690446,
+        "repaired_geometry_type": "Polygon",
+        "source_area_square_metres": 1881123.6650690418,
+        "source_geometry_type": "MultiPolygon",
+        "source_validity_error": "Ring Self-intersection[80.21414488455 13.116922453649]"
+      },
+      {
+        "absolute_area_change_square_metres": 0.0,
+        "feature_index": "190",
+        "feature_name": "91",
+        "repaired_area_square_metres": 1216247.680769303,
+        "repaired_geometry_type": "Polygon",
+        "source_area_square_metres": 1216247.680769303,
+        "source_geometry_type": "MultiPolygon",
+        "source_validity_error": "Ring Self-intersection[80.1772084413218 13.0780361365037]"
+      },
+      {
+        "absolute_area_change_square_metres": 0.0,
+        "feature_index": "192",
+        "feature_name": "39",
+        "repaired_area_square_metres": 1042310.1344676093,
+        "repaired_geometry_type": "Polygon",
+        "source_area_square_metres": 1042310.1344676093,
+        "source_geometry_type": "MultiPolygon",
+        "source_validity_error": "Ring Self-intersection[80.2926717275228 13.1334671923668]"
+      },
+      {
+        "absolute_area_change_square_metres": 0.0,
+        "feature_index": "196",
+        "feature_name": "161",
+        "repaired_area_square_metres": 789818.483119364,
+        "repaired_geometry_type": "Polygon",
+        "source_area_square_metres": 789818.483119364,
+        "source_geometry_type": "MultiPolygon",
+        "source_validity_error": "Ring Self-intersection[80.2070213512584 12.9993108410563]"
+      }
+    ],
+    "repaired_geometry_count": 9,
+    "source_invalid_geometry_count": 9,
+    "total_absolute_repair_area_change_square_metres": 1.8690520445816219,
+    "union_geometry_type": "MultiPolygon",
+    "union_is_valid": true
+  },
+  "claim_limit": "This validates the 2022 GCC study boundary only; it does not complete the dated OSM road-graph stage.",
+  "component": "study_boundary",
+  "decision": "PASS WITH DOCUMENTED SOURCE GEOMETRY REPAIR",
+  "provenance": {
+    "content_bytes": 2815875,
+    "content_sha256": "be48ef7eb4320279e790f59da1691ece9efc92b34459ca73c492957943c347e0",
+    "dataset_id": "gcc-ward-information",
+    "dataset_title": "GCC Ward Information",
+    "package_api_url": "https://data.opencity.in/api/3/action/package_show?id=gcc-ward-information",
+    "package_metadata_modified": "2026-03-02T06:30:59.799959",
+    "provider_organization": "Greater Chennai Corporation (GCC)",
+    "resource_format": "KML",
+    "resource_id": "e90176d4-319a-45bd-918e-ecce4f048c4d",
+    "resource_last_modified": "2025-11-25T14:04:12.009306",
+    "resource_license": "Public Domain",
+    "resource_name": "Chennai GCC Ward Map - 2022",
+    "resource_source": "https://chennaicorporation.gov.in",
+    "resource_url": "https://data.opencity.in/dataset/c77de7f8-e377-4990-90fc-4f0f8ca0e2d2/resource/e90176d4-319a-45bd-918e-ecce4f048c4d/download/6a8a05ed-a41c-492a-aade-ff7517e1a4b1.kml",
+    "retrieved_at_utc": "2026-09-07T17:43:33.146197+00:00"
+  },
+  "stage": 3
+}

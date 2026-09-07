@@ -90,7 +90,7 @@ or engineering experiment; it cannot be presented as Chennai validation.
 |---|---|---|---|
 | 1. Controlled flood-to-road proof of concept | Implemented | Previous run recorded; source artifacts are mutable/ignored and constants are demonstration assumptions | **PASS WITH LIMITATIONS** |
 | 2. Certificate/controller and prototype CCH | Implemented and tested | Deterministic synthetic evidence committed; no Chennai-scale or traffic claim | **PASS WITH LIMITATIONS** |
-| 3. Reproducible Chennai graph | Stage 1 downloader only; publication pipeline absent | No fixed GCC boundary artifact, dated OSM extract, city graph manifest, or structural audit | **IN PROGRESS** |
+| 3. Reproducible Chennai graph | GCC boundary pipeline and graph-normalization/audit utilities implemented | Fixed 2022 GCC boundary evidence passed with documented repair; dated OSM extract and city graph audit remain | **IN PROGRESS** |
 | 4. Flood/rainfall road-state evidence | Generic binary error utility only | Chennai temporal integration and defensible state mapping absent | **NOT STARTED** |
 | 5. Chennai traffic and SUMO | Placeholder module | No OD/count data, network import, calibration, or scenario evidence | **NOT STARTED** |
 | 6. Chennai CCH integration | Synthetic finite-integer adapter exists | No Chennai mapping, turn model, quantization audit, or city-scale differential test | **NOT STARTED** |
@@ -165,6 +165,16 @@ stages.
 
 **Critical risk:** An OSM graph alone is not a calibrated traffic network.
 Turn restrictions and capacities remain gates for Stages 5–6.
+
+**Current checkpoint:** S3.1 passed on 7 September 2026 with documented source
+repair. The pinned KML contained all 200 unique ward names but 9 invalid
+self-intersecting geometries. Deterministic `make_valid` processing produced
+valid polygonal output; the total absolute measured area change was
+1.8690520445816219 square metres in EPSG:32644, with a maximum single-feature
+change of 1.8690520357340574 square metres. The exact 2,815,875-byte source is
+archived with SHA-256
+`be48ef7eb4320279e790f59da1691ece9efc92b34459ca73c492957943c347e0`.
+This passes only the boundary substage; S3.2–S3.8 remain open.
 
 ### Stage 4 — Flood, Rainfall, Freshness, and Road-State Evidence
 

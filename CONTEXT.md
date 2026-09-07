@@ -97,21 +97,28 @@ The implemented controller uses complete fixed-topology snapshots and non-negati
 6. Deterministic synthetic experiment runner.
 7. Population-weighted accessibility, partial-compliance, evidence-robustness, and facility-road-criticality utilities.
 8. Differential, certificate, closure/recovery, parallel-edge, and CCH tests.
+9. Pinned OpenCity/GCC 2022 study-boundary acquisition, exact-source archive,
+   provenance, deterministic geometry repair audit, and processed union.
+10. Deterministic Stage 3 road-arc IDs, strict explicit-speed parsing, and
+    topology/attribute missingness reporting.
 
 ### Preliminary Evidence
 
 The main synthetic experiment used 200 nodes, 600 extra arcs, 100 update epochs, 5 updates and 50 queries per epoch.
 
-- 45 tests pass.
+- 53 tests pass.
 - 20,000 main route queries across Dijkstra/CCH and monotone/mixed workloads produced zero certificate violations.
 - Monotone CCH workload avoided 94 of 100 eager update refreshes.
 - Mixed CCH workload avoided 14 of 100 because decreases invalidated the lower bound.
+- The 2022 GCC source contains 200 uniquely named wards. Nine source
+  geometries required documented validity repair; all processed geometries and
+  their union are valid. This is boundary evidence, not a completed road graph.
 
 These results do not establish Chennai traffic outcomes.
 
 ### Planned
 
-- stable dated Chennai graph and turn validation;
+- dated Chennai OSM graph and turn validation;
 - flood/rainfall/road-state pipeline;
 - Chennai SUMO demand/calibration;
 - production CCH ordering and closure representation;
