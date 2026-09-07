@@ -128,11 +128,48 @@ def test_boundary_audit_enforces_count_and_builds_valid_union(tmp_path: Path) ->
     assert len(union) == 1
     assert audit.feature_count == 2
     assert audit.duplicate_name_count == 0
+    assert audit.source_invalid_geometry_count == 0
+    assert audit.repaired_geometry_count == 0
     assert audit.union_is_valid
     assert audit.bounds_wgs84 == pytest.approx((80.0, 13.0, 80.2, 13.1))
 
     with pytest.raises(ValueError, match="Expected 3"):
         load_and_audit_gcc_2022_wards(source, expected_feature_count=3)
+
+
+def test_boundary_invalid_geometry_requires_explicit_documented_repair(
+    tmp_path: Path,
+) -> None:
+    source = tmp_path / "invalid.geojson"
+    gpd.GeoDataFrame(
+        {"Name": ["Self-intersecting ward"]},
+        geometry=[
+            Polygon(
+                [
+                    (80.0, 13.0),
+                    (80.1, 13.1),
+                    (80.1, 13.0),
+                    (80.0, 13.1),
+                    (80.0, 13.0),
+                ]
+            )
+        ],
+        crs="EPSG:4326",
+    ).to_file(source, driver="GeoJSON")
+
+    with pytest.raises(ValueError, match="1 invalid geometries"):
+        load_and_audit_gcc_2022_wards(source, expected_feature_count=1)
+
+    _, _, audit = load_and_audit_gcc_2022_wards(
+        source,
+        expected_feature_count=1,
+        repair_invalid=True,
+    )
+    assert audit.source_invalid_geometry_count == 1
+    assert audit.repaired_geometry_count == 1
+    assert audit.post_repair_invalid_geometry_count == 0
+    assert len(audit.repair_records) == 1
+    assert "Self-intersection" in audit.repair_records[0].source_validity_error
 
 
 def test_boundary_evidence_archives_exact_source_deterministically(tmp_path: Path) -> None:

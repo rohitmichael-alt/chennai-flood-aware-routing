@@ -12,6 +12,7 @@ from typing import Any
 
 import geopandas as gpd
 import requests
+from shapely.validation import explain_validity
 
 GCC_WARD_PACKAGE_ID = "gcc-ward-information"
 GCC_WARD_PACKAGE_API = (
@@ -44,6 +45,20 @@ class BoundaryProvenance:
 
 
 @dataclass(frozen=True)
+class BoundaryRepairRecord:
+    """One deterministic validity repair applied to a provider geometry."""
+
+    feature_index: str
+    feature_name: str
+    source_geometry_type: str
+    source_validity_error: str
+    repaired_geometry_type: str
+    source_area_square_metres: float
+    repaired_area_square_metres: float
+    absolute_area_change_square_metres: float
+
+
+@dataclass(frozen=True)
 class BoundaryAudit:
     """Geometry checks that define the Stage 3 study boundary."""
 
@@ -51,9 +66,15 @@ class BoundaryAudit:
     expected_feature_count: int
     crs: str
     empty_geometry_count: int
-    invalid_geometry_count: int
+    source_invalid_geometry_count: int
+    repaired_geometry_count: int
+    post_repair_invalid_geometry_count: int
     non_polygon_geometry_count: int
     duplicate_name_count: int | None
+    area_measurement_crs: str
+    total_absolute_repair_area_change_square_metres: float
+    maximum_absolute_repair_area_change_square_metres: float
+    repair_records: tuple[BoundaryRepairRecord, ...]
     union_geometry_type: str
     union_is_valid: bool
     bounds_wgs84: tuple[float, float, float, float]
@@ -175,6 +196,7 @@ def load_and_audit_gcc_2022_wards(
     kml_path: Path,
     *,
     expected_feature_count: int = EXPECTED_GCC_WARD_COUNT,
+    repair_invalid: bool = False,
 ) -> tuple[gpd.GeoDataFrame, gpd.GeoDataFrame, BoundaryAudit]:
     """Load ward polygons, enforce source checks, and return their union."""
 
@@ -186,29 +208,82 @@ def load_and_audit_gcc_2022_wards(
     wards = wards.to_crs("EPSG:4326")
 
     empty_count = int(wards.geometry.is_empty.sum() + wards.geometry.isna().sum())
-    invalid_count = int((~wards.geometry.is_valid).sum())
-    non_polygon_count = int(
-        (~wards.geometry.geom_type.isin(["Polygon", "MultiPolygon"])).sum()
-    )
     if len(wards) != expected_feature_count:
         raise ValueError(
             f"Expected {expected_feature_count} GCC ward features; found {len(wards)}."
         )
     if empty_count:
         raise ValueError(f"GCC ward KML contains {empty_count} empty geometries.")
-    if invalid_count:
-        raise ValueError(f"GCC ward KML contains {invalid_count} invalid geometries.")
-    if non_polygon_count:
-        raise ValueError(
-            f"GCC ward KML contains {non_polygon_count} non-polygon geometries."
-        )
 
     name_column = next(
         (column for column in ("Name", "name", "WARD_NO", "ward_no") if column in wards),
         None,
     )
+    source_invalid_mask = ~wards.geometry.is_valid
+    source_invalid_count = int(source_invalid_mask.sum())
+    if source_invalid_count and not repair_invalid:
+        raise ValueError(
+            f"GCC ward KML contains {source_invalid_count} invalid geometries."
+        )
+
+    area_crs = wards.estimate_utm_crs()
+    if area_crs is None:
+        raise ValueError("Could not determine a projected CRS for boundary repair audit.")
+    source_projected = wards.to_crs(area_crs)
+    source_areas = source_projected.geometry.area
+    validity_errors = {
+        index: explain_validity(geometry)
+        for index, geometry in wards.loc[source_invalid_mask].geometry.items()
+    }
+    source_geometry_types = {
+        index: geometry.geom_type
+        for index, geometry in wards.loc[source_invalid_mask].geometry.items()
+    }
+
+    if source_invalid_count:
+        wards = wards.copy()
+        wards.loc[source_invalid_mask, "geometry"] = (
+            wards.loc[source_invalid_mask].geometry.make_valid()
+        )
+
+    post_repair_invalid_count = int((~wards.geometry.is_valid).sum())
+    non_polygon_count = int(
+        (~wards.geometry.geom_type.isin(["Polygon", "MultiPolygon"])).sum()
+    )
+    if post_repair_invalid_count:
+        raise ValueError(
+            "Deterministic make_valid repair left "
+            f"{post_repair_invalid_count} invalid geometries."
+        )
+    if non_polygon_count:
+        raise ValueError(
+            "Boundary processing produced "
+            f"{non_polygon_count} non-polygon geometries."
+        )
+
+    repaired_projected = wards.to_crs(area_crs)
+    repaired_areas = repaired_projected.geometry.area
+    repair_records = tuple(
+        BoundaryRepairRecord(
+            feature_index=str(index),
+            feature_name=(
+                str(wards.at[index, name_column]).strip() if name_column else ""
+            ),
+            source_geometry_type=source_geometry_types[index],
+            source_validity_error=validity_errors[index],
+            repaired_geometry_type=wards.at[index, "geometry"].geom_type,
+            source_area_square_metres=float(source_areas.at[index]),
+            repaired_area_square_metres=float(repaired_areas.at[index]),
+            absolute_area_change_square_metres=float(
+                abs(repaired_areas.at[index] - source_areas.at[index])
+            ),
+        )
+        for index in wards.index[source_invalid_mask]
+    )
     duplicate_name_count = (
-        int(wards[name_column].astype(str).duplicated().sum()) if name_column else None
+        int(wards[name_column].astype(str).str.strip().duplicated().sum())
+        if name_column
+        else None
     )
     union_geometry = wards.geometry.union_all()
     union = gpd.GeoDataFrame(
@@ -222,9 +297,23 @@ def load_and_audit_gcc_2022_wards(
         expected_feature_count=expected_feature_count,
         crs=str(wards.crs),
         empty_geometry_count=empty_count,
-        invalid_geometry_count=invalid_count,
+        source_invalid_geometry_count=source_invalid_count,
+        repaired_geometry_count=len(repair_records),
+        post_repair_invalid_geometry_count=post_repair_invalid_count,
         non_polygon_geometry_count=non_polygon_count,
         duplicate_name_count=duplicate_name_count,
+        area_measurement_crs=str(area_crs),
+        total_absolute_repair_area_change_square_metres=sum(
+            record.absolute_area_change_square_metres for record in repair_records
+        ),
+        maximum_absolute_repair_area_change_square_metres=max(
+            (
+                record.absolute_area_change_square_metres
+                for record in repair_records
+            ),
+            default=0.0,
+        ),
+        repair_records=repair_records,
         union_geometry_type=union_geometry.geom_type,
         union_is_valid=bool(union_geometry.is_valid),
         bounds_wgs84=(bounds[0], bounds[1], bounds[2], bounds[3]),
@@ -281,7 +370,11 @@ def write_boundary_evidence(
             {
                 "stage": 3,
                 "component": "study_boundary",
-                "decision": "PASS",
+                "decision": (
+                    "PASS WITH DOCUMENTED SOURCE GEOMETRY REPAIR"
+                    if audit.repaired_geometry_count
+                    else "PASS"
+                ),
                 "provenance": asdict(provenance),
                 "audit": asdict(audit),
                 "artifacts": {

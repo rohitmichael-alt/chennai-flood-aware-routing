@@ -40,7 +40,10 @@ def run_stage3_boundary() -> Stage3BoundaryResult:
 
     paths = get_project_paths()
     kml_path, metadata_path, provenance = download_gcc_2022_wards(paths.raw_boundary)
-    wards, union, audit = load_and_audit_gcc_2022_wards(kml_path)
+    wards, union, audit = load_and_audit_gcc_2022_wards(
+        kml_path,
+        repair_invalid=True,
+    )
     evidence_path = paths.root / "docs" / "evidence" / "STAGE3_BOUNDARY_RESULTS.json"
     archived_path = (
         paths.root / "docs" / "evidence" / "sources" / "gcc_wards_2022.kml.gz"
@@ -65,7 +68,11 @@ def run_stage3_boundary() -> Stage3BoundaryResult:
         evidence_path=_repository_relative(evidence_path, paths.root),
         provenance=asdict(provenance),
         audit=asdict(audit),
-        decision="PASS",
+        decision=(
+            "PASS WITH DOCUMENTED SOURCE GEOMETRY REPAIR"
+            if audit.repaired_geometry_count
+            else "PASS"
+        ),
         next_gate=(
             "Acquire a dated OSM source, normalize the full road graph, and pass "
             "the Stage 3 topology and missingness audit."
