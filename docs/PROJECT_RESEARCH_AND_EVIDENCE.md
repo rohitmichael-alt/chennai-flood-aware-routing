@@ -155,14 +155,14 @@ t_{e,t}=t^0_e\left[
 
 where adjacency denotes multiplication. For software and CCH, seconds are quantized to non-negative integer milliseconds. Flow and capacity use the same interval and units. Discharged throughput is retained as an outcome, not substituted for assigned entering demand.
 
-When \(c^{eff}_{e,t}=0\), the edge is excluded and its routing cost is \(+\infty\); the finite BPR expression is not evaluated. The native CCH experiment currently rejects closures until a finite sentinel and overflow bound are validated.
+When \(c^{eff}_{e,t}=0\), the edge is excluded and its routing cost is \(+\infty\); the finite BPR expression is not evaluated. Stage 6 represents native CCH closures with a finite geographic sentinel, not \(+\infty\).
 
 ### 5.2 Which Algorithm Finds the Path?
 
-Stage 1 uses Dijkstra. Stage 2 can select Dijkstra or the native CCH adapter on synthetic graphs. The planned Chennai implementation will use CCH only after Stage 6 validates topology conversion, turns, closures, quantization, ordering, and path equality.
+Stage 1 uses Dijkstra. Stage 2 can select Dijkstra or the native CCH adapter on synthetic graphs. Stage 6 validated inertial CCH against Dijkstra on the Stage 3 graph under a no-turn-expansion topology and a labelled millisecond metric.
 
 - **Dijkstra:** implemented correctness oracle and Stage 1 baseline.
-- **CCH:** implemented prototype adapter; planned final Chennai path engine after validation.
+- **CCH:** implemented path engine for the Stage 3 graph after Stage 6 differential validation.
 - **ALT-guided bidirectional A\*:** unimplemented planned comparator/backup.
 - **Certificate gate:** decides whether CCH must be refreshed; it is not a path-finding replacement.
 
@@ -259,7 +259,7 @@ The lower bound is invalid if any current weight drops below the synchronized we
 - road reopening;
 - any other represented cost decrease.
 
-A closure represented as an increase is safe for the lower-bound direction, but a candidate containing the closed edge fails the upper-bound test. Native CCH currently accepts finite integer weights only; closure-sentinel behavior still requires a dedicated validation stage.
+A closure represented as an increase is safe for the lower-bound direction, but a candidate containing the closed edge fails the upper-bound test. Stage 6 represents native CCH closures with a finite geographic sentinel on the Stage 3 graph.
 
 ### 5.6 Route Adoption and Projected Load
 
@@ -511,27 +511,51 @@ OSM and OpenCity historical hotspots were joined to roads; one real mapped edge 
 - eager baseline and deterministic experiment runner;
 - accessibility/compliance evaluation utilities;
 - uncertainty and facility-road-criticality utilities;
-- 45 passing tests.
+- GCC 2022 boundary acquisition, provenance, validity-repair audit, and exact-source archive;
+- deterministic road-arc normalization and graph missingness reporting;
+- 53 passing tests at the previous certificate/boundary checkpoint;
+- Stage 3 graph evidence committed separately after the dated OSM run.
 
 ### Stage 3 — Reproducible Chennai Graph
 
-**Status:** Planned.  
-Dated OSM extract, stable arc IDs, validated directions/turns/parallel arcs, free-flow times, and documented capacity assumptions.
+**Status:** Pass with reported attribute missingness (8 September 2026).
+The pinned OpenCity/GCC 2022 KML contains 200 uniquely named wards. Nine
+self-intersecting source geometries were repaired deterministically and
+reported. The dated Geofabrik extract `india-260901.osm.pbf` (provider MD5
+`44ec6a7dff8ff2f3382da80a546b505f`) was clipped to that union. The driving
+graph has 155,345 nodes and 331,545 directed arcs, one connected component in
+both the weak and strong sense, and no arc-ID collisions. Explicit OSM
+maxspeed is available on 6,092 arcs; 325,453 arcs have no Stage 3 free-flow
+time. Lanes are missing on 318,131 arcs. No capacity was assigned. Turn
+restrictions remain a later gate.
 
 ### Stage 4 — Flood and Road-State Evidence
 
-**Status:** Synthetic binary lag/error utility implemented; dated Chennai road-state truth and temporal integration are unimplemented.  
-Historical susceptibility, IMERG or no-key reanalysis rainfall, optional current evidence, source freshness, confidence, and explained `NORMAL/DEGRADED/SEVERE/BLOCKED` states.
+**Status:** Pass with limitations (8 September 2026). Four OpenCity flood KMLs
+were pinned and checksummed. Open-Meteo ERA5 rainfall for 1 Nov–15 Dec 2015 is
+731.7 mm (**MODELLED**). Coarse DEM samples are **PROXY**. 327 GCC hotspots
+were distance-swept onto the Stage 3 graph. BLOCKED/SEVERE labels are declared
+scenario rules, not observed 2015 closures. Rainfall does not assign road
+state. IMERG/SRTM remain unavailable without Earthdata.
 
 ### Stage 5 — Chennai Traffic and SUMO Calibration
 
-**Status:** Planned.  
-Heterogeneous demand, entering PCE flow, incidents, queues, BPR calibration/sensitivity, and no double counting of SUMO delay.
+**Status:** Pass with limitations; demand and calibration classes are
+**SYNTHETIC**. No public Chennai counts or OD matrix were obtained. OSM
+`netconvert` on SUMO 1.18.0 aborted with RTree assertions. The Stage 3 graph
+was imported as SUMO node/edge files (331,545 edges). 325,453 arcs use a
+labelled 30 km/h SCENARIO default. 60 seeded random trips were written.
 
 ### Stage 6 — Chennai CCH Integration
 
-**Status:** Planned.  
-Geometry-aware ordering, turn-expanded topology, finite closure sentinel, integer quantization, full/partial customization, and Dijkstra differential validation.
+**Status:** Pass with limitations. Inertial CCH on the Stage 3 graph matched
+NetworkX Dijkstra on 24/24 seeded OD pairs (0 unpacked-cost mismatches).
+Travel times are integer milliseconds; 325,453 arcs use a labelled SCENARIO
+30 km/h default. Turn restrictions are not modelled. Twenty Stage 4 BLOCKED
+scenario arcs as a finite sentinel also matched Dijkstra (0 closed-arc paths
+in those queries). Mean CCH query 0.443 ms versus 160.3 ms for this Dijkstra
+oracle. These timings are one-machine measurements on a represented metric,
+not Chennai traffic outcomes.
 
 ### Stage 7 — Stable Projected-Load Rerouting
 
@@ -658,8 +682,10 @@ The proposed core remains feasible as historical-evidence-conditioned scenario r
 
 1. The certificate principle has close prior art; algorithmic novelty is not claimed.
 2. Preliminary experiments are synthetic and do not establish Chennai outcomes.
-3. Native CCH uses degree ordering; production Chennai ordering is unvalidated.
-4. CCH closure sentinel, turns, and quantization require further tests.
+3. Native CCH uses inertial ordering on the Stage 3 graph; the published
+   synthetic experiment still used degree ordering.
+4. CCH closures use a finite geographic sentinel. Turn restrictions are not
+   modelled. Millisecond quantization rounding is at most 0.5 ms per arc.
 5. Any weight decrease invalidates the stale lower bound and usually forces refresh.
 6. The certificate controls represented route cost, not model accuracy.
 7. BPR parameters and flood-capacity multipliers are not Chennai-calibrated.
@@ -680,7 +706,7 @@ The proposed core remains feasible as historical-evidence-conditioned scenario r
 | Component | Final decision |
 |---|---|
 | Problem | Repeated routing under compound flood, incident, and congestion updates |
-| Path engine | Dijkstra implemented; prototype CCH implemented; Chennai CCH planned after Stage 6; ALT unimplemented comparator |
+| Path engine | Dijkstra oracle implemented; inertial CCH validated on the Stage 3 graph (24/24 cost match); ALT unimplemented comparator |
 | Certificate | Established LB/UB principle used as a CCH refresh gate |
 | Defensible novelty | Chennai integration, workload characterization, and compound-disruption evaluation |
 | Flood model | Susceptibility + rainfall + optional observation → explained state |
@@ -688,7 +714,7 @@ The proposed core remains feasible as historical-evidence-conditioned scenario r
 | Stability | Trigger, minimum gain, cooldown, projected time-indexed load |
 | Additional factors | Uncertainty, facility access, population-weighted loss, partial compliance, road criticality |
 | Emergency | Secondary scenario with external-delay reporting |
-| Current evidence | Tested synthetic CCH/Dijkstra method experiment; Stage 1 demo was previously run but lacks versioned publication evidence |
+| Current evidence | Tested synthetic CCH/Dijkstra method experiment; Stage 3 graph; Stage 4 scenario overlays; SYNTHETIC SUMO; Stage 6 city CCH differential |
 | Required next evidence | Chennai graph, flood/rain pipeline, SUMO calibration and full ablations |
 
 ## 17. Research Claim Boundary
@@ -703,7 +729,7 @@ It does **not yet** support:
 - operational real-time flood routing;
 - a new shortest-path algorithm;
 - a new approximation-certificate theorem;
-- city-scale CCH performance;
+- city-scale CCH versus a tuned production Dijkstra or ALT;
 - publication-ready causal claims.
 
-Those claims require completion of Stages 3–10.
+Those claims require completion of Stages 7–10. City-scale CCH correctness versus the NetworkX Dijkstra oracle is reported in Stage 6 with the limitations listed there.

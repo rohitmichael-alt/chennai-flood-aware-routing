@@ -73,7 +73,7 @@ U\le(1+\epsilon)L.
 
 Any current weight below its synchronized value invalidates this lower bound and forces refresh unless another valid lower-bound metric is available.
 
-The implemented controller uses complete fixed-topology snapshots and non-negative integer weights. Native CCH closure-sentinel and turn-expanded topology behavior remain unvalidated.
+The implemented controller uses complete fixed-topology snapshots and non-negative integer weights. Native CCH was validated on the Stage 3 graph with inertial ordering, a geographic overflow bound, and a finite closure sentinel. Turn-expanded topology remains unvalidated.
 
 ## Data Principles
 
@@ -97,24 +97,44 @@ The implemented controller uses complete fixed-topology snapshots and non-negati
 6. Deterministic synthetic experiment runner.
 7. Population-weighted accessibility, partial-compliance, evidence-robustness, and facility-road-criticality utilities.
 8. Differential, certificate, closure/recovery, parallel-edge, and CCH tests.
+9. Pinned OpenCity/GCC 2022 study-boundary acquisition, exact-source archive,
+   provenance, deterministic geometry repair audit, and processed union.
+10. Deterministic Stage 3 road-arc IDs, strict explicit-speed parsing, and
+    topology/attribute missingness reporting.
+11. Dated Geofabrik India `india-260901` extract clipped to the GCC 2022 union,
+    with committed graph audit, data dictionary, and QA map.
+12. Stage 4 historical flood overlays, Open-Meteo ERA5 rainfall, and scenario
+    road states that do not treat rain or DEM as street flooding.
+13. Stage 5 SUMO import from the Stage 3 graph, labelled SYNTHETIC.
+14. Stage 6 inertial CCH on the Stage 3 graph with a Dijkstra differential.
 
 ### Preliminary Evidence
 
 The main synthetic experiment used 200 nodes, 600 extra arcs, 100 update epochs, 5 updates and 50 queries per epoch.
 
-- 45 tests pass.
+- Stage 3/4 unit tests are included with the repository test suite.
 - 20,000 main route queries across Dijkstra/CCH and monotone/mixed workloads produced zero certificate violations.
 - Monotone CCH workload avoided 94 of 100 eager update refreshes.
 - Mixed CCH workload avoided 14 of 100 because decreases invalidated the lower bound.
+- The 2022 GCC source contains 200 uniquely named wards. Nine source
+  geometries required documented validity repair; all processed geometries and
+  their union are valid.
+- The dated GCC-clipped driving graph has 155,345 nodes and 331,545 arcs.
+  Explicit OSM maxspeed covers 6,092 arcs; the rest have no Stage 3 free-flow
+  time. This is not a calibrated traffic network.
+- Stage 4 mapped 327 historical hotspots with a distance sweep. BLOCKED/SEVERE
+  labels are scenario overlays. Open-Meteo ERA5 rainfall is MODELLED reanalysis.
+- Stage 5 SUMO demand is SYNTHETIC. OSM netconvert failed on SUMO 1.18; the
+  Stage 3 graph was imported as node/edge files instead.
+- Stage 6 inertial CCH matched NetworkX Dijkstra on 24/24 seeded OD pairs
+  (0 cost mismatches). Mean CCH query was 0.443 ms versus 160.3 ms for this
+  Dijkstra oracle. Missing OSM maxspeed remains a labelled SCENARIO 30 km/h
+  default. Turn restrictions are not modelled.
 
 These results do not establish Chennai traffic outcomes.
 
 ### Planned
 
-- stable dated Chennai graph and turn validation;
-- flood/rainfall/road-state pipeline;
-- Chennai SUMO demand/calibration;
-- production CCH ordering and closure representation;
 - stability and time-indexed projected reservations;
 - facility/population data integration;
 - emergency scenario and full ablations.

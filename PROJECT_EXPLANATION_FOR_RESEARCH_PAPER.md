@@ -2,7 +2,7 @@
 
 ## Short Explanation
 
-The project studies how Chennai road routes should change when flooding, incidents, and congestion alter road capacity. Stage 1 uses Dijkstra; a synthetic prototype can use CCH. The planned Chennai implementation will use CCH only after Stage 6 validation, while the certificate decides whether its synchronized metric must be refreshed.
+The project studies how Chennai road routes should change when flooding, incidents, and congestion alter road capacity. Stage 1 uses Dijkstra. Stage 6 validated inertial CCH against Dijkstra on the Stage 3 graph. The certificate decides whether the synchronized CCH metric must be refreshed.
 
 ## What Is Implemented?
 
@@ -27,11 +27,21 @@ fixtures; it is therefore not publication-grade Chennai evidence yet.
 - eager-refresh baseline;
 - synthetic monotone and mixed-update experiments;
 - partial generic utilities for uncertainty, accessibility/population, compliance, and directed-edge criticality; no Chennai factor-level experiment;
-- 45 passing tests.
+- pinned GCC 2022 boundary acquisition, repair audit, and exact-source archive;
+- deterministic road-arc normalization and missingness reporting;
+- 88 passing tests.
+
+### Stage 3 Boundary Checkpoint
+
+The exact study boundary is now fixed to the OpenCity/GCC 2022 200-ward KML.
+Nine invalid source polygons were repaired deterministically and each repair is
+recorded in `docs/evidence/STAGE3_BOUNDARY_RESULTS.json`. The dated OSM graph
+is complete with reported maxspeed/lane missingness. Turn restrictions remain
+unmodelled.
 
 ## What Finds the Path?
 
-Stage 1 uses Dijkstra. The preliminary synthetic experiment supports either Dijkstra or CCH. CCH is the planned Chennai path engine after topology, turn, closure, and quantization validation.
+Stage 1 uses Dijkstra. The preliminary synthetic experiment supports either Dijkstra or CCH. Stage 6 validated inertial CCH against Dijkstra on the Stage 3 graph.
 
 - Dijkstra is the correctness baseline.
 - ALT-guided bidirectional A* is an unimplemented planned comparator.
@@ -103,10 +113,6 @@ live Chennai routing.”
 
 ## What Remains?
 
-- reproducible dated Chennai graph;
-- rainfall/flood road-state model;
-- Chennai SUMO calibration;
-- production CCH topology, ordering, turn, closure, and quantization validation;
 - stable projected-load policy;
 - facility/population integration;
 - emergency scenario;

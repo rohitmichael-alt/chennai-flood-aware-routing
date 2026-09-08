@@ -6,6 +6,20 @@ Current scripts:
 
 - `run_stage1_poc.py`: downloads the Stage 1 open data sources, maps historical flood hotspots to roads, applies the controlled blocked-edge model assumption, runs before/after Dijkstra routing, and writes CSV/map outputs.
 - `run_certified_lazy_experiment.py`: replays one seeded metric-update/query trace through eager and certificate-gated Dijkstra/CCH engines, checks the declared route bound, and writes per-query CSV plus summary JSON evidence.
+- `run_stage3_boundary.py`: downloads the pinned OpenCity/GCC 2022 200-ward
+  KML, captures provider metadata and SHA-256, explicitly audits/repairs invalid
+  source polygons, preserves the exact source, and writes the Stage 3 boundary
+  evidence manifest.
+- `run_stage3_graph.py`: verifies the dated Geofabrik India PBF, clips it to
+  the GCC 2022 union, builds the driving graph without speed imputation, and
+  writes the Stage 3 graph audit and QA map.
+- `run_stage4_road_state.py`: pins historical flood KMLs, Open-Meteo rainfall,
+  and DEM context, maps inventories with a distance sweep, and writes labelled
+  scenario road states.
+- `run_stage5_sumo.py`: records traffic-data feasibility, imports the Stage 3
+  graph into SUMO, and writes seeded synthetic trips. Demand is SYNTHETIC.
+- `run_stage6_cch.py`: maps the Stage 3 graph into inertial CCH, quantizes
+  travel times to milliseconds, and compares unpacked CCH paths with Dijkstra.
 
 Run the routing experiment after installing `.[test,cch]`:
 

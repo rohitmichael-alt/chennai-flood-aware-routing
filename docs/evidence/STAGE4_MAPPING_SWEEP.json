@@ -1,0 +1,49 @@
+{
+  "distance_selection": "SCENARIO",
+  "distances_meters": [
+    50.0,
+    100.0,
+    150.0,
+    200.0,
+    250.0
+  ],
+  "note": "150 m is reported because it matches the Stage 1 demonstration distance; it is not a measured KML accuracy.",
+  "reported_distance_for_state_table_m": 150.0,
+  "summaries": [
+    {
+      "distance_meters": 50.0,
+      "evidence_count": 327,
+      "matched_arc_count": 583,
+      "matched_feature_count": 318,
+      "unmatched_feature_count": 9
+    },
+    {
+      "distance_meters": 100.0,
+      "evidence_count": 327,
+      "matched_arc_count": 594,
+      "matched_feature_count": 324,
+      "unmatched_feature_count": 3
+    },
+    {
+      "distance_meters": 150.0,
+      "evidence_count": 327,
+      "matched_arc_count": 596,
+      "matched_feature_count": 325,
+      "unmatched_feature_count": 2
+    },
+    {
+      "distance_meters": 200.0,
+      "evidence_count": 327,
+      "matched_arc_count": 598,
+      "matched_feature_count": 326,
+      "unmatched_feature_count": 1
+    },
+    {
+      "distance_meters": 250.0,
+      "evidence_count": 327,
+      "matched_arc_count": 598,
+      "matched_feature_count": 326,
+      "unmatched_feature_count": 1
+    }
+  ]
+}

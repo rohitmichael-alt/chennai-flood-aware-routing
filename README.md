@@ -21,13 +21,19 @@ See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE
 | Historical flood-to-road Dijkstra proof of concept | Implemented |
 | Certificate-gated synchronization controller | Implemented |
 | Exact NetworkX Dijkstra adapter | Implemented |
-| Native `routingkit-cch` adapter | Implemented for finite integer experimental metrics |
+| Native `routingkit-cch` adapter | Implemented; Stage 6 adds inertial ordering on the Stage 3 graph |
 | Eager baseline and deterministic experiments | Implemented |
 | Uncertainty, accessibility, compliance, and road-criticality methods | Implemented |
-| Chennai graph/flood/rainfall/SUMO integration | Planned |
+| GCC 2022 study-boundary acquisition and validation | Implemented; 9 source geometries repaired and reported |
+| Dated Greater Chennai OSM driving graph | Implemented; 155,345 nodes, 331,545 arcs, explicit-speed missingness reported |
+| Flood/rainfall/road-state evidence | Implemented; historical overlays, ERA5 rainfall, scenario states |
+| Chennai SUMO demand/calibration | Implemented and labelled **SYNTHETIC**; OSM netconvert failed on SUMO 1.18 |
+| Chennai CCH vs Dijkstra | Implemented; inertial CCH matched Dijkstra on 24/24 seeded queries |
 | Full publication evaluation | Planned |
 
-Current tests: **45 passing** at the latest recorded verification.
+Current tests: run `python -m pytest` for the current count. Stage 3 graph
+evidence is in [`docs/evidence/STAGE3_GRAPH_RESULTS.json`](docs/evidence/STAGE3_GRAPH_RESULTS.json).
+Stage 6 CCH evidence is in [`docs/evidence/STAGE6_CCH_RESULTS.json`](docs/evidence/STAGE6_CCH_RESULTS.json).
 
 ## Install
 
@@ -37,7 +43,7 @@ Python 3.11 or newer:
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e ".[test,cch]"
+python -m pip install -e ".[test,cch,stage3]"
 ```
 
 Windows PowerShell:
@@ -46,7 +52,7 @@ Windows PowerShell:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -e ".[test,cch]"
+python -m pip install -e ".[test,cch,stage3]"
 ```
 
 ## Run Tests
@@ -108,13 +114,72 @@ Stage 1:
 
 Stage 1 proves controlled closure avoidance. It does not prove current flooding, calibrated congestion behaviour, or city-wide performance.
 
+## Run the Stage 3 Boundary and Graph
+
+```bash
+python scripts/run_stage3_boundary.py
+python scripts/run_stage3_graph.py
+```
+
+`run_stage3_boundary.py` pins the OpenCity/GCC 2022 200-ward resource,
+checksums the unchanged KML, repairs invalid source geometries, and writes
+[`docs/evidence/STAGE3_BOUNDARY_RESULTS.json`](docs/evidence/STAGE3_BOUNDARY_RESULTS.json).
+
+`run_stage3_graph.py` downloads the dated Geofabrik India extract
+`india-260901.osm.pbf`, verifies the provider MD5, clips it to the GCC union
+with osmium, builds a driving graph without imputing missing speeds, and writes
+[`docs/evidence/STAGE3_GRAPH_RESULTS.json`](docs/evidence/STAGE3_GRAPH_RESULTS.json).
+The India-wide PBF and GraphML are local artifacts and are not committed.
+
+Explicit OSM maxspeed covers only a small fraction of arcs. Missing speeds and
+lanes stay unavailable. This graph is not a calibrated traffic network.
+
+## Run Stage 4 Road-State Evidence
+
+```bash
+python scripts/run_stage4_road_state.py
+```
+
+Stage 4 pins historical OpenCity flood KMLs, Open-Meteo ERA5 rainfall, a coarse
+DEM sample, and the 2023 drain map. Rainfall and elevation do not create road
+closures. BLOCKED/SEVERE labels are declared scenario rules on historical
+inventory overlays.
+
+## Run Stage 5 SUMO (synthetic)
+
+```bash
+python scripts/run_stage5_sumo.py
+```
+
+No public Chennai counts or OD matrix were obtained. Demand is labelled
+SYNTHETIC. Ubuntu SUMO 1.18 could not import the OSM extract directly; the
+Stage 3 graph is converted through node/edge files instead.
+
+## Run Stage 6 Chennai CCH
+
+```bash
+python scripts/run_stage6_cch.py
+```
+
+Stage 6 maps the Stage 3 graph into inertial CCH, quantizes travel times to
+milliseconds, and compares unpacked CCH paths with Dijkstra. Missing OSM
+maxspeed uses a labelled SCENARIO 30 km/h default. Turn restrictions are not
+modelled. City-scale timings are not traffic outcomes.
+
 ## Routing Components
 
 | File | Responsibility |
 |---|---|
+| `data/boundary.py` | Pinned GCC boundary acquisition, provenance, repair audit, and archive |
+| `data/osm_snapshot.py` | Dated Geofabrik PBF download, MD5 reuse, and osmium clip |
+| `preprocessing/roads.py` | Deterministic Stage 3 arc IDs, explicit-speed parsing, and graph audit |
+| `stage4_road_state.py` | Historical flood/rainfall/DEM evidence and explained scenario states |
+| `stage5_sumo.py` | SYNTHETIC SUMO import and traffic-feasibility report |
+| `stage6_cch.py` | Inertial CCH mapping, millisecond quantization, Dijkstra differential |
 | `routing/engine.py` | Engine-neutral snapshots, keyed paths, and protocol |
 | `routing/networkx_engine.py` | Exact Dijkstra reference engine |
-| `routing/cch_engine.py` | Native experimental CCH adapter |
+| `routing/cch_engine.py` | Native CCH adapter with degree or inertial ordering |
+| `routing/quantization.py` | Millisecond travel-time quantization and geographic overflow bound |
 | `routing/dynamic.py` | Certificate and refresh controller |
 | `evaluation/baseline.py` | Eager-refresh oracle |
 | `evaluation/experiments.py` | Reproducible synthetic experiment |

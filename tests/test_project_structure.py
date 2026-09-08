@@ -11,8 +11,15 @@ def test_project_paths_resolve_to_repository_directories() -> None:
     assert paths.raw_data == paths.root / "data" / "raw"
     assert paths.processed_data == paths.root / "data" / "processed"
     assert paths.outputs == paths.root / "outputs"
+    assert paths.raw_boundary == paths.root / "data" / "raw" / "boundary"
+    assert paths.raw_osm == paths.root / "data" / "raw" / "osm"
     assert paths.raw_flood == paths.root / "data" / "raw" / "flood"
+    assert paths.raw_rainfall == paths.root / "data" / "raw" / "rainfall"
+    assert paths.raw_elevation == paths.root / "data" / "raw" / "elevation"
+    assert paths.raw_hydrology == paths.root / "data" / "raw" / "hydrology"
+    assert paths.processed_boundary == paths.root / "data" / "processed" / "boundary"
     assert paths.processed_roads == paths.root / "data" / "processed" / "roads"
+    assert paths.processed_road_state == paths.root / "data" / "processed" / "road_state"
     assert paths.output_maps == paths.root / "outputs" / "maps"
 
 
