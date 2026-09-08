@@ -14,6 +14,7 @@ from typing import Any
 import geopandas as gpd
 import networkx as nx
 import requests
+import shapely
 
 USER_AGENT = "chennai-routing-research/0.1 (reproducible academic data acquisition)"
 GEOFABRIK_INDIA_PBF_URL = "https://download.geofabrik.de/asia/india-260901.osm.pbf"
@@ -140,7 +141,7 @@ def write_clip_geojson(union: gpd.GeoDataFrame, path: Path) -> Path:
     if len(union) != 1:
         raise ValueError("Clip geometry must be a single union feature.")
     path.parent.mkdir(parents=True, exist_ok=True)
-    geometry = union.to_crs("EPSG:4326").geometry.iloc[0]
+    geometry = shapely.force_2d(union.to_crs("EPSG:4326").geometry.iloc[0])
     if geometry is None or geometry.is_empty:
         raise ValueError("Clip geometry is empty.")
     payload = {
@@ -149,7 +150,7 @@ def write_clip_geojson(union: gpd.GeoDataFrame, path: Path) -> Path:
             {
                 "type": "Feature",
                 "properties": {},
-                "geometry": geometry.__geo_interface__,
+                "geometry": shapely.geometry.mapping(geometry),
             }
         ],
     }

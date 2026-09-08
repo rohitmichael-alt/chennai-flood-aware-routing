@@ -395,6 +395,38 @@ def test_clip_geojson_is_rfc7946_without_crs_member(tmp_path: Path) -> None:
     assert payload["type"] == "FeatureCollection"
     assert "crs" not in payload
     assert payload["features"][0]["geometry"]["type"] in {"Polygon", "MultiPolygon"}
+    first = payload["features"][0]["geometry"]["coordinates"]
+    while isinstance(first[0], list) and not isinstance(first[0][0], (int, float)):
+        first = first[0]
+    if isinstance(first[0], list):
+        first = first[0]
+    assert len(first) == 2
+
+
+def test_clip_geojson_strips_z_coordinates(tmp_path: Path) -> None:
+    from shapely.geometry import Polygon
+
+    from chennai_routing.data.osm_snapshot import write_clip_geojson
+
+    union = gpd.GeoDataFrame(
+        geometry=[
+            Polygon(
+                [
+                    (80.0, 13.0, 0.0),
+                    (80.1, 13.0, 0.0),
+                    (80.1, 13.1, 0.0),
+                    (80.0, 13.1, 0.0),
+                    (80.0, 13.0, 0.0),
+                ]
+            )
+        ],
+        crs="EPSG:4326",
+    )
+    clip_path = tmp_path / "clip3d.geojson"
+    write_clip_geojson(union, clip_path)
+    payload = json.loads(clip_path.read_text(encoding="utf-8"))
+    ring = payload["features"][0]["geometry"]["coordinates"][0]
+    assert all(len(coord) == 2 for coord in ring)
 
 
 def test_clip_geojson_requires_single_union_feature(tmp_path: Path) -> None:
