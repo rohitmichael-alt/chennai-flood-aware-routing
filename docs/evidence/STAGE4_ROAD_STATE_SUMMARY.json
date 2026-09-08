@@ -1,0 +1,10 @@
+{
+  "capacity_multiplier_class": "SCENARIO",
+  "claim_limit": "These states are declared scenario overlays on historical inventories, not observed 2015 or live closures.",
+  "conflict_count": 269,
+  "row_count": 100039,
+  "state_counts": {
+    "BLOCKED": 596,
+    "SEVERE": 99443
+  }
+}

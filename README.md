@@ -26,8 +26,8 @@ See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE
 | Uncertainty, accessibility, compliance, and road-criticality methods | Implemented |
 | GCC 2022 study-boundary acquisition and validation | Implemented; 9 source geometries repaired and reported |
 | Dated Greater Chennai OSM driving graph | Implemented; 155,345 nodes, 331,545 arcs, explicit-speed missingness reported |
-| Flood/rainfall/road-state evidence | In progress |
-| Chennai SUMO demand/calibration | Planned; will be labelled SYNTHETIC unless counts exist |
+| Flood/rainfall/road-state evidence | Implemented; historical overlays, ERA5 rainfall, scenario states |
+| Chennai SUMO demand/calibration | Implemented and labelled **SYNTHETIC**; OSM netconvert failed on SUMO 1.18 |
 | Full publication evaluation | Planned |
 
 Current tests: run `python -m pytest` for the current count. Stage 3 graph
@@ -143,6 +143,16 @@ DEM sample, and the 2023 drain map. Rainfall and elevation do not create road
 closures. BLOCKED/SEVERE labels are declared scenario rules on historical
 inventory overlays.
 
+## Run Stage 5 SUMO (synthetic)
+
+```bash
+python scripts/run_stage5_sumo.py
+```
+
+No public Chennai counts or OD matrix were obtained. Demand is labelled
+SYNTHETIC. Ubuntu SUMO 1.18 could not import the OSM extract directly; the
+Stage 3 graph is converted through node/edge files instead.
+
 ## Routing Components
 
 | File | Responsibility |
@@ -151,6 +161,7 @@ inventory overlays.
 | `data/osm_snapshot.py` | Dated Geofabrik PBF download, MD5 reuse, and osmium clip |
 | `preprocessing/roads.py` | Deterministic Stage 3 arc IDs, explicit-speed parsing, and graph audit |
 | `stage4_road_state.py` | Historical flood/rainfall/DEM evidence and explained scenario states |
+| `stage5_sumo.py` | SYNTHETIC SUMO import and traffic-feasibility report |
 | `routing/engine.py` | Engine-neutral snapshots, keyed paths, and protocol |
 | `routing/networkx_engine.py` | Exact Dijkstra reference engine |
 | `routing/cch_engine.py` | Native experimental CCH adapter |

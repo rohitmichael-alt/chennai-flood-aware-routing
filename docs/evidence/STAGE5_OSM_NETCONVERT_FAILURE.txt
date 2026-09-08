@@ -1,0 +1,1 @@
+FAIL: Ubuntu SUMO 1.18.0 netconvert aborted on the GCC-clipped OSM extract with RTree/junction-angle assertions. The Stage 3 GraphML was imported instead as SUMO node/edge files.

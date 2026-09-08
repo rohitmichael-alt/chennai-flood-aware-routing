@@ -91,8 +91,8 @@ or engineering experiment; it cannot be presented as Chennai validation.
 | 1. Controlled flood-to-road proof of concept | Implemented | Previous run recorded; source artifacts are mutable/ignored and constants are demonstration assumptions | **PASS WITH LIMITATIONS** |
 | 2. Certificate/controller and prototype CCH | Implemented and tested | Deterministic synthetic evidence committed; no Chennai-scale or traffic claim | **PASS WITH LIMITATIONS** |
 | 3. Reproducible Chennai graph | GCC boundary plus dated Geofabrik clip, pyrosm driving graph, and missingness audit implemented | 2022 GCC boundary passed with documented repair; india-260901.osm.pbf clipped and audited on 8 September 2026 | **PASS WITH REPORTED ATTRIBUTE MISSINGNESS** |
-| 4. Flood/rainfall road-state evidence | Pinned OpenCity flood KMLs, Open-Meteo ERA5 rainfall, coarse DEM grid, drain inventory, distance-sweep mapping, and scenario road-state rules implemented | Live Chennai mapping pending the Stage 4 evidence run | **IN PROGRESS** |
-| 5. Chennai traffic and SUMO | Placeholder module | No OD/count data, network import, calibration, or scenario evidence | **NOT STARTED** |
+| 4. Flood/rainfall road-state evidence | Pinned OpenCity flood KMLs, Open-Meteo ERA5, coarse DEM, drain inventory, distance-sweep mapping, and scenario road-state rules implemented | Historical inventories mapped; rainfall/DEM do not create closures; BLOCKED/SEVERE are SCENARIO overlays | **PASS WITH LIMITATIONS** |
+| 5. Chennai traffic and SUMO | GraphML-to-SUMO import, feasibility report, seeded random trips | No public counts/OD; OSM netconvert failed on SUMO 1.18; demand labelled SYNTHETIC | **PASS WITH LIMITATIONS** |
 | 6. Chennai CCH integration | Synthetic finite-integer adapter exists | No Chennai mapping, turn model, quantization audit, or city-scale differential test | **NOT STARTED** |
 | 7. Stable projected-load rerouting | Placeholder module | No policy implementation or simulation comparison | **NOT STARTED** |
 | 8. Accessibility/population/compliance/criticality | Generic utilities implemented | No Chennai facility/population integration or factor experiment | **PARTIAL** |
@@ -348,14 +348,13 @@ Parallel work is permitted only when it does not bypass a gate:
 
 ## 8. Immediate Execution
 
-The next authorized work is Stage 4:
+The next authorized work is Stage 6:
 
-1. pin OpenCity historical flood KMLs with checksums;
-2. acquire no-key Open-Meteo ERA5 rainfall for the 2015 event window;
-3. sample coarse DEM elevation as PROXY terrain context;
-4. map historical evidence to Stage 3 arcs with a distance sweep;
-5. assign UNKNOWN/NORMAL/DEGRADED/SEVERE/BLOCKED only from declared scenario
-   rules, and never treat rainfall or DEM as street flooding.
+1. map the Stage 3 graph into CCH with geometry-aware ordering;
+2. decide the turn model or restrict the evaluated topology;
+3. bound integer quantization error;
+4. compare unpacked CCH paths with Dijkstra on the Chennai metric;
+5. do not claim city-scale benefit until that differential test passes.
 
 ## 9. Research Integrity Summary
 

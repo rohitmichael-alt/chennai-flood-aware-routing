@@ -103,6 +103,9 @@ The implemented controller uses complete fixed-topology snapshots and non-negati
     topology/attribute missingness reporting.
 11. Dated Geofabrik India `india-260901` extract clipped to the GCC 2022 union,
     with committed graph audit, data dictionary, and QA map.
+12. Stage 4 historical flood overlays, Open-Meteo ERA5 rainfall, and scenario
+    road states that do not treat rain or DEM as street flooding.
+13. Stage 5 SUMO import from the Stage 3 graph, labelled SYNTHETIC.
 
 ### Preliminary Evidence
 
@@ -118,14 +121,16 @@ The main synthetic experiment used 200 nodes, 600 extra arcs, 100 update epochs,
 - The dated GCC-clipped driving graph has 155,345 nodes and 331,545 arcs.
   Explicit OSM maxspeed covers 6,092 arcs; the rest have no Stage 3 free-flow
   time. This is not a calibrated traffic network.
+- Stage 4 mapped 327 historical hotspots with a distance sweep. BLOCKED/SEVERE
+  labels are scenario overlays. Open-Meteo ERA5 rainfall is MODELLED reanalysis.
+- Stage 5 SUMO demand is SYNTHETIC. OSM netconvert failed on SUMO 1.18; the
+  Stage 3 graph was imported as node/edge files instead.
 
 These results do not establish Chennai traffic outcomes.
 
 ### Planned
 
-- flood/rainfall/road-state mapping onto the Stage 3 graph;
-- Chennai SUMO demand/calibration, labelled from actual evidence;
-- production CCH ordering and closure representation;
+- production CCH ordering and closure representation on the Stage 3 graph;
 - stability and time-indexed projected reservations;
 - facility/population data integration;
 - emergency scenario and full ablations.

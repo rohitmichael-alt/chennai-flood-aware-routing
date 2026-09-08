@@ -11,7 +11,7 @@ subtitle: "Design and Analysis of Algorithms — Assignment"
 **Course:** Design and Analysis of Algorithms
 **Date:** 8 September 2026
 
-This document is the DAA assignment submission. It is separate from the longer project research-and-evidence file. Experimental comparison tables for implementation and existing algorithms will be added after Stages 4 and 5.
+This document is the DAA assignment submission. It is separate from the longer project research-and-evidence file. Experimental tables below use Stage 3–5 artifacts plus the earlier synthetic certificate experiment. They do not claim calibrated Chennai traffic or city-scale CCH timings.
 
 ---
 
@@ -471,32 +471,105 @@ The proposed algorithm is implemented as a refresh controller in front of an exa
 
 Unit tests currently check certificate pass and fail, mandatory refresh after a decrease, keyed parallel-edge identity, CCH equality with Dijkstra on synthetic graphs, rejection of unsafe CCH weights, and exact rational $\varepsilon$. These tests confirm the controller, not Chennai traffic.
 
-Reproduction commands, city-scale run logs, and execution-result tables will be inserted here after Stages 4 and 5, when flood/road-state evidence and SUMO scenarios exist. Until then, this section does not present experimental numbers.
+Reproduction:
 
-Still required before those tables: a dated Greater Chennai OSM graph, explained road states, SUMO demand, and a city-scale CCH validation that includes turns and closures.
+```bash
+python scripts/run_stage3_graph.py
+python scripts/run_stage4_road_state.py
+python scripts/run_stage5_sumo.py
+python scripts/run_certified_lazy_experiment.py --engine both --mode both
+```
+
+## 9.1 Dated Greater Chennai graph (Stage 3)
+
+Source: Geofabrik `india-260901.osm.pbf`, provider MD5 `44ec6a7dff8ff2f3382da80a546b505f`, clipped to the GCC 2022 ward union. Decision: **PASS WITH REPORTED ATTRIBUTE MISSINGNESS**.
+
+| Quantity | Value | Classification |
+|---|---:|---|
+| Nodes | 155,345 | OBSERVED |
+| Directed arcs | 331,545 | OBSERVED |
+| Weak / strong components | 1 / 1 | OBSERVED |
+| Explicit OSM maxspeed arcs | 6,092 | OBSERVED |
+| Missing maxspeed arcs | 325,453 | UNAVAILABLE |
+| Missing lanes | 318,131 | UNAVAILABLE |
+| Free-flow time assigned | 6,092 | OBSERVED only where speed exists |
+| Arc-ID collisions | 0 | OBSERVED |
+
+This graph is not a calibrated traffic network. Missing speeds were not replaced by a silent city-wide default in Stage 3.
+
+## 9.2 Explained road states (Stage 4)
+
+Historical OpenCity inventories were mapped with a distance sweep. 150 m is a **SCENARIO** reporting distance (same as the Stage 1 demo), not measured KML accuracy. Rainfall and DEM do not create closures. BLOCKED/SEVERE labels are declared scenario rules.
+
+| Matching distance (m) | Hotspot features | Unique matched features | Unmatched | Matched arcs |
+|---:|---:|---:|---:|---:|
+| 50 | 327 | 318 | 9 | 583 |
+| 100 | 327 | 324 | 3 | 594 |
+| 150 | 327 | 325 | 2 | 596 |
+| 200 | 327 | 326 | 1 | 598 |
+| 250 | 327 | 326 | 1 | 598 |
+
+| Assigned scenario state at 150 m | Arc rows | Basis |
+|---|---:|---|
+| BLOCKED | 596 | Historical hotspot nearest-arc rule (**SCENARIO**) |
+| SEVERE | 99,443 | Historical inundation-polygon overlay (**SCENARIO**) |
+| Conflicts (hotspot vs inundation) | 269 | Both rules applied; more severe kept |
+| UNKNOWN / NORMAL | not tabulated | Default for unmapped arcs |
+
+Open-Meteo ERA5 rainfall for 1 Nov–15 Dec 2015 at (13.0827, 80.2707) totals 731.7 mm over 1,080 hourly rows (**MODELLED** reanalysis, not street flooding). IMERG was **UNAVAILABLE** without Earthdata credentials.
+
+## 9.3 SUMO import (Stage 5)
+
+Demand class: **SYNTHETIC**. Calibration class: **SYNTHETIC**. Vehicle types: **SCENARIO** labels.
+
+| Item | Result |
+|---|---|
+| Public Chennai counts / OD / speeds | UNAVAILABLE |
+| OSM `netconvert` of the GCC extract | FAIL (SUMO 1.18.0 RTree/junction-angle abort) |
+| Import used instead | Stage 3 GraphML as SUMO node/edge files |
+| SUMO edges / lanes / junctions | 331,545 / 345,252 / 156,607 |
+| Observed OSM speeds used | 6,092 |
+| SCENARIO default 30 km/h speeds | 325,453 |
+| Seeded random trips | 60 trips, seed 8597, 300 s |
+
+SUMO output is simulated traffic. It is not live or counted Chennai traffic. City-scale CCH timings, turns, and closures remain Stage 6.
 
 ---
 
 # 10. Comparison with Existing Algorithms
 
-The assignment requires experimental comparison with at least two existing algorithms. The two baselines that will be compared with Certificate-Gated Routing are:
+The two implemented baselines compared with Certificate-Gated Routing are:
 
 1. Eager repeated Dijkstra, which rebuilds or re-solves on the latest metric after every update batch.
 2. Eager CCH, which customizes after every update batch and then queries.
 
-Certificate-Gated Routing will use the same engine, same graph, same updates, same queries, and the same $\varepsilon$ as the matching eager method. The planned comparison parameters are execution time, number of customizations or rebuilds, certificate-bound violations, path-cost agreement with the Dijkstra oracle, and later Chennai-specific cost and access metrics. Memory will be reported only if it is actually instrumented.
+Certificate-Gated Routing uses the same engine, same graph, same updates, same queries, and the same $\varepsilon=5\%$ as the matching eager method. City-scale comparison on the 331,545-arc Chennai graph is **not** in this table; that is Stage 6. The numbers below are the committed synthetic experiment (`docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json`): 200 nodes, 600 extra arcs, 100 epochs, 5 updates and 50 queries per epoch, seed 8597.
 
-No comparison table is included in this version. Tables will be added after Stages 4 and 5 from generated artifacts. A\* / ALT will appear in the comparison only after that engine is implemented.
+| Engine | Update mode | Queries | Eager syncs | CLMS refreshes | Refreshes avoided | Certificate violations | Oracle mismatches |
+|---|---|---:|---:|---:|---:|---:|---:|
+| Dijkstra | increases only | 5,000 | 101 | 6 | 94 | 0 | 0 |
+| Dijkstra | mixed | 5,000 | 101 | 86 | 14 | 0 | 0 |
+| CCH | increases only | 5,000 | 101 | 6 | 94 | 0 | 0 |
+| CCH | mixed | 5,000 | 101 | 86 | 14 | 0 | 0 |
+
+| Engine | Update mode | Eager total (s) | CLMS total (s) |
+|---|---|---:|---:|
+| Dijkstra | increases only | 0.705 | 0.587 |
+| Dijkstra | mixed | 0.736 | 0.707 |
+| CCH | increases only | 0.203 | 0.120 |
+| CCH | mixed | 0.202 | 0.209 |
+
+These are single-run synthetic wall-clock values. They are not Chennai traffic outcomes. Mixed workloads include weight decreases, which invalidate the stale lower bound and force refresh; CLMS then does not save customization work. A\* / ALT is not implemented yet and is omitted.
 
 ---
 
 # 11. Results and Discussion
 
-Results are not claimed in this version because the comparison tables are deferred until Stages 4 and 5.
+On the synthetic monotone-increase workload, Certificate-Gated Routing avoided 94 of 100 post-initial eager refreshes for both Dijkstra and CCH, with zero certificate violations and zero oracle mismatches. On the mixed increase/decrease workload it avoided only 14 of 100, as required by the decrease rule in Section 5. That matches the complexity discussion in Section 8: CLMS helps when weights mostly nondecrease and $\varepsilon>0$, and does not help when recoveries are frequent.
 
-From the algorithm itself, Certificate-Gated Routing is expected to reduce customization work when weights mostly nondecrease and $\varepsilon>0$, because many queries can reuse a stale metric inside the declared bound. It is not expected to help when recoveries (weight decreases) are frequent, because those decreases invalidate the stale lower bound and force refresh. It also cannot be cheaper than eager refresh in the worst case of a single query, as shown in Section 8.
+Stages 3–5 now supply a dated Chennai graph, historical flood overlays, and a **SYNTHETIC** SUMO scenario. They do **not** show that CLMS reduces Chennai congestion, emergency response time, or live flood routing. Most OSM arcs still lack explicit maxspeed. Inundation-polygon overlay marks tens of thousands of arcs SEVERE as a scenario, not as observed 2015 closures. City-scale CCH comparison remains Stage 6.
 
-No statement is made that the method reduces Chennai congestion, emergency response time, or live flood routing. Those claims require the later experiments.
+No statement is made that the method is calibrated to Chennai traffic. Stage 5 labels the SUMO run **SYNTHETIC** because no public link counts or OD matrix were obtained.
 
 ---
 
@@ -506,9 +579,9 @@ This assignment studies repeated shortest-path queries when road weights change,
 
 **Proposed algorithm:** Certificate-Gated Routing, implemented as Certified Lazy Metric Synchronization (CLMS). It leaves path-finding to Dijkstra or CCH and refreshes the engine metric only when a decrease invalidates the stale lower bound or when re-evaluating the old path fails $U\le(1+\varepsilon)L$.
 
-**Current status:** The algorithm, proof under stated assumptions, complexity derivation, and literature comparison are complete. Implementation and baseline comparison tables will follow Stages 4 and 5.
+**Current status:** The algorithm, proof under stated assumptions, complexity derivation, literature comparison, dated Chennai graph, historical road-state overlays, and a SYNTHETIC SUMO import are complete. City-scale CCH comparison (Stage 6) is not yet run.
 
-**Limitations:** The certificate is established prior art; CLMS is a controller, not a new shortest-path theorem. Prototype CCH is unoptimized. Closures on native CCH, turns, the city graph, flood evidence, and SUMO evaluation are incomplete. Extra space is $O(m)$. Worst-case per-query time remains $\Theta(T_{\text{sync}}+T_{\text{query}})$.
+**Limitations:** The certificate is established prior art; CLMS is a controller, not a new shortest-path theorem. Prototype CCH is unoptimized. Closures on native CCH and turn-expanded city queries remain unvalidated. Extra space is $O(m)$. Worst-case per-query time remains $\Theta(T_{\text{sync}}+T_{\text{query}})$. Most OSM maxspeed values are missing. SUMO demand is synthetic.
 
 ---
 

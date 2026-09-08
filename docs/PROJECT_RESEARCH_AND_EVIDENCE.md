@@ -531,15 +531,20 @@ restrictions remain a later gate.
 
 ### Stage 4 — Flood and Road-State Evidence
 
-**Status:** Implementation in progress; historical inventories are classified
-as `HISTORICAL_INVENTORY`, Open-Meteo ERA5 rainfall as `MODELLED`, and coarse
-DEM samples as `PROXY`. Rainfall and elevation do not create road closures.
-Assigned BLOCKED/SEVERE labels are declared scenario rules.
+**Status:** Pass with limitations (8 September 2026). Four OpenCity flood KMLs
+were pinned and checksummed. Open-Meteo ERA5 rainfall for 1 Nov–15 Dec 2015 is
+731.7 mm (**MODELLED**). Coarse DEM samples are **PROXY**. 327 GCC hotspots
+were distance-swept onto the Stage 3 graph. BLOCKED/SEVERE labels are declared
+scenario rules, not observed 2015 closures. Rainfall does not assign road
+state. IMERG/SRTM remain unavailable without Earthdata.
 
 ### Stage 5 — Chennai Traffic and SUMO Calibration
 
-**Status:** Planned.  
-Heterogeneous demand, entering PCE flow, incidents, queues, BPR calibration/sensitivity, and no double counting of SUMO delay.
+**Status:** Pass with limitations; demand and calibration classes are
+**SYNTHETIC**. No public Chennai counts or OD matrix were obtained. OSM
+`netconvert` on SUMO 1.18.0 aborted with RTree assertions. The Stage 3 graph
+was imported as SUMO node/edge files (331,545 edges). 325,453 arcs use a
+labelled 30 km/h SCENARIO default. 60 seeded random trips were written.
 
 ### Stage 6 — Chennai CCH Integration
 
