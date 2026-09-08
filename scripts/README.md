@@ -10,6 +10,12 @@ Current scripts:
   KML, captures provider metadata and SHA-256, explicitly audits/repairs invalid
   source polygons, preserves the exact source, and writes the Stage 3 boundary
   evidence manifest.
+- `run_stage3_graph.py`: verifies the dated Geofabrik India PBF, clips it to
+  the GCC 2022 union, builds the driving graph without speed imputation, and
+  writes the Stage 3 graph audit and QA map.
+- `run_stage4_road_state.py`: pins historical flood KMLs, Open-Meteo rainfall,
+  coarse DEM samples, and drain inventory; maps evidence to roads when the
+  Stage 3 graph is present. Rainfall is not treated as street flooding.
 
 Run the routing experiment after installing `.[test,cch]`:
 

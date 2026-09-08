@@ -169,7 +169,7 @@ def clip_pbf_to_polygon(
 
     version = require_osmium()
     output_pbf.parent.mkdir(parents=True, exist_ok=True)
-    subprocess.run(
+    completed = subprocess.run(
         [
             "osmium",
             "extract",
@@ -182,8 +182,13 @@ def clip_pbf_to_polygon(
             str(output_pbf),
             str(source_pbf),
         ],
-        check=True,
+        check=False,
+        capture_output=True,
+        text=True,
     )
+    if completed.returncode != 0:
+        detail = (completed.stderr or completed.stdout or "").strip()
+        raise RuntimeError(f"osmium extract failed: {detail}")
     if not output_pbf.is_file() or output_pbf.stat().st_size == 0:
         raise RuntimeError("osmium extract produced an empty PBF.")
     return version

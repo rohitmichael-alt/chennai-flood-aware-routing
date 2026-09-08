@@ -1,0 +1,72 @@
+{
+  "access": {
+    "classification": "UNAVAILABLE when absent",
+    "meaning": "Raw OSM access tag when present",
+    "unit": null
+  },
+  "bridge": {
+    "classification": "UNAVAILABLE when absent",
+    "meaning": "Raw OSM bridge tag when present",
+    "unit": null
+  },
+  "geometry": {
+    "classification": "OBSERVED",
+    "meaning": "Source linestring, or a two-point line from node coordinates",
+    "unit": "EPSG:4326"
+  },
+  "highway": {
+    "classification": "OBSERVED",
+    "meaning": "OSM highway class tag",
+    "unit": null
+  },
+  "lanes": {
+    "classification": "UNAVAILABLE when absent",
+    "meaning": "Raw OSM lanes tag; missing values stay missing",
+    "unit": null
+  },
+  "layer": {
+    "classification": "UNAVAILABLE when absent",
+    "meaning": "Raw OSM layer tag when present",
+    "unit": null
+  },
+  "length": {
+    "classification": "OBSERVED",
+    "meaning": "Edge length from the OSM geometry",
+    "unit": "m"
+  },
+  "maxspeed": {
+    "classification": "OBSERVED",
+    "meaning": "Raw OSM maxspeed tag; missing or compound values are not imputed",
+    "unit": "tag text"
+  },
+  "oneway": {
+    "classification": "OBSERVED",
+    "meaning": "Raw OSM oneway tag",
+    "unit": null
+  },
+  "osmid": {
+    "classification": "OBSERVED",
+    "meaning": "OpenStreetMap way identifier copied from the dated extract",
+    "unit": null
+  },
+  "stage3_arc_id": {
+    "classification": "OBSERVED",
+    "meaning": "SHA-256 of canonical u, v, key, osmid, and geometry identity",
+    "unit": null
+  },
+  "stage3_explicit_speed_kph": {
+    "classification": "OBSERVED",
+    "meaning": "Parsed unambiguous maxspeed in kilometres per hour, else missing",
+    "unit": "km/h"
+  },
+  "stage3_free_flow_time_seconds": {
+    "classification": "OBSERVED",
+    "meaning": "length / explicit speed; missing when speed or length is unavailable",
+    "unit": "s"
+  },
+  "tunnel": {
+    "classification": "UNAVAILABLE when absent",
+    "meaning": "Raw OSM tunnel tag when present",
+    "unit": null
+  }
+}

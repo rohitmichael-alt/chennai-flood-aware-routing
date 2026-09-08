@@ -19,7 +19,9 @@ Current tests verify:
 - facility-oriented road-criticality ranking;
 - pinned boundary provenance and exact-source archiving;
 - explicit invalid-boundary repair auditing;
-- deterministic Stage 3 arc identifiers, strict speed parsing, and graph
-  missingness reporting.
+- deterministic Stage 3 arc identifiers, strict speed parsing, graph
+  missingness reporting, Geofabrik MD5 reuse, and 2D clip-polygon writing;
+- Stage 4 evidence classification, distance-sweep mapping, and scenario
+  road-state rules that do not treat rainfall as flooding.
 
-Latest recorded result: **53 passed**.
+Latest recorded result: run `python -m pytest` in the repository.

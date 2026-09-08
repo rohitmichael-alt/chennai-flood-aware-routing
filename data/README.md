@@ -13,7 +13,12 @@ Stage 1 also writes the OSM-derived graph to `data/processed/roads/`. These are 
 
 Stage 3 downloads the pinned OpenCity/GCC 2022 ward KML and provider metadata
 to `data/raw/boundary/`, then writes validated ward and union GeoJSON files to
-`data/processed/boundary/`. These working copies are ignored. The exact source
-is preserved in `docs/evidence/sources/gcc_wards_2022.kml.gz`, and the checksum,
-licence, source geometry repairs, and audit are committed in
-`docs/evidence/STAGE3_BOUNDARY_RESULTS.json`.
+`data/processed/boundary/`. The dated Geofabrik India PBF and GCC-clipped
+extract are stored under `data/raw/osm/`; the GraphML graph is stored under
+`data/processed/roads/`. These working copies are ignored. Checksums, licence,
+missingness counts, and the QA map are committed in
+`docs/evidence/STAGE3_GRAPH_RESULTS.json` and
+`docs/evidence/STAGE3_GRAPH_QA_MAP.png`.
+
+The exact GCC KML source is preserved in
+`docs/evidence/sources/gcc_wards_2022.kml.gz`.

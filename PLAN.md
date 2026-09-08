@@ -90,8 +90,8 @@ or engineering experiment; it cannot be presented as Chennai validation.
 |---|---|---|---|
 | 1. Controlled flood-to-road proof of concept | Implemented | Previous run recorded; source artifacts are mutable/ignored and constants are demonstration assumptions | **PASS WITH LIMITATIONS** |
 | 2. Certificate/controller and prototype CCH | Implemented and tested | Deterministic synthetic evidence committed; no Chennai-scale or traffic claim | **PASS WITH LIMITATIONS** |
-| 3. Reproducible Chennai graph | GCC boundary pipeline and graph-normalization/audit utilities implemented | Fixed 2022 GCC boundary evidence passed with documented repair; dated OSM extract and city graph audit remain | **IN PROGRESS** |
-| 4. Flood/rainfall road-state evidence | Generic binary error utility only | Chennai temporal integration and defensible state mapping absent | **NOT STARTED** |
+| 3. Reproducible Chennai graph | GCC boundary plus dated Geofabrik clip, pyrosm driving graph, and missingness audit implemented | 2022 GCC boundary passed with documented repair; india-260901.osm.pbf clipped and audited on 8 September 2026 | **PASS WITH REPORTED ATTRIBUTE MISSINGNESS** |
+| 4. Flood/rainfall road-state evidence | Pinned OpenCity flood KMLs, Open-Meteo ERA5 rainfall, coarse DEM grid, drain inventory, distance-sweep mapping, and scenario road-state rules implemented | Live Chennai mapping pending the Stage 4 evidence run | **IN PROGRESS** |
 | 5. Chennai traffic and SUMO | Placeholder module | No OD/count data, network import, calibration, or scenario evidence | **NOT STARTED** |
 | 6. Chennai CCH integration | Synthetic finite-integer adapter exists | No Chennai mapping, turn model, quantization audit, or city-scale differential test | **NOT STARTED** |
 | 7. Stable projected-load rerouting | Placeholder module | No policy implementation or simulation comparison | **NOT STARTED** |
@@ -166,15 +166,25 @@ stages.
 **Critical risk:** An OSM graph alone is not a calibrated traffic network.
 Turn restrictions and capacities remain gates for Stages 5–6.
 
-**Current checkpoint:** S3.1 passed on 7 September 2026 with documented source
-repair. The pinned KML contained all 200 unique ward names but 9 invalid
-self-intersecting geometries. Deterministic `make_valid` processing produced
-valid polygonal output; the total absolute measured area change was
-1.8690520445816219 square metres in EPSG:32644, with a maximum single-feature
-change of 1.8690520357340574 square metres. The exact 2,815,875-byte source is
-archived with SHA-256
+**Current checkpoint:** S3.1–S3.8 passed on 8 September 2026 with reported
+attribute missingness. The dated Geofabrik extract
+`https://download.geofabrik.de/asia/india-260901.osm.pbf` (Last-Modified
+Wed, 02 Sep 2026 05:19:21 GMT; provider MD5
+`44ec6a7dff8ff2f3382da80a546b505f`) was clipped to the GCC 2022 union with
+osmium `smart` strategy after stripping KML Z=0 coordinates. The clipped
+driving graph has 155,345 nodes and 331,545 directed arcs, one weakly and one
+strongly connected component, no self-loops, no arc-ID collisions, and no
+invalid lengths. Explicit OSM maxspeed is present on 6,092 arcs (about 1.8%);
+325,453 arcs have missing maxspeed and therefore no Stage 3 free-flow time.
+Lanes are missing on 318,131 arcs. 2,447 nodes lie outside the union because
+osmium retains complete ways that cross the boundary. These counts are
+topology/attribute facts, not a calibrated traffic network. Turn restrictions
+and capacities remain Stages 5–6 gates.
+
+The earlier S3.1 boundary checkpoint remains: 200 uniquely named wards, 9
+invalid source geometries repaired, total absolute area change
+1.8690520445816219 square metres in EPSG:32644, source SHA-256
 `be48ef7eb4320279e790f59da1691ece9efc92b34459ca73c492957943c347e0`.
-This passes only the boundary substage; S3.2–S3.8 remain open.
 
 ### Stage 4 — Flood, Rainfall, Freshness, and Road-State Evidence
 
@@ -338,15 +348,14 @@ Parallel work is permitted only when it does not bypass a gate:
 
 ## 8. Immediate Execution
 
-The next authorized work is Stage 3:
+The next authorized work is Stage 4:
 
-1. implement an exact OpenCity/GCC 2022 boundary downloader and provenance
-   record;
-2. validate the KML feature count, geometry, CRS, union, checksum, and licence;
-3. implement deterministic road-graph normalization and structural reporting;
-4. attempt the dated OSM acquisition path;
-5. stop and report if the authentic source or completion gate cannot be met,
-   rather than substituting invented values.
+1. pin OpenCity historical flood KMLs with checksums;
+2. acquire no-key Open-Meteo ERA5 rainfall for the 2015 event window;
+3. sample coarse DEM elevation as PROXY terrain context;
+4. map historical evidence to Stage 3 arcs with a distance sweep;
+5. assign UNKNOWN/NORMAL/DEGRADED/SEVERE/BLOCKED only from declared scenario
+   rules, and never treat rainfall or DEM as street flooding.
 
 ## 9. Research Integrity Summary
 

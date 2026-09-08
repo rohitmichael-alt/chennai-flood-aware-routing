@@ -101,26 +101,30 @@ The implemented controller uses complete fixed-topology snapshots and non-negati
    provenance, deterministic geometry repair audit, and processed union.
 10. Deterministic Stage 3 road-arc IDs, strict explicit-speed parsing, and
     topology/attribute missingness reporting.
+11. Dated Geofabrik India `india-260901` extract clipped to the GCC 2022 union,
+    with committed graph audit, data dictionary, and QA map.
 
 ### Preliminary Evidence
 
 The main synthetic experiment used 200 nodes, 600 extra arcs, 100 update epochs, 5 updates and 50 queries per epoch.
 
-- 53 tests pass.
+- Stage 3/4 unit tests are included with the repository test suite.
 - 20,000 main route queries across Dijkstra/CCH and monotone/mixed workloads produced zero certificate violations.
 - Monotone CCH workload avoided 94 of 100 eager update refreshes.
 - Mixed CCH workload avoided 14 of 100 because decreases invalidated the lower bound.
 - The 2022 GCC source contains 200 uniquely named wards. Nine source
   geometries required documented validity repair; all processed geometries and
-  their union are valid. This is boundary evidence, not a completed road graph.
+  their union are valid.
+- The dated GCC-clipped driving graph has 155,345 nodes and 331,545 arcs.
+  Explicit OSM maxspeed covers 6,092 arcs; the rest have no Stage 3 free-flow
+  time. This is not a calibrated traffic network.
 
 These results do not establish Chennai traffic outcomes.
 
 ### Planned
 
-- dated Chennai OSM graph and turn validation;
-- flood/rainfall/road-state pipeline;
-- Chennai SUMO demand/calibration;
+- flood/rainfall/road-state mapping onto the Stage 3 graph;
+- Chennai SUMO demand/calibration, labelled from actual evidence;
 - production CCH ordering and closure representation;
 - stability and time-indexed projected reservations;
 - facility/population data integration;

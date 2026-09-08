@@ -18,3 +18,16 @@ The gzip container is generated with a fixed timestamp. Decompression restores
 the unchanged provider KML. The archive is committed because the provider URL
 may later serve a revised file even though the resource identifier remains the
 same.
+
+## Geofabrik India `india-260901.osm.pbf`
+
+The India-wide PBF is not committed (about 1.71 GB). Stage 3 records:
+
+- URL: `https://download.geofabrik.de/asia/india-260901.osm.pbf`
+- Provider MD5: `44ec6a7dff8ff2f3382da80a546b505f`
+- Last-Modified: `Wed, 02 Sep 2026 05:19:21 GMT`
+- Licence: ODbL 1.0
+- Clipped PBF SHA-256:
+  `00fced3d1e4a8c4b938f32d8b902141fc121cb910fcb8b070465d38b139b487b`
+
+See [`../STAGE3_GRAPH_RESULTS.json`](../STAGE3_GRAPH_RESULTS.json).

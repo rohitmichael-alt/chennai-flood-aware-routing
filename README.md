@@ -25,11 +25,13 @@ See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE
 | Eager baseline and deterministic experiments | Implemented |
 | Uncertainty, accessibility, compliance, and road-criticality methods | Implemented |
 | GCC 2022 study-boundary acquisition and validation | Implemented; 9 source geometries repaired and reported |
-| Deterministic road-arc normalization and missingness audit | Implemented; full Chennai graph run pending |
-| Dated Chennai OSM graph/flood/rainfall/SUMO integration | Planned |
+| Dated Greater Chennai OSM driving graph | Implemented; 155,345 nodes, 331,545 arcs, explicit-speed missingness reported |
+| Flood/rainfall/road-state evidence | In progress |
+| Chennai SUMO demand/calibration | Planned; will be labelled SYNTHETIC unless counts exist |
 | Full publication evaluation | Planned |
 
-Current tests: **53 passing** at the latest recorded verification.
+Current tests: run `python -m pytest` for the current count. Stage 3 graph
+evidence is in [`docs/evidence/STAGE3_GRAPH_RESULTS.json`](docs/evidence/STAGE3_GRAPH_RESULTS.json).
 
 ## Install
 
@@ -39,7 +41,7 @@ Python 3.11 or newer:
 python -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install -e ".[test,cch]"
+python -m pip install -e ".[test,cch,stage3]"
 ```
 
 Windows PowerShell:
@@ -48,7 +50,7 @@ Windows PowerShell:
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -e ".[test,cch]"
+python -m pip install -e ".[test,cch,stage3]"
 ```
 
 ## Run Tests
@@ -110,26 +112,45 @@ Stage 1:
 
 Stage 1 proves controlled closure avoidance. It does not prove current flooding, calibrated congestion behaviour, or city-wide performance.
 
-## Run the Stage 3 Boundary Substage
+## Run the Stage 3 Boundary and Graph
 
 ```bash
 python scripts/run_stage3_boundary.py
+python scripts/run_stage3_graph.py
 ```
 
-This pins the OpenCity/GCC 2022 200-ward resource, downloads and checksums the
-unchanged KML, explicitly repairs and reports invalid source geometries, writes
-offline processed boundaries, and updates
+`run_stage3_boundary.py` pins the OpenCity/GCC 2022 200-ward resource,
+checksums the unchanged KML, repairs invalid source geometries, and writes
 [`docs/evidence/STAGE3_BOUNDARY_RESULTS.json`](docs/evidence/STAGE3_BOUNDARY_RESULTS.json).
-The exact source is preserved as a deterministic gzip archive. This completes
-only the study-boundary substage; a dated OSM road extract and full structural
-audit are still required.
+
+`run_stage3_graph.py` downloads the dated Geofabrik India extract
+`india-260901.osm.pbf`, verifies the provider MD5, clips it to the GCC union
+with osmium, builds a driving graph without imputing missing speeds, and writes
+[`docs/evidence/STAGE3_GRAPH_RESULTS.json`](docs/evidence/STAGE3_GRAPH_RESULTS.json).
+The India-wide PBF and GraphML are local artifacts and are not committed.
+
+Explicit OSM maxspeed covers only a small fraction of arcs. Missing speeds and
+lanes stay unavailable. This graph is not a calibrated traffic network.
+
+## Run Stage 4 Road-State Evidence
+
+```bash
+python scripts/run_stage4_road_state.py
+```
+
+Stage 4 pins historical OpenCity flood KMLs, Open-Meteo ERA5 rainfall, a coarse
+DEM sample, and the 2023 drain map. Rainfall and elevation do not create road
+closures. BLOCKED/SEVERE labels are declared scenario rules on historical
+inventory overlays.
 
 ## Routing Components
 
 | File | Responsibility |
 |---|---|
 | `data/boundary.py` | Pinned GCC boundary acquisition, provenance, repair audit, and archive |
+| `data/osm_snapshot.py` | Dated Geofabrik PBF download, MD5 reuse, and osmium clip |
 | `preprocessing/roads.py` | Deterministic Stage 3 arc IDs, explicit-speed parsing, and graph audit |
+| `stage4_road_state.py` | Historical flood/rainfall/DEM evidence and explained scenario states |
 | `routing/engine.py` | Engine-neutral snapshots, keyed paths, and protocol |
 | `routing/networkx_engine.py` | Exact Dijkstra reference engine |
 | `routing/cch_engine.py` | Native experimental CCH adapter |

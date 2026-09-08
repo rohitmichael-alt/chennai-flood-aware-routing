@@ -513,23 +513,28 @@ OSM and OpenCity historical hotspots were joined to roads; one real mapped edge 
 - uncertainty and facility-road-criticality utilities;
 - GCC 2022 boundary acquisition, provenance, validity-repair audit, and exact-source archive;
 - deterministic road-arc normalization and graph missingness reporting;
-- 53 passing tests.
+- 53 passing tests at the previous certificate/boundary checkpoint;
+- Stage 3 graph evidence committed separately after the dated OSM run.
 
 ### Stage 3 — Reproducible Chennai Graph
 
-**Status:** In progress; study-boundary substage passed with documented source repair.
+**Status:** Pass with reported attribute missingness (8 September 2026).
 The pinned OpenCity/GCC 2022 KML contains 200 uniquely named wards. Nine
 self-intersecting source geometries were repaired deterministically and
-reported; the processed polygons and union are valid. The source is archived
-with its provider metadata and SHA-256. Deterministic arc-ID, strict
-explicit-speed, and graph-audit utilities are implemented. A dated OSM
-extract, city-scale structural run, turn validation, and unresolved speed/lane
-report remain required; no capacity value will be silently assigned.
+reported. The dated Geofabrik extract `india-260901.osm.pbf` (provider MD5
+`44ec6a7dff8ff2f3382da80a546b505f`) was clipped to that union. The driving
+graph has 155,345 nodes and 331,545 directed arcs, one connected component in
+both the weak and strong sense, and no arc-ID collisions. Explicit OSM
+maxspeed is available on 6,092 arcs; 325,453 arcs have no Stage 3 free-flow
+time. Lanes are missing on 318,131 arcs. No capacity was assigned. Turn
+restrictions remain a later gate.
 
 ### Stage 4 — Flood and Road-State Evidence
 
-**Status:** Synthetic binary lag/error utility implemented; dated Chennai road-state truth and temporal integration are unimplemented.  
-Historical susceptibility, IMERG or no-key reanalysis rainfall, optional current evidence, source freshness, confidence, and explained `NORMAL/DEGRADED/SEVERE/BLOCKED` states.
+**Status:** Implementation in progress; historical inventories are classified
+as `HISTORICAL_INVENTORY`, Open-Meteo ERA5 rainfall as `MODELLED`, and coarse
+DEM samples as `PROXY`. Rainfall and elevation do not create road closures.
+Assigned BLOCKED/SEVERE labels are declared scenario rules.
 
 ### Stage 5 — Chennai Traffic and SUMO Calibration
 
