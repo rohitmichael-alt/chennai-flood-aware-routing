@@ -81,18 +81,27 @@ def sweep_point_mapping(
             max_distance_meters=distance,
         )
         matched = mapped[mapped["distance_to_road_m"].notna()] if not mapped.empty else mapped
-        matched_count = 0 if matched.empty else int(matched["distance_to_road_m"].notna().sum())
-        arc_count = 0
-        if not matched.empty and {"u", "v", "key"}.issubset(matched.columns):
-            arc_count = int(
-                matched.dropna(subset=["u", "v", "key"]).groupby(["u", "v", "key"]).ngroups
-            )
+        if matched.empty:
+            matched_rows = 0
+            matched_features = 0
+            arc_count = 0
+        else:
+            matched_rows = int(matched["distance_to_road_m"].notna().sum())
+            if "feature_id" in matched.columns:
+                matched_features = int(matched["feature_id"].nunique())
+            else:
+                matched_features = matched_rows
+            arc_count = 0
+            if {"u", "v", "key"}.issubset(matched.columns):
+                arc_count = int(
+                    matched.dropna(subset=["u", "v", "key"]).groupby(["u", "v", "key"]).ngroups
+                )
         summaries.append(
             MappingSweepSummary(
                 distance_meters=distance,
                 evidence_count=len(points),
-                matched_feature_count=matched_count,
-                unmatched_feature_count=max(len(points) - matched_count, 0),
+                matched_feature_count=matched_features,
+                unmatched_feature_count=max(len(points) - matched_features, 0),
                 matched_arc_count=arc_count,
             )
         )
