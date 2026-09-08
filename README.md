@@ -21,7 +21,7 @@ See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE
 | Historical flood-to-road Dijkstra proof of concept | Implemented |
 | Certificate-gated synchronization controller | Implemented |
 | Exact NetworkX Dijkstra adapter | Implemented |
-| Native `routingkit-cch` adapter | Implemented for finite integer experimental metrics |
+| Native `routingkit-cch` adapter | Implemented; Stage 6 adds inertial ordering on the Stage 3 graph |
 | Eager baseline and deterministic experiments | Implemented |
 | Uncertainty, accessibility, compliance, and road-criticality methods | Implemented |
 | GCC 2022 study-boundary acquisition and validation | Implemented; 9 source geometries repaired and reported |
@@ -153,6 +153,17 @@ No public Chennai counts or OD matrix were obtained. Demand is labelled
 SYNTHETIC. Ubuntu SUMO 1.18 could not import the OSM extract directly; the
 Stage 3 graph is converted through node/edge files instead.
 
+## Run Stage 6 Chennai CCH
+
+```bash
+python scripts/run_stage6_cch.py
+```
+
+Stage 6 maps the Stage 3 graph into inertial CCH, quantizes travel times to
+milliseconds, and compares unpacked CCH paths with Dijkstra. Missing OSM
+maxspeed uses a labelled SCENARIO 30 km/h default. Turn restrictions are not
+modelled. City-scale timings are not traffic outcomes.
+
 ## Routing Components
 
 | File | Responsibility |
@@ -162,9 +173,11 @@ Stage 3 graph is converted through node/edge files instead.
 | `preprocessing/roads.py` | Deterministic Stage 3 arc IDs, explicit-speed parsing, and graph audit |
 | `stage4_road_state.py` | Historical flood/rainfall/DEM evidence and explained scenario states |
 | `stage5_sumo.py` | SYNTHETIC SUMO import and traffic-feasibility report |
+| `stage6_cch.py` | Inertial CCH mapping, millisecond quantization, Dijkstra differential |
 | `routing/engine.py` | Engine-neutral snapshots, keyed paths, and protocol |
 | `routing/networkx_engine.py` | Exact Dijkstra reference engine |
-| `routing/cch_engine.py` | Native experimental CCH adapter |
+| `routing/cch_engine.py` | Native CCH adapter with degree or inertial ordering |
+| `routing/quantization.py` | Millisecond travel-time quantization and geographic overflow bound |
 | `routing/dynamic.py` | Certificate and refresh controller |
 | `evaluation/baseline.py` | Eager-refresh oracle |
 | `evaluation/experiments.py` | Reproducible synthetic experiment |

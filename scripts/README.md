@@ -13,8 +13,13 @@ Current scripts:
 - `run_stage3_graph.py`: verifies the dated Geofabrik India PBF, clips it to
   the GCC 2022 union, builds the driving graph without speed imputation, and
   writes the Stage 3 graph audit and QA map.
+- `run_stage4_road_state.py`: pins historical flood KMLs, Open-Meteo rainfall,
+  and DEM context, maps inventories with a distance sweep, and writes labelled
+  scenario road states.
 - `run_stage5_sumo.py`: records traffic-data feasibility, imports the Stage 3
   graph into SUMO, and writes seeded synthetic trips. Demand is SYNTHETIC.
+- `run_stage6_cch.py`: maps the Stage 3 graph into inertial CCH, quantizes
+  travel times to milliseconds, and compares unpacked CCH paths with Dijkstra.
 
 Run the routing experiment after installing `.[test,cch]`:
 
