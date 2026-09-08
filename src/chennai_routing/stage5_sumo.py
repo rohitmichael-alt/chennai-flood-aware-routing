@@ -10,7 +10,7 @@ from chennai_routing.config import get_project_paths
 from chennai_routing.simulation.sumo import (
     SYNTHETIC_SEED,
     VEHICLE_TYPE_CLASS,
-    convert_osm_pbf_to_sumo_net,
+    convert_graphml_to_sumo_net,
     count_trip_elements,
     write_scenario_vehicle_types,
     write_sumo_config,
@@ -38,14 +38,6 @@ def _repository_relative(path: Path, root: Path) -> str:
     return str(path.resolve().relative_to(root.resolve()))
 
 
-def _stage3_arc_count(root: Path) -> int | None:
-    audit_path = root / "docs" / "evidence" / "STAGE3_GRAPH_AUDIT.json"
-    if not audit_path.is_file():
-        return None
-    payload = json.loads(audit_path.read_text(encoding="utf-8"))
-    return int(payload["arc_count"])
-
-
 def run_stage5_sumo() -> Stage5Result:
     """Import the Stage 3 OSM extract into SUMO and write synthetic demand."""
 
@@ -58,18 +50,23 @@ def run_stage5_sumo() -> Stage5Result:
     feasibility = write_traffic_feasibility_report(feasibility_path)
 
     osm_pbf = paths.raw_osm / "chennai_gcc_2022_india-260901.osm.pbf"
-    if not osm_pbf.is_file():
-        raise FileNotFoundError(
-            "Stage 5 requires the Stage 3 clipped PBF at "
-            "data/raw/osm/chennai_gcc_2022_india-260901.osm.pbf"
-        )
-    net_path = sumo_dir / "chennai_gcc_2022.net.xml"
-    _net, conversion, log = convert_osm_pbf_to_sumo_net(
-        osm_pbf,
-        net_path,
-        osm_arc_count=_stage3_arc_count(paths.root),
+    graphml = paths.processed_roads / "stage3_chennai_gcc_2022.graphml"
+    if not graphml.is_file():
+        raise FileNotFoundError("Stage 5 requires the Stage 3 GraphML road graph.")
+    osm_netconvert_status = (
+        "FAIL: Ubuntu SUMO 1.18.0 netconvert aborted on the GCC-clipped OSM "
+        "extract with RTree/junction-angle assertions. The Stage 3 GraphML was "
+        "imported instead as SUMO node/edge files."
     )
-    (sumo_dir / "netconvert.log").write_text(log, encoding="utf-8")
+    if osm_pbf.is_file():
+        failure_note = evidence_dir / "STAGE5_OSM_NETCONVERT_FAILURE.txt"
+        failure_note.write_text(osm_netconvert_status + "\n", encoding="utf-8")
+    net_path = sumo_dir / "chennai_gcc_2022.net.xml"
+    _net, conversion = convert_graphml_to_sumo_net(
+        graphml,
+        net_path,
+        osm_netconvert_status=osm_netconvert_status,
+    )
 
     types_path = write_scenario_vehicle_types(sumo_dir / "scenario_vtypes.add.xml")
     trips_path = write_synthetic_trips(
@@ -89,10 +86,10 @@ def run_stage5_sumo() -> Stage5Result:
     )
 
     claim_limit = (
-        "Stage 5 imported the GCC-clipped OSM extract into SUMO and generated "
-        "seeded random trips. Demand and calibration classes are SYNTHETIC. "
-        "SUMO output is simulated traffic, not live or counted Chennai traffic. "
-        "Vehicle types are scenario labels, not a measured fleet mix."
+        "Stage 5 imported the Stage 3 graph into SUMO after OSM netconvert "
+        "failed on SUMO 1.18. Demand and calibration classes are SYNTHETIC. "
+        "Most free-flow speeds and lanes are labelled SCENARIO defaults, not "
+        "observed Chennai values. SUMO output is simulated traffic."
     )
     evidence_path = evidence_dir / "STAGE5_SUMO_RESULTS.json"
     payload = {

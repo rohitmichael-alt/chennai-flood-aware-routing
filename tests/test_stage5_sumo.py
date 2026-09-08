@@ -53,6 +53,30 @@ def test_trip_counter_reads_trip_elements(tmp_path: Path) -> None:
     assert count_trip_elements(trips) == 2
 
 
+def test_plain_sumo_writer_labels_missing_speed_as_scenario(tmp_path: Path) -> None:
+    import networkx as nx
+
+    from chennai_routing.simulation.sumo import write_plain_sumo_from_graphml
+
+    graph = nx.DiGraph()
+    graph.add_node("1", x="80.27", y="13.08")
+    graph.add_node("2", x="80.28", y="13.08")
+    graph.add_edge("1", "2", maxspeed="50", lanes="2", stage3_arc_id="arc-obs")
+    graph.add_edge("2", "1", maxspeed="nan", lanes="nan", stage3_arc_id="arc-scen")
+    graphml = tmp_path / "g.graphml"
+    nx.write_graphml(graph, graphml)
+    counts = write_plain_sumo_from_graphml(
+        graphml,
+        tmp_path / "nodes.xml",
+        tmp_path / "edges.xml",
+    )
+    assert counts["observed_speed_count"] == 1
+    assert counts["scenario_speed_count"] == 1
+    edges = (tmp_path / "edges.xml").read_text(encoding="utf-8")
+    assert 'id="arc-obs"' in edges
+    assert 'numLanes="2"' in edges
+
+
 def test_netconvert_missing_binary_is_explicit(monkeypatch: pytest.MonkeyPatch) -> None:
     from chennai_routing.simulation import sumo as sumo_mod
 

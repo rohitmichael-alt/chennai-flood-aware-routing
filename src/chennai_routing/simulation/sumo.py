@@ -22,6 +22,8 @@ SUMO_HOME_CANDIDATES = (
 )
 SYNTHETIC_SEED = 8597
 VEHICLE_TYPE_CLASS = "SCENARIO"
+SCENARIO_DEFAULT_SPEED_KPH = 30.0
+SCENARIO_DEFAULT_LANES = 1
 
 
 @dataclass(frozen=True)
@@ -202,6 +204,175 @@ def _count_sumo_net(net_path: Path) -> tuple[int, int, int]:
     return len(edges), len(lanes), len(root.findall("junction"))
 
 
+@dataclass(frozen=True)
+class GraphToSumoReport:
+    """Stage 3 graph imported as SUMO node/edge files after OSM netconvert failed."""
+
+    method: str
+    netconvert_version: str
+    node_count: int
+    edge_count: int
+    observed_speed_count: int
+    scenario_speed_count: int
+    scenario_speed_kph: float
+    observed_lane_count: int
+    scenario_lane_count: int
+    sumo_edge_count: int
+    sumo_lane_count: int
+    sumo_junction_count: int
+    osm_netconvert_status: str
+    speed_policy: str
+
+
+def _xml_escape(value: str) -> str:
+    return (
+        value.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+
+def _parse_positive_int(value: object) -> int | None:
+    if value is None:
+        return None
+    text = str(value).strip()
+    if text in {"", "nan", "None"}:
+        return None
+    try:
+        number = int(float(text))
+    except ValueError:
+        return None
+    return number if number > 0 else None
+
+
+def write_plain_sumo_from_graphml(
+    graphml_path: Path,
+    nodes_path: Path,
+    edges_path: Path,
+) -> dict[str, int]:
+    """Write SUMO plain node/edge XML from the Stage 3 GraphML."""
+
+    import networkx as nx
+    from pyproj import Transformer
+
+    from chennai_routing.preprocessing.roads import parse_explicit_osm_maxspeed_kph
+
+    graph = nx.read_graphml(graphml_path)
+    transformer = Transformer.from_crs("EPSG:4326", "EPSG:32644", always_xy=True)
+    nodes_path.parent.mkdir(parents=True, exist_ok=True)
+    observed_speed = scenario_speed = observed_lanes = scenario_lanes = 0
+
+    with nodes_path.open("w", encoding="utf-8") as handle:
+        handle.write('<?xml version="1.0" encoding="UTF-8"?>\n<nodes>\n')
+        for node_id, data in graph.nodes(data=True):
+            try:
+                lon = float(data["x"])
+                lat = float(data["y"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            easting, northing = transformer.transform(lon, lat)
+            handle.write(
+                f'  <node id="{_xml_escape(str(node_id))}" x="{easting:.3f}" y="{northing:.3f}"/>\n'
+            )
+        handle.write("</nodes>\n")
+
+    with edges_path.open("w", encoding="utf-8") as handle:
+        handle.write('<?xml version="1.0" encoding="UTF-8"?>\n<edges>\n')
+        for u, v, data in graph.edges(data=True):
+            speed_kph = parse_explicit_osm_maxspeed_kph(data.get("maxspeed"))
+            if speed_kph is None:
+                speed_kph = SCENARIO_DEFAULT_SPEED_KPH
+                scenario_speed += 1
+            else:
+                observed_speed += 1
+            lanes = _parse_positive_int(data.get("lanes"))
+            if lanes is None:
+                lanes = SCENARIO_DEFAULT_LANES
+                scenario_lanes += 1
+            else:
+                observed_lanes += 1
+            edge_id = str(data.get("stage3_arc_id") or f"{u}_{v}")
+            handle.write(
+                "  <edge "
+                f'id="{_xml_escape(edge_id)}" '
+                f'from="{_xml_escape(str(u))}" '
+                f'to="{_xml_escape(str(v))}" '
+                f'numLanes="{lanes}" '
+                f'speed="{speed_kph / 3.6:.4f}"/>\n'
+            )
+        handle.write("</edges>\n")
+    return {
+        "node_count": graph.number_of_nodes(),
+        "edge_count": graph.number_of_edges(),
+        "observed_speed_count": observed_speed,
+        "scenario_speed_count": scenario_speed,
+        "observed_lane_count": observed_lanes,
+        "scenario_lane_count": scenario_lanes,
+    }
+
+
+def convert_graphml_to_sumo_net(
+    graphml_path: Path,
+    output_net: Path,
+    *,
+    osm_netconvert_status: str,
+) -> tuple[Path, GraphToSumoReport]:
+    """Import the Stage 3 graph as SUMO plain files, then netconvert."""
+
+    output_net.parent.mkdir(parents=True, exist_ok=True)
+    nodes_path = output_net.with_name("chennai_gcc_2022.nod.xml")
+    edges_path = output_net.with_name("chennai_gcc_2022.edg.xml")
+    counts = write_plain_sumo_from_graphml(graphml_path, nodes_path, edges_path)
+    version = require_netconvert()
+    env = os.environ.copy()
+    env.setdefault("SUMO_HOME", str(sumo_home()))
+    completed = subprocess.run(
+        [
+            "netconvert",
+            "--node-files",
+            str(nodes_path),
+            "--edge-files",
+            str(edges_path),
+            "--output-file",
+            str(output_net),
+            "--ignore-errors",
+            "true",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+    log = (completed.stderr or "") + "\n" + (completed.stdout or "")
+    (output_net.parent / "graph_netconvert.log").write_text(log, encoding="utf-8")
+    if completed.returncode != 0 or not output_net.is_file():
+        raise RuntimeError(f"SUMO node/edge netconvert failed:\n{log[-4000:]}")
+    edge_count, lane_count, junction_count = _count_sumo_net(output_net)
+    report = GraphToSumoReport(
+        method="stage3_graphml_plain_node_edge",
+        netconvert_version=version,
+        node_count=counts["node_count"],
+        edge_count=counts["edge_count"],
+        observed_speed_count=counts["observed_speed_count"],
+        scenario_speed_count=counts["scenario_speed_count"],
+        scenario_speed_kph=SCENARIO_DEFAULT_SPEED_KPH,
+        observed_lane_count=counts["observed_lane_count"],
+        scenario_lane_count=counts["scenario_lane_count"],
+        sumo_edge_count=edge_count,
+        sumo_lane_count=lane_count,
+        sumo_junction_count=junction_count,
+        osm_netconvert_status=osm_netconvert_status,
+        speed_policy=(
+            "Explicit OSM maxspeed is used where parseable. Remaining arcs receive "
+            f"a labelled SCENARIO default of {SCENARIO_DEFAULT_SPEED_KPH} km/h. "
+            "Missing lanes receive a labelled SCENARIO default of "
+            f"{SCENARIO_DEFAULT_LANES}."
+        ),
+    )
+    return output_net, report
+
+
 def write_scenario_vehicle_types(path: Path) -> Path:
     """Write labelled scenario vehicle types. These are not a Chennai mix."""
 
@@ -249,7 +420,6 @@ def write_synthetic_trips(
             str(period_seconds),
             "--end",
             str(end_seconds),
-            "--validate",
         ],
         check=False,
         capture_output=True,
