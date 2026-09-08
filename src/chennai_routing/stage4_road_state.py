@@ -7,7 +7,7 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import geopandas as gpd
-import osmnx as ox
+from shapely import wkt
 from shapely.geometry.base import BaseGeometry
 
 from chennai_routing.config import get_project_paths
@@ -53,6 +53,47 @@ class Stage4Result:
 
 def _repository_relative(path: Path, root: Path) -> str:
     return str(path.resolve().relative_to(root.resolve()))
+
+
+def load_stage3_edges_from_graphml(path: Path) -> gpd.GeoDataFrame:
+    """Load Stage 3 edges without OSMnx bool coercion of OSM oneway tags."""
+
+    import networkx as nx
+
+    graph = nx.read_graphml(path)
+    rows = []
+    for u, v, data in graph.edges(data=True):
+        geometry_text = data.get("geometry")
+        if not geometry_text or geometry_text == "nan":
+            continue
+        rows.append(
+            {
+                "u": data.get("u", u),
+                "v": data.get("v", v),
+                "key": data.get("id", 0),
+                "stage3_arc_id": data.get("stage3_arc_id"),
+                "osmid": data.get("osmid"),
+                "geometry": wkt.loads(str(geometry_text)),
+            }
+        )
+    if not rows:
+        raise ValueError("GraphML has no parseable edge geometries for Stage 4 mapping.")
+    return gpd.GeoDataFrame(rows, geometry="geometry", crs="EPSG:4326")
+
+
+def load_mapping_roads(paths) -> gpd.GeoDataFrame | None:
+    """Prefer a GeoPackage export; otherwise parse the Stage 3 GraphML."""
+
+    gpkg = paths.processed_roads / "stage3_chennai_gcc_2022_edges.gpkg"
+    if gpkg.is_file():
+        return gpd.read_file(gpkg)
+    graphml = paths.processed_roads / "stage3_chennai_gcc_2022.graphml"
+    if graphml.is_file():
+        roads = load_stage3_edges_from_graphml(graphml)
+        gpkg.parent.mkdir(parents=True, exist_ok=True)
+        roads.to_file(gpkg, driver="GPKG")
+        return roads
+    return None
 
 
 def graph_edges_to_gdf(graph) -> gpd.GeoDataFrame:
@@ -146,11 +187,6 @@ def run_stage4_road_state(graph=None) -> Stage4Result:
         encoding="utf-8",
     )
 
-    if graph is None:
-        graphml = paths.processed_roads / "stage3_chennai_gcc_2022.graphml"
-        if graphml.is_file():
-            graph = ox.load_graphml(graphml)
-
     mapping_path = None
     road_state_path = None
     mapping_done = False
@@ -159,6 +195,10 @@ def run_stage4_road_state(graph=None) -> Stage4Result:
     conflict_count = 0
     if graph is not None:
         roads = graph_edges_to_gdf(graph)
+    else:
+        roads = load_mapping_roads(paths)
+
+    if roads is not None:
         hotspot_features = next(
             features
             for _path, provenance, features in flood_results
@@ -213,6 +253,27 @@ def run_stage4_road_state(graph=None) -> Stage4Result:
         )
         road_state_path = paths.processed_road_state / "stage4_road_states.csv"
         state_frame.to_csv(road_state_path, index=False)
+        summary_path = paths.root / "docs" / "evidence" / "STAGE4_ROAD_STATE_SUMMARY.json"
+        summary_path.write_text(
+            json.dumps(
+                {
+                    "row_count": state_count,
+                    "conflict_count": conflict_count,
+                    "state_counts": {}
+                    if state_frame.empty
+                    else {str(key): int(value) for key, value in state_frame["state"].value_counts().items()},
+                    "capacity_multiplier_class": "SCENARIO",
+                    "claim_limit": (
+                        "These states are declared scenario overlays on historical "
+                        "inventories, not observed 2015 or live closures."
+                    ),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+            + "\n",
+            encoding="utf-8",
+        )
         mapping_done = True
 
     evidence_path = paths.root / "docs" / "evidence" / "STAGE4_ROAD_STATE_RESULTS.json"

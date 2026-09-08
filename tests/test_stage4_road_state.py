@@ -174,6 +174,29 @@ def test_graph_edges_to_gdf_requires_geometry() -> None:
     assert edges.iloc[0]["stage3_arc_id"] == "arc-1"
 
 
+def test_graphml_loader_does_not_require_boolean_oneway(tmp_path: Path) -> None:
+    from chennai_routing.stage4_road_state import load_stage3_edges_from_graphml
+
+    graph = nx.DiGraph()
+    graph.add_edge(
+        "1",
+        "2",
+        geometry="LINESTRING (80.0 13.0, 80.1 13.1)",
+        stage3_arc_id="arc-1",
+        u="1",
+        v="2",
+        id="0",
+        osmid="9",
+        oneway="yes",
+    )
+    path = tmp_path / "stage3.graphml"
+    nx.write_graphml(graph, path)
+    edges = load_stage3_edges_from_graphml(path)
+    assert len(edges) == 1
+    assert edges.iloc[0]["stage3_arc_id"] == "arc-1"
+    assert edges.geometry.iloc[0].geom_type == "LineString"
+
+
 class _RainfallResponse:
     def __init__(self, payload: dict[str, object]):
         self._payload = payload

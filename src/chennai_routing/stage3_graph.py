@@ -199,6 +199,10 @@ def run_stage3_graph() -> Stage3GraphResult:
     graphml_path = paths.processed_roads / "stage3_chennai_gcc_2022.graphml"
     graphml_path.parent.mkdir(parents=True, exist_ok=True)
     ox.save_graphml(graph, filepath=graphml_path)
+    edge_gpkg = paths.processed_roads / "stage3_chennai_gcc_2022_edges.gpkg"
+    from chennai_routing.stage4_road_state import graph_edges_to_gdf
+
+    graph_edges_to_gdf(graph).to_file(edge_gpkg, driver="GPKG")
     audit_path = paths.root / "docs" / "evidence" / "STAGE3_GRAPH_AUDIT.json"
     write_road_graph_audit(audit, audit_path)
     data_dictionary_path = paths.root / "docs" / "evidence" / "STAGE3_GRAPH_DATA_DICTIONARY.json"
