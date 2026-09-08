@@ -109,6 +109,27 @@ def write_traffic_feasibility_report(path: Path) -> TrafficFeasibilityReport:
     return report
 
 
+def osm_xml_from_pbf(pbf_path: Path, osm_xml_path: Path) -> Path:
+    """Convert a PBF extract to OSM XML so netconvert can read it."""
+
+    osmium = shutil.which("osmium")
+    if osmium is None:
+        raise RuntimeError("osmium-tool is required to convert the clipped PBF to OSM XML.")
+    osm_xml_path.parent.mkdir(parents=True, exist_ok=True)
+    completed = subprocess.run(
+        [osmium, "cat", "--overwrite", "-f", "osm", "-o", str(osm_xml_path), str(pbf_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0 or not osm_xml_path.is_file():
+        raise RuntimeError(
+            "osmium cat failed to write OSM XML:\n"
+            f"{completed.stderr or completed.stdout}"
+        )
+    return osm_xml_path
+
+
 def convert_osm_pbf_to_sumo_net(
     osm_pbf: Path,
     output_net: Path,
@@ -117,13 +138,17 @@ def convert_osm_pbf_to_sumo_net(
 ) -> tuple[Path, SumoConversionReport, str]:
     """Import the GCC-clipped OSM extract with netconvert and count objects."""
 
+    osm_xml = osm_pbf.with_suffix(".osm")
+    osm_xml_from_pbf(osm_pbf, osm_xml)
     output_net.parent.mkdir(parents=True, exist_ok=True)
     version = require_netconvert()
     type_file = sumo_home() / "data" / "typemap" / "osmNetconvert.typ.xml"
+    env = os.environ.copy()
+    env.setdefault("SUMO_HOME", str(sumo_home()))
     command = [
         "netconvert",
         "--osm-files",
-        str(osm_pbf),
+        str(osm_xml),
         "--output-file",
         str(output_net),
         "--geometry.remove",
@@ -143,7 +168,7 @@ def convert_osm_pbf_to_sumo_net(
     ]
     if type_file.is_file():
         command.extend(["--type-files", str(type_file)])
-    completed = subprocess.run(command, check=False, capture_output=True, text=True)
+    completed = subprocess.run(command, check=False, capture_output=True, text=True, env=env)
     log = (completed.stderr or "") + "\n" + (completed.stdout or "")
     if completed.returncode != 0 or not output_net.is_file():
         raise RuntimeError(f"netconvert failed:\n{log[-4000:]}")
