@@ -28,10 +28,12 @@ See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE
 | Dated Greater Chennai OSM driving graph | Implemented; 155,345 nodes, 331,545 arcs, explicit-speed missingness reported |
 | Flood/rainfall/road-state evidence | Implemented; historical overlays, ERA5 rainfall, scenario states |
 | Chennai SUMO demand/calibration | Implemented and labelled **SYNTHETIC**; OSM netconvert failed on SUMO 1.18 |
+| Chennai CCH vs Dijkstra | Implemented; inertial CCH matched Dijkstra on 24/24 seeded queries |
 | Full publication evaluation | Planned |
 
 Current tests: run `python -m pytest` for the current count. Stage 3 graph
 evidence is in [`docs/evidence/STAGE3_GRAPH_RESULTS.json`](docs/evidence/STAGE3_GRAPH_RESULTS.json).
+Stage 6 CCH evidence is in [`docs/evidence/STAGE6_CCH_RESULTS.json`](docs/evidence/STAGE6_CCH_RESULTS.json).
 
 ## Install
 

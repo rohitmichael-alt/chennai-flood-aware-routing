@@ -11,7 +11,7 @@ subtitle: "Design and Analysis of Algorithms — Assignment"
 **Course:** Design and Analysis of Algorithms
 **Date:** 8 September 2026
 
-This document is the DAA assignment submission. It is separate from the longer project research-and-evidence file. Experimental tables below use Stage 3–5 artifacts plus the earlier synthetic certificate experiment. They do not claim calibrated Chennai traffic or city-scale CCH timings.
+This document is the DAA assignment submission. It is separate from the longer project research-and-evidence file. Experimental tables below use Stage 3–6 artifacts plus the earlier synthetic certificate experiment. They do not claim calibrated Chennai traffic.
 
 ---
 
@@ -59,7 +59,7 @@ For each query:
 ## 2.4 Constraints
 
 - Topology does not change inside a CLMS session. Arc insertion/deletion is outside the current algorithm.
-- Weights are non-negative. Native CCH currently accepts **finite** integers only; $+\infty$ closures are rejected until a later validation stage.
+- Weights are non-negative. Native CCH accepts **finite** integers only. Stage 6 represents closures with a geographic finite sentinel, not $+\infty$.
 - The engine query under $\bar{w}$ is exact for that represented metric.
 - The current implementation stores complete metric snapshots; it does not maintain a partial CCH overlay update.
 
@@ -67,8 +67,8 @@ For each query:
 
 | Item | Classification | Statement |
 |---|---|---|
-| Graph topology | Observed later from OSM | Stage 3 uses a dated extract clipped to the 2022 Greater Chennai Corporation ward union. City-graph timings are not reported in this file. |
-| Experimental edge weights | Scenario / synthetic until Stages 4–5 | Later experiments will state whether weights are synthetic or derived from Chennai evidence. |
+| Graph topology | Observed later from OSM | Stage 3 uses a dated extract clipped to the 2022 Greater Chennai Corporation ward union. Stage 6 reports CCH versus NetworkX Dijkstra on that graph. |
+| Experimental edge weights | Scenario / mixed | Stage 6 travel times are milliseconds from length and speed. Missing OSM maxspeed uses a labelled SCENARIO 30 km/h default. |
 | $\varepsilon$ | Scenario parameter | A declared rational tolerance; the value used in each later experiment will be reported with that experiment. |
 | Dijkstra binary-heap complexity | Published | Standard worst-case bound from algorithm textbooks [1], [2]. |
 | CCH query/customization behaviour | Published | Metric-independent contraction, customization, and exact queries as described by Dibbelt et al. [3]. |
@@ -461,7 +461,7 @@ Eager refresh stores one weight map plus the engine: also $O(m)$ extra, without 
 
 Over $E$ epochs with $Q$ queries each, eager refresh pays about $E\cdot T_{\text{sync}}+EQ\cdot T_{\text{query}}$.
 CLMS pays $R\cdot T_{\text{sync}}+EQ\cdot T_{\text{query}}$ plus $O(k)$ path evaluations, where $R\le E$ is the number of refreshes.
-If weights mostly increase and $\varepsilon>0$, $R$ can be much smaller than $E$. If decreases are frequent, $R\approx E$ and wall-clock time need not improve. That workload distinction will be measured after Stages 4 and 5.
+If weights mostly increase and $\varepsilon>0$, $R$ can be much smaller than $E$. If decreases are frequent, $R\approx E$ and wall-clock time need not improve. That workload distinction is measured on the synthetic experiment in Section 10. City-scale CLMS is not yet run.
 
 ---
 
@@ -477,6 +477,7 @@ Reproduction:
 python scripts/run_stage3_graph.py
 python scripts/run_stage4_road_state.py
 python scripts/run_stage5_sumo.py
+python scripts/run_stage6_cch.py
 python scripts/run_certified_lazy_experiment.py --engine both --mode both
 ```
 
@@ -532,7 +533,36 @@ Demand class: **SYNTHETIC**. Calibration class: **SYNTHETIC**. Vehicle types: **
 | SCENARIO default 30 km/h speeds | 325,453 |
 | Seeded random trips | 60 trips, seed 8597, 300 s |
 
-SUMO output is simulated traffic. It is not live or counted Chennai traffic. City-scale CCH timings, turns, and closures remain Stage 6.
+SUMO output is simulated traffic. It is not live or counted Chennai traffic.
+
+## 9.4 Chennai CCH (Stage 6)
+
+Decision: **PASS WITH LIMITATIONS**. Engine: RoutingKit CCH 0.1.4 with inertial (lat/lon) ordering. Oracle: NetworkX 3.6.1 Dijkstra. Metric: integer milliseconds. Seed 8597.
+
+| Item | Value | Classification |
+|---|---|---|
+| Order | inertial, OSM $y$ = latitude, $x$ = longitude | OBSERVED coordinates, SCENARIO order heuristic |
+| Turn model | Directed OSM arcs; no restriction relations | UNAVAILABLE / restricted topology |
+| OBSERVED maxspeed arcs | 6,092 | OBSERVED |
+| SCENARIO 30 km/h arcs | 325,453 | SCENARIO |
+| Quantization | round to 1 ms; $\le 0.5$ ms error per arc | SCENARIO representation |
+| Geographic overflow bound | 137,418,160 ms | SCENARIO (47.7 km diagonal, 5 km/h, detour 4) |
+| Differential OD pairs | 24 | SCENARIO sample |
+| Unpacked-cost mismatches | 0 | OBSERVED in this run |
+| Closure sentinel arcs | 20 Stage 4 BLOCKED overlays | SCENARIO |
+| Closure / recovery mismatches | 0 / 0 | OBSERVED in this run |
+| Paths using a closed arc | 0 of 8 closure queries | OBSERVED in this run |
+
+| Timing (one machine, Python 3.12.3) | Value |
+|---|---|
+| Inertial order | 2.75 s |
+| CCH construct | 1.66 s |
+| Full customize | 0.313 s |
+| In-place metric reset | 0.175 s |
+| Mean CCH query (80 queries) | 0.443 ms |
+| Mean NetworkX Dijkstra query (24 queries) | 160.3 ms |
+
+CCH is retained for repeated queries on this represented metric relative to the NetworkX Dijkstra oracle. That is not a comparison with a tuned C++ Dijkstra, not a turn-restricted router, and not a Chennai traffic outcome. OSM-to-CCH maps are local (`data/processed/cch/`, SHA-256 `4ac8e689f1ed1f58c7e4ff372d5615357d116f0b204abb02f6c3afc694311d2d`) and are not committed.
 
 ---
 
@@ -543,7 +573,11 @@ The two implemented baselines compared with Certificate-Gated Routing are:
 1. Eager repeated Dijkstra, which rebuilds or re-solves on the latest metric after every update batch.
 2. Eager CCH, which customizes after every update batch and then queries.
 
-Certificate-Gated Routing uses the same engine, same graph, same updates, same queries, and the same $\varepsilon=5\%$ as the matching eager method. City-scale comparison on the 331,545-arc Chennai graph is **not** in this table; that is Stage 6. The numbers below are the committed synthetic experiment (`docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json`): 200 nodes, 600 extra arcs, 100 epochs, 5 updates and 50 queries per epoch, seed 8597.
+Certificate-Gated Routing uses the same engine, same graph, same updates, same queries, and the same $\varepsilon=5\%$ as the matching eager method.
+
+## 10.1 Synthetic certificate experiment
+
+City-scale CLMS was not re-run in Stage 6. The numbers below remain the committed synthetic experiment (`docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json`): 200 nodes, 600 extra arcs, 100 epochs, 5 updates and 50 queries per epoch, seed 8597.
 
 | Engine | Update mode | Queries | Eager syncs | CLMS refreshes | Refreshes avoided | Certificate violations | Oracle mismatches |
 |---|---|---:|---:|---:|---:|---:|---:|
@@ -561,15 +595,24 @@ Certificate-Gated Routing uses the same engine, same graph, same updates, same q
 
 These are single-run synthetic wall-clock values. They are not Chennai traffic outcomes. Mixed workloads include weight decreases, which invalidate the stale lower bound and force refresh; CLMS then does not save customization work. A\* / ALT is not implemented yet and is omitted.
 
+## 10.2 City-scale CCH versus Dijkstra (Stage 6)
+
+On the 331,545-arc Stage 3 graph, unpacked inertial CCH costs matched NetworkX Dijkstra on all 24 seeded queries (`docs/evidence/STAGE6_CCH_RESULTS.json`). Mean query time was 0.443 ms for CCH and 160.3 ms for this Dijkstra oracle. One full CCH customization took 0.313 s. Relative to **this** oracle, about two CCH queries amortize one customization. Certificate-gated CCH on the city graph is not in this table.
+
+| Engine | Graph | Queries | Cost mismatches vs Dijkstra | Mean query |
+|---|---|---:|---:|---|
+| NetworkX Dijkstra (oracle) | Stage 3 Chennai | 24 | — | 160.3 ms |
+| RoutingKit CCH (inertial) | Stage 3 Chennai | 80 | 0 of 24 paired | 0.443 ms |
+
 ---
 
 # 11. Results and Discussion
 
 On the synthetic monotone-increase workload, Certificate-Gated Routing avoided 94 of 100 post-initial eager refreshes for both Dijkstra and CCH, with zero certificate violations and zero oracle mismatches. On the mixed increase/decrease workload it avoided only 14 of 100, as required by the decrease rule in Section 5. That matches the complexity discussion in Section 8: CLMS helps when weights mostly nondecrease and $\varepsilon>0$, and does not help when recoveries are frequent.
 
-Stages 3–5 now supply a dated Chennai graph, historical flood overlays, and a **SYNTHETIC** SUMO scenario. They do **not** show that CLMS reduces Chennai congestion, emergency response time, or live flood routing. Most OSM arcs still lack explicit maxspeed. Inundation-polygon overlay marks tens of thousands of arcs SEVERE as a scenario, not as observed 2015 closures. City-scale CCH comparison remains Stage 6.
+Stages 3–6 now supply a dated Chennai graph, historical flood overlays, a **SYNTHETIC** SUMO scenario, and a city-scale CCH that matched Dijkstra on the declared millisecond metric. They do **not** show that CLMS reduces Chennai congestion, emergency response time, or live flood routing. Most OSM arcs still lack explicit maxspeed. Inundation-polygon overlay marks tens of thousands of arcs SEVERE as a scenario, not as observed 2015 closures. Turn restrictions are not modelled.
 
-No statement is made that the method is calibrated to Chennai traffic. Stage 5 labels the SUMO run **SYNTHETIC** because no public link counts or OD matrix were obtained.
+No statement is made that the method is calibrated to Chennai traffic. Stage 5 labels the SUMO run **SYNTHETIC** because no public link counts or OD matrix were obtained. Stage 6 timings compare CCH with NetworkX Dijkstra, not with a production C++ Dijkstra.
 
 ---
 
@@ -579,9 +622,9 @@ This assignment studies repeated shortest-path queries when road weights change,
 
 **Proposed algorithm:** Certificate-Gated Routing, implemented as Certified Lazy Metric Synchronization (CLMS). It leaves path-finding to Dijkstra or CCH and refreshes the engine metric only when a decrease invalidates the stale lower bound or when re-evaluating the old path fails $U\le(1+\varepsilon)L$.
 
-**Current status:** The algorithm, proof under stated assumptions, complexity derivation, literature comparison, dated Chennai graph, historical road-state overlays, and a SYNTHETIC SUMO import are complete. City-scale CCH comparison (Stage 6) is not yet run.
+**Current status:** The algorithm, proof under stated assumptions, complexity derivation, literature comparison, dated Chennai graph, historical road-state overlays, a SYNTHETIC SUMO import, and Stage 6 inertial CCH versus Dijkstra are complete. Certificate-gated city-scale CLMS and Stage 7 rerouting are not yet run.
 
-**Limitations:** The certificate is established prior art; CLMS is a controller, not a new shortest-path theorem. Prototype CCH is unoptimized. Closures on native CCH and turn-expanded city queries remain unvalidated. Extra space is $O(m)$. Worst-case per-query time remains $\Theta(T_{\text{sync}}+T_{\text{query}})$. Most OSM maxspeed values are missing. SUMO demand is synthetic.
+**Limitations:** The certificate is established prior art; CLMS is a controller, not a new shortest-path theorem. Closures on native CCH use a finite geographic sentinel. Turn-expanded city queries are not modelled. Extra space is $O(m)$. Worst-case per-query time remains $\Theta(T_{\text{sync}}+T_{\text{query}})$. Most OSM maxspeed values are missing. SUMO demand is synthetic. City CCH speed is versus NetworkX Dijkstra.
 
 ---
 

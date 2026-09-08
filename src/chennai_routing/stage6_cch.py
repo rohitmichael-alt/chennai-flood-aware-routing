@@ -111,7 +111,9 @@ def decide_turn_model(graph: nx.MultiDiGraph) -> dict[str, object]:
             lowered = str(key).lower()
             if "restriction" in lowered or lowered in {"except", "turn:lanes"}:
                 attribute_names.add(str(key))
-        if sampled_edges >= graph.number_of_edges():
+        if sampled_edges >= 1 and not attribute_names:
+            # Stage 3 GraphML keys are schema-uniform; one edge is enough when
+            # no restriction attributes exist on the first edge.
             break
     return {
         "decision": TURN_MODEL_DECISION,
@@ -358,8 +360,15 @@ def evaluate_graph(
 ) -> dict[str, object]:
     """Run Stage 6 mapping, CCH customization, and Dijkstra comparison."""
 
+    print("Stage 6: deciding turn model and building quantized metric", flush=True)
     turn_model = decide_turn_model(graph)
     metric_bundle = build_quantized_weights(graph)
+    print(
+        f"Stage 6: metric observed={metric_bundle['observed_speed_count']} "
+        f"scenario={metric_bundle['scenario_speed_count']} "
+        f"max_arc_ms={metric_bundle['max_arc_ms']}",
+        flush=True,
+    )
     weights: dict[EdgeId, int] = metric_bundle["weights"]
     arc_ids: dict[EdgeId, str] = metric_bundle["arc_ids"]
     overflow = metric_bundle["overflow"]
@@ -373,6 +382,7 @@ def evaluate_graph(
         tails.append(node_to_index[u])
         heads.append(node_to_index[v])
 
+    print(f"Stage 6: computing {order_method} contraction order", flush=True)
     order_started = perf_counter_ns()
     order = compute_contraction_order(
         node_count=graph.number_of_nodes(),
@@ -384,6 +394,7 @@ def evaluate_graph(
     )
     order_ns = perf_counter_ns() - order_started
 
+    print("Stage 6: constructing CCH", flush=True)
     build_started = perf_counter_ns()
     cch = RoutingKitCCHEngine(
         graph,
@@ -399,6 +410,7 @@ def evaluate_graph(
         version=0,
         weights=MappingProxyType(weights),
     )
+    print("Stage 6: customizing CCH metric", flush=True)
     customize_started = perf_counter_ns()
     cch.synchronize(snapshot)
     customize_ns = perf_counter_ns() - customize_started
@@ -416,6 +428,7 @@ def evaluate_graph(
     partial_ns = perf_counter_ns() - partial_started
 
     dijkstra = NetworkXDijkstraEngine(graph)
+    print("Stage 6: synchronizing Dijkstra oracle", flush=True)
     dijkstra.synchronize(
         MetricSnapshot(
             topology_id=dijkstra.topology_id,
@@ -425,7 +438,15 @@ def evaluate_graph(
     )
 
     pairs = sample_od_pairs(cch.nodes, differential_query_count, seed=seed)
-    differential = [compare_query(cch, dijkstra, source, target) for source, target in pairs]
+    print(
+        f"Stage 6: Dijkstra differential on {differential_query_count} queries",
+        flush=True,
+    )
+    differential = []
+    for index, (source, target) in enumerate(pairs, start=1):
+        differential.append(compare_query(cch, dijkstra, source, target))
+        if index == 1 or index == differential_query_count or index % 4 == 0:
+            print(f"Stage 6: differential {index}/{differential_query_count}", flush=True)
     mismatch_count = sum(1 for row in differential if row["cost_mismatch"])
 
     extra_pairs = sample_od_pairs(
@@ -433,6 +454,7 @@ def evaluate_graph(
         cch_query_count,
         seed=seed + 1,
     )
+    print(f"Stage 6: CCH-only query benchmark ({cch_query_count})", flush=True)
     cch_query_samples: list[int] = []
     for source, target in extra_pairs:
         started = perf_counter_ns()
@@ -582,7 +604,13 @@ def run_stage6_cch(
     graphml = paths.processed_roads / "stage3_chennai_gcc_2022.graphml"
     if not graphml.is_file():
         raise FileNotFoundError("Stage 6 requires the Stage 3 GraphML road graph.")
+    print(f"Stage 6: loading {graphml}", flush=True)
     graph = load_stage3_graphml(graphml)
+    print(
+        f"Stage 6: loaded {graph.number_of_nodes()} nodes, "
+        f"{graph.number_of_edges()} arcs",
+        flush=True,
+    )
     road_states = paths.processed_road_state / "stage4_road_states.csv"
     closed_ids = _blocked_arc_ids(road_states, closed_arc_limit)
     evaluation = evaluate_graph(
@@ -595,6 +623,7 @@ def run_stage6_cch(
     )
     cch_dir = paths.processed_data / "cch"
     cch_dir.mkdir(parents=True, exist_ok=True)
+    print("Stage 6: writing OSM-to-CCH maps and evidence", flush=True)
     maps_path = cch_dir / "stage6_osm_to_cch_maps.json"
     maps_path.write_text(
         json.dumps(evaluation.pop("maps"), separators=(",", ":")) + "\n",

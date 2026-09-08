@@ -73,7 +73,7 @@ U\le(1+\epsilon)L.
 
 Any current weight below its synchronized value invalidates this lower bound and forces refresh unless another valid lower-bound metric is available.
 
-The implemented controller uses complete fixed-topology snapshots and non-negative integer weights. Native CCH closure-sentinel and turn-expanded topology behavior remain unvalidated.
+The implemented controller uses complete fixed-topology snapshots and non-negative integer weights. Native CCH was validated on the Stage 3 graph with inertial ordering, a geographic overflow bound, and a finite closure sentinel. Turn-expanded topology remains unvalidated.
 
 ## Data Principles
 
@@ -106,6 +106,7 @@ The implemented controller uses complete fixed-topology snapshots and non-negati
 12. Stage 4 historical flood overlays, Open-Meteo ERA5 rainfall, and scenario
     road states that do not treat rain or DEM as street flooding.
 13. Stage 5 SUMO import from the Stage 3 graph, labelled SYNTHETIC.
+14. Stage 6 inertial CCH on the Stage 3 graph with a Dijkstra differential.
 
 ### Preliminary Evidence
 
@@ -125,12 +126,15 @@ The main synthetic experiment used 200 nodes, 600 extra arcs, 100 update epochs,
   labels are scenario overlays. Open-Meteo ERA5 rainfall is MODELLED reanalysis.
 - Stage 5 SUMO demand is SYNTHETIC. OSM netconvert failed on SUMO 1.18; the
   Stage 3 graph was imported as node/edge files instead.
+- Stage 6 inertial CCH matched NetworkX Dijkstra on 24/24 seeded OD pairs
+  (0 cost mismatches). Mean CCH query was 0.443 ms versus 160.3 ms for this
+  Dijkstra oracle. Missing OSM maxspeed remains a labelled SCENARIO 30 km/h
+  default. Turn restrictions are not modelled.
 
 These results do not establish Chennai traffic outcomes.
 
 ### Planned
 
-- production CCH ordering and closure representation on the Stage 3 graph;
 - stability and time-indexed projected reservations;
 - facility/population data integration;
 - emergency scenario and full ablations.

@@ -93,7 +93,7 @@ or engineering experiment; it cannot be presented as Chennai validation.
 | 3. Reproducible Chennai graph | GCC boundary plus dated Geofabrik clip, pyrosm driving graph, and missingness audit implemented | 2022 GCC boundary passed with documented repair; india-260901.osm.pbf clipped and audited on 8 September 2026 | **PASS WITH REPORTED ATTRIBUTE MISSINGNESS** |
 | 4. Flood/rainfall road-state evidence | Pinned OpenCity flood KMLs, Open-Meteo ERA5, coarse DEM, drain inventory, distance-sweep mapping, and scenario road-state rules implemented | Historical inventories mapped; rainfall/DEM do not create closures; BLOCKED/SEVERE are SCENARIO overlays | **PASS WITH LIMITATIONS** |
 | 5. Chennai traffic and SUMO | GraphML-to-SUMO import, feasibility report, seeded random trips | No public counts/OD; OSM netconvert failed on SUMO 1.18; demand labelled SYNTHETIC | **PASS WITH LIMITATIONS** |
-| 6. Chennai CCH integration | Synthetic finite-integer adapter exists | No Chennai mapping, turn model, quantization audit, or city-scale differential test | **NOT STARTED** |
+| 6. Chennai CCH integration | Inertial CCH, millisecond metric, finite closure sentinel, OSM-to-CCH maps | 24/24 unpacked costs matched Dijkstra; 20 scenario closures matched; turns not modelled | **PASS WITH LIMITATIONS** |
 | 7. Stable projected-load rerouting | Placeholder module | No policy implementation or simulation comparison | **NOT STARTED** |
 | 8. Accessibility/population/compliance/criticality | Generic utilities implemented | No Chennai facility/population integration or factor experiment | **PARTIAL** |
 | 9. Emergency scenario | Placeholder module | No implemented priority policy or scenario | **NOT STARTED** |
@@ -250,6 +250,27 @@ model and a measured workload region where CCH is justified. Otherwise,
 ALT-guided bidirectional A* becomes the primary candidate and Dijkstra remains
 the oracle.
 
+**Current checkpoint:** S6.1–S6.7 passed with limitations on 8 September 2026.
+Inertial ordering used OSM `y`/`x` as WGS84 latitude/longitude. OSM-to-CCH
+maps for 155,345 nodes and 331,545 arcs are at
+`data/processed/cch/stage6_osm_to_cch_maps.json` (SHA-256
+`4ac8e689f1ed1f58c7e4ff372d5615357d116f0b204abb02f6c3afc694311d2d`; not
+committed). The turn model is **RESTRICTED_TOPOLOGY_NO_TURN_EXPANSION**:
+restriction relations are UNAVAILABLE on the Stage 3 graph. Travel times are
+integer milliseconds; 6,092 arcs use OBSERVED OSM maxspeed and 325,453 use a
+labelled SCENARIO 30 km/h default. Per-arc rounding error is at most 0.5 ms.
+Overflow uses a geographic-diameter SCENARIO bound of 137,418,160 ms (bbox
+diagonal 47.7 km at 5 km/h with detour factor 4), not the n−1 hop product.
+Seed 8597, 24 OD pairs: unpacked CCH costs matched NetworkX Dijkstra on all
+24 queries (0 mismatches). Twenty Stage 4 BLOCKED scenario arcs as a finite
+sentinel produced 0 oracle mismatches and 0 unpacked paths that used a closed
+arc; recovery also matched. Mean query: CCH 0.443 ms (80 queries) versus
+NetworkX Dijkstra 160.3 ms (24 queries). Inertial order 2.75 s, CCH construct
+1.66 s, full customize 0.313 s, in-place reset 0.175 s. CCH is retained for
+repeated queries on this represented metric relative to the NetworkX Dijkstra
+oracle. This is not a calibrated traffic result, not a turn-restricted router,
+and not a comparison with a tuned C++ Dijkstra.
+
 ### Stage 7 — Stable, Projected-Load-Aware Rerouting
 
 **Objective:** Reduce route churn and recommendation-created congestion.
@@ -348,13 +369,11 @@ Parallel work is permitted only when it does not bypass a gate:
 
 ## 8. Immediate Execution
 
-The next authorized work is Stage 6:
+The next authorized work is Stage 7:
 
-1. map the Stage 3 graph into CCH with geometry-aware ordering;
-2. decide the turn model or restrict the evaluated topology;
-3. bound integer quantization error;
-4. compare unpacked CCH paths with Dijkstra on the Chennai metric;
-5. do not claim city-scale benefit until that differential test passes.
+1. implement infeasibility, degradation, minimum-gain, and cooldown policies;
+2. keep thresholds as cited or preregistered ranges, not outcome-tuned values;
+3. do not claim Chennai traffic improvement until SUMO comparisons exist.
 
 ## 9. Research Integrity Summary
 
