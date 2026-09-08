@@ -1,21 +1,23 @@
 ---
-title: "Certificate-Gated Dynamic Routing under Compound Urban Disruptions using Certified Lazy Metric Synchronization (CLMS)"
+title: "Certificate-Gated Routing"
 subtitle: "Design and Analysis of Algorithms — Assignment"
 ---
 
-**Student name:** *[to be filled]*
-**Register number:** *[to be filled]*
-**Programme / course code:** *[to be filled]*
-**Institution:** *[to be filled]*
+**Vellore Institute of Technology (VIT), Chennai**
+
+**Student:** Rohit Michael Raj
+**Registration number:** 24BCE5108
+**Programme:** B.Tech. Computer Science and Engineering
+**Course:** Design and Analysis of Algorithms
 **Date:** 8 September 2026
 
-**Scope of this submission.** Sections 1–8, 11 and 12 are complete from the implemented algorithm and cited literature. Sections 9–10 contain only results that have already been recorded on a **synthetic** graph. Comparison on the Greater Chennai road network, flood/rainfall road states, and SUMO traffic outcomes is **not claimed here** and is scheduled after Stages 3–5 of the project.
+This document is the DAA assignment submission. It is separate from the longer project research-and-evidence file. Experimental comparison tables for implementation and existing algorithms will be added after Stages 4 and 5.
 
 ---
 
 # 1. Title
 
-**Certificate-Gated Dynamic Routing under Compound Urban Disruptions using Certified Lazy Metric Synchronization (CLMS)**
+**Certificate-Gated Routing**
 
 Real-world problem: repeated vehicle routing when Chennai road costs change because of flooding, incidents, and congestion.
 
@@ -65,9 +67,9 @@ For each query:
 
 | Item | Classification | Statement |
 |---|---|---|
-| Graph topology | Observed later from OSM | Stage 3 will use a dated extract clipped to the 2022 Greater Chennai Corporation ward union. That graph is not used in the current numerical tables. |
-| Edge weights in the recorded experiment | Scenario / synthetic | Integer weights on a seeded 200-node directed multigraph. They are not measured Chennai travel times. |
-| $\varepsilon=5\%$ in the main experiment | Scenario parameter | Chosen as a declared tolerance, not fitted to hide violations. Sensitivity at $0\%$, $1\%$, $5\%$, $10\%$ is reported. |
+| Graph topology | Observed later from OSM | Stage 3 uses a dated extract clipped to the 2022 Greater Chennai Corporation ward union. City-graph timings are not reported in this file. |
+| Experimental edge weights | Scenario / synthetic until Stages 4–5 | Later experiments will state whether weights are synthetic or derived from Chennai evidence. |
+| $\varepsilon$ | Scenario parameter | A declared rational tolerance; the value used in each later experiment will be reported with that experiment. |
 | Dijkstra binary-heap complexity | Published | Standard worst-case bound from algorithm textbooks [1], [2]. |
 | CCH query/customization behaviour | Published | Metric-independent contraction, customization, and exact queries as described by Dibbelt et al. [3]. |
 | Certificate principle | Published prior art | Lower bound from an old exact distance under nondecreasing weights; upper bound from re-evaluating the old path [4], [5]. |
@@ -459,160 +461,54 @@ Eager refresh stores one weight map plus the engine: also $O(m)$ extra, without 
 
 Over $E$ epochs with $Q$ queries each, eager refresh pays about $E\cdot T_{\text{sync}}+EQ\cdot T_{\text{query}}$.
 CLMS pays $R\cdot T_{\text{sync}}+EQ\cdot T_{\text{query}}$ plus $O(k)$ path evaluations, where $R\le E$ is the number of refreshes.
-If weights mostly increase and $\varepsilon>0$, $R$ can be much smaller than $E$. If decreases are frequent, $R\approx E$ and wall-clock time need not improve. Section 10 reports exactly that pattern on synthetic data.
+If weights mostly increase and $\varepsilon>0$, $R$ can be much smaller than $E$. If decreases are frequent, $R\approx E$ and wall-clock time need not improve. That workload distinction will be measured after Stages 4 and 5.
 
 ---
 
 # 9. Implementation
 
-## 9.1 What is implemented now
+The proposed algorithm is implemented as a refresh controller in front of an exact shortest-path engine. The controller applies atomic metric updates, tests the decrease set, queries the synchronized engine, re-evaluates the returned keyed path on the current metric, and either accepts the stale path or customizes and queries again. Two engines are wired to the same interface: NetworkX Dijkstra as the correctness oracle, and a native RoutingKit CCH prototype for finite integer metrics. An eager baseline synchronizes after every accepted update batch so later comparisons can use identical traces.
 
-| Component | Path | Role |
-|---|---|---|
-| CLMS controller | `src/chennai_routing/routing/dynamic.py` | Certificate, decrease handling, refresh |
-| Dijkstra engine | `src/chennai_routing/routing/networkx_engine.py` | Exact oracle / baseline engine |
-| CCH engine | `src/chennai_routing/routing/cch_engine.py` | Native `routingkit-cch` prototype |
-| Eager baseline | `src/chennai_routing/evaluation/baseline.py` | Synchronize after every batch |
-| Experiment runner | `src/chennai_routing/evaluation/experiments.py` | Identical traces for lazy vs eager |
-| CLI | `scripts/run_certified_lazy_experiment.py` | Reproducible synthetic run |
-| Tests | `tests/test_certified_lazy_sync.py` and related | 53 tests passing at last recorded run |
+Unit tests currently check certificate pass and fail, mandatory refresh after a decrease, keyed parallel-edge identity, CCH equality with Dijkstra on synthetic graphs, rejection of unsafe CCH weights, and exact rational $\varepsilon$. These tests confirm the controller, not Chennai traffic.
 
-## 9.2 Test cases already executed (algorithmic, not Chennai)
+Reproduction commands, city-scale run logs, and execution-result tables will be inserted here after Stages 4 and 5, when flood/road-state evidence and SUMO scenarios exist. Until then, this section does not present experimental numbers.
 
-Implemented tests cover, among other cases:
-
-- monotone certificate pass and fail;
-- mandatory refresh after a decrease;
-- closure/reopening behaviour on Dijkstra;
-- keyed parallel-edge identity;
-- CCH/Dijkstra path equality on the synthetic graph;
-- CCH rejection of unsafe infinite/overflow weights;
-- exact rational $\varepsilon$;
-- metric version rollback rejection.
-
-These are **unit/property tests**. They are not a city traffic study.
-
-## 9.3 How to reproduce the recorded synthetic experiment
-
-```bash
-python -m pip install -e ".[test,cch]"
-python -m pytest
-python scripts/run_certified_lazy_experiment.py \
-  --engine both --mode both --seed 8597 \
-  --nodes 200 --extra-edges 600 \
-  --epochs 100 --updates-per-epoch 5 \
-  --queries-per-epoch 50 --epsilon-percent 5
-```
-
-Recorded machine-readable output: `docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json`
-Python 3.12.3, NetworkX 3.6.1, `routingkit-cch` 0.1.4, seed 8597.
-
-## 9.4 Deferred implementation (after Stages 3–5)
-
-The following are **not** presented as completed assignment results:
-
-- dated Greater Chennai OSM graph (Stage 3; only the 2022 GCC boundary is currently archived);
-- flood/rainfall → road-state mapping (Stage 4);
-- SUMO demand and realized travel times (Stage 5);
-- ALT-guided bidirectional A\* comparator;
-- city-scale CCH ordering, turns, and closure sentinel.
-
-Those outputs will be inserted into Sections 9–10 when the corresponding stages finish.
+Still required before those tables: a dated Greater Chennai OSM graph, explained road states, SUMO demand, and a city-scale CCH validation that includes turns and closures.
 
 ---
 
 # 10. Comparison with Existing Algorithms
 
-Two implemented existing methods are compared with CLMS on **the same synthetic traces**:
+The assignment requires experimental comparison with at least two existing algorithms. The two baselines that will be compared with Certificate-Gated Routing are:
 
-1. **Eager Dijkstra:** NetworkX Dijkstra, `synchronize` after every update batch.
-2. **Eager CCH:** RoutingKit CCH prototype, `synchronize` after every update batch.
+1. Eager repeated Dijkstra, which rebuilds or re-solves on the latest metric after every update batch.
+2. Eager CCH, which customizes after every update batch and then queries.
 
-The proposed method is CLMS in front of the **same** engine (lazy Dijkstra or lazy CCH). Policy, graph, updates, queries, and $\varepsilon$ are identical; only the refresh rule changes.
+Certificate-Gated Routing will use the same engine, same graph, same updates, same queries, and the same $\varepsilon$ as the matching eager method. The planned comparison parameters are execution time, number of customizations or rebuilds, certificate-bound violations, path-cost agreement with the Dijkstra oracle, and later Chennai-specific cost and access metrics. Memory will be reported only if it is actually instrumented.
 
-## 10.1 Comparison parameters used now
-
-| Parameter | Measured? | Notes |
-|---|---|---|
-| Execution time | Yes | Single-run wall-clock for updates+queries; engine construction excluded |
-| Refresh / customization count | Yes | Direct operation count |
-| Certificate violations | Yes | Must be zero for a valid run |
-| Path-cost accuracy vs oracle | Yes | Dijkstra oracle on CCH runs |
-| Memory usage | No | Not instrumented; omitted rather than guessed |
-| Chennai distance / profit / resource utilization | No | No city demand model yet |
-
-## 10.2 Main synthetic results (5,000 queries, $\varepsilon=5\%$)
-
-Graph: 200 nodes, 600 extra arcs, 100 epochs, 5 updates and 50 queries per epoch.
-
-| Engine / update pattern | Queries | Certified stale | Lazy refreshes | Eager update refreshes | Refreshes avoided | Bound violations | Lazy total (ms) | Eager total (ms) |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Dijkstra / increases only | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 587 | 705 |
-| Dijkstra / mixed +/− | 5,000 | 700 | 86 | 100 | 14 | 0 | 707 | 736 |
-| CCH / increases only | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 120 | 203 |
-| CCH / mixed +/− | 5,000 | 700 | 86 | 100 | 14 | 0 | 209 | 202 |
-
-Source: `docs/evidence/CERTIFIED_LAZY_SYNC_RESULTS.json` (`main_results`). Totals are milliseconds rounded from nanoseconds. Eager “update refreshes” counts customization after the 100 update epochs (plus initial sync in the detailed JSON as 101 synchronizations); “refreshes avoided” compares lazy refreshes with those 100 post-start update customizations.
-
-Zero certificate violations, zero post-refresh exact mismatches, and zero CCH-versus-independent-Dijkstra mismatches were recorded on these traces.
-
-## 10.3 $\varepsilon$ sensitivity (CCH, 2,500 queries, 50 epochs)
-
-| $\varepsilon$ | Increases-only refreshes | Mixed refreshes | Bound violations |
-|---:|---:|---:|---:|
-| 0% | 33 | 47 | 0 |
-| 1% | 25 | 44 | 0 |
-| 5% | 4 | 43 | 0 |
-| 10% | 0 | 43 | 0 |
-
-Under mixed updates, decreases dominate: raising $\varepsilon$ barely reduces refreshes.
-
-## 10.4 What is not compared yet
-
-A\* / ALT is not implemented, so it is absent from the table. City-scale Dijkstra vs CCH vs CLMS, SUMO travel time, queues, and facility access will be added after Stages 3–5. No memory column is included because it was not measured.
+No comparison table is included in this version. Tables will be added after Stages 4 and 5 from generated artifacts. A\* / ALT will appear in the comparison only after that engine is implemented.
 
 ---
 
 # 11. Results and Discussion
 
-## 11.1 What the tables support
+Results are not claimed in this version because the comparison tables are deferred until Stages 4 and 5.
 
-On this **synthetic**, fixed-topology, single-machine workload:
+From the algorithm itself, Certificate-Gated Routing is expected to reduce customization work when weights mostly nondecrease and $\varepsilon>0$, because many queries can reuse a stale metric inside the declared bound. It is not expected to help when recoveries (weight decreases) are frequent, because those decreases invalidate the stale lower bound and force refresh. It also cannot be cheaper than eager refresh in the worst case of a single query, as shown in Section 8.
 
-- When weights only increase, CLMS avoided 94 of 100 eager update refreshes and returned 4,840/5,000 queries as certified stale, with **no** bound violations.
-- Wall-clock improved for lazy Dijkstra (587 ms vs 705 ms) and lazy CCH (120 ms vs 203 ms) on the increases-only trace.
-- When increases and decreases mixed, CLMS still avoided 14 refreshes but had to refresh 86 times. Lazy CCH was **slightly slower** than eager CCH (209 ms vs 202 ms) on that single run. That negative result is reported, not omitted.
-
-## 11.2 Where CLMS performs well
-
-- Many queries, metrics that **mostly nondecrease** (congestion/flood worsening, not recovery).
-- $\varepsilon>0$ so modest cost growth can be certified without customization.
-- An engine whose `synchronize` is expensive relative to one query (CCH customization in a production setting; even Dijkstra rebuilds in the prototype).
-
-## 11.3 Where CLMS may not help
-
-- Frequent recoveries / weight **decreases** (mandatory refresh).
-- $\varepsilon=0$ and frequent updates that break equality of $U$ and $L$.
-- Workloads where `synchronize` is already cheap compared with query overhead; mixed CCH in Section 10.2 is an example where lazy was not faster.
-- Any claim about Chennai travel time, emergency arrival, or live flooding — **unsupported** until later stages.
-
-## 11.4 Honesty constraint
-
-Improvement is claimed **only** for refresh counts and for the labelled synthetic wall-clock cells above. No sentence in this assignment asserts that CLMS reduces Chennai congestion or is faster on the GCC road network.
+No statement is made that the method reduces Chennai congestion, emergency response time, or live flood routing. Those claims require the later experiments.
 
 ---
 
 # 12. Conclusion
 
-This assignment studies repeated shortest-path queries when road weights change, with Chennai flood/incident/congestion routing as the intended real-world setting.
+This assignment studies repeated shortest-path queries when road weights change, with Chennai flood, incident, and congestion routing as the intended real-world setting.
 
-**Proposed algorithm:** Certified Lazy Metric Synchronization (CLMS). It leaves path-finding to Dijkstra or CCH and refreshes the engine metric only when a decrease invalidates the stale lower bound or when re-evaluating the old path fails $U\le(1+\varepsilon)L$.
+**Proposed algorithm:** Certificate-Gated Routing, implemented as Certified Lazy Metric Synchronization (CLMS). It leaves path-finding to Dijkstra or CCH and refreshes the engine metric only when a decrease invalidates the stale lower bound or when re-evaluating the old path fails $U\le(1+\varepsilon)L$.
 
-**Major findings so far:** On a seeded synthetic graph, CLMS preserved the declared bound (zero violations) and cut most refreshes when weights only increased. When weights also decreased, savings collapsed and lazy CCH was not faster than eager CCH in the recorded run.
+**Current status:** The algorithm, proof under stated assumptions, complexity derivation, and literature comparison are complete. Implementation and baseline comparison tables will follow Stages 4 and 5.
 
-**Limitations:** The certificate is established prior art; CLMS is a controller, not a new shortest-path theorem. Prototype CCH is unoptimized. Closures on native CCH, turns, city graph, flood evidence, and SUMO evaluation are incomplete. Space is $O(m)$ extra. Worst-case per-query time is still $\Theta(T_{\text{sync}}+T_{\text{query}})$.
-
-**Next evidence:** Stages 3–5 (Chennai graph, road-state evidence, traffic/SUMO), after which Sections 9–10 should be updated with city-scale tables. Until then, this file is an algorithm assignment with synthetic method evidence, not a completed city evaluation.
+**Limitations:** The certificate is established prior art; CLMS is a controller, not a new shortest-path theorem. Prototype CCH is unoptimized. Closures on native CCH, turns, the city graph, flood evidence, and SUMO evaluation are incomplete. Extra space is $O(m)$. Worst-case per-query time remains $\Theta(T_{\text{sync}}+T_{\text{query}})$.
 
 ---
 
@@ -669,9 +565,9 @@ IEEE numbered style.
 | Step-by-step illustration | §6 | Complete |
 | Correctness | §7 | Proof under stated assumptions |
 | Time and space derived, not only Big-O | §8 | Complete |
-| Implementation + tests | §9 | Synthetic implementation complete |
-| Compare ≥2 existing methods | §10 | Eager Dijkstra and eager CCH |
-| Tables; no unsupported improvement claim | §11 | Mixed-CCH slowdown reported |
+| Implementation + tests | §9 | Controller described; result tables deferred to Stages 4–5 |
+| Compare ≥2 existing methods | §10 | Baselines named; comparison tables deferred to Stages 4–5 |
+| Tables; no unsupported improvement claim | §6 illustration; §11 | Experimental tables withheld until Stages 4–5 |
 | Conclusion + limitations | §12 | Complete |
 | ≥10 references, ≥5 papers, IEEE | §13 | 17 entries; papers [2]–[14] |
 
