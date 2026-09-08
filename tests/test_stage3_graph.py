@@ -267,3 +267,168 @@ def test_road_audit_reports_missingness_instead_of_imputing() -> None:
     assert audit.duplicate_arc_id_count == 0
     assert normalized[2][1][0]["stage3_free_flow_time_seconds"] is None
     assert math.isfinite(normalized[1][2][0]["stage3_free_flow_time_seconds"])
+
+
+def test_geofabrik_md5_parser_rejects_non_checksum_text() -> None:
+    from chennai_routing.data.osm_snapshot import parse_geofabrik_md5
+
+    assert parse_geofabrik_md5("44ec6a7dff8ff2f3382da80a546b505f  india-260901.osm.pbf\n") == (
+        "44ec6a7dff8ff2f3382da80a546b505f"
+    )
+    with pytest.raises(ValueError, match="32-character MD5"):
+        parse_geofabrik_md5("not-a-checksum")
+
+
+class _TextResponse:
+    def __init__(self, text: str, headers: dict[str, str] | None = None):
+        self.text = text
+        self.headers = headers or {}
+
+    def raise_for_status(self) -> None:
+        return None
+
+
+class _StreamResponse:
+    def __init__(self, content: bytes, headers: dict[str, str] | None = None):
+        self.headers = headers or {}
+        self._content = content
+
+    def raise_for_status(self) -> None:
+        return None
+
+    def __enter__(self) -> "_StreamResponse":
+        return self
+
+    def __exit__(self, *_args: object) -> None:
+        return None
+
+    def iter_content(self, chunk_size: int = 1):
+        yield self._content
+
+
+class _OsmSession:
+    def __init__(self, md5_text: str, pbf_bytes: bytes = b"", headers: dict[str, str] | None = None):
+        self.md5_text = md5_text
+        self.pbf_bytes = pbf_bytes
+        self.headers = headers or {
+            "Last-Modified": "Wed, 02 Sep 2026 05:19:21 GMT",
+            "ETag": '"test"',
+            "Content-Length": str(len(pbf_bytes)),
+        }
+        self.gets: list[str] = []
+        self.heads: list[str] = []
+
+    def get(self, url: str, **_kwargs: object) -> _TextResponse | _StreamResponse:
+        self.gets.append(url)
+        if url.endswith(".md5"):
+            return _TextResponse(self.md5_text)
+        return _StreamResponse(self.pbf_bytes, self.headers)
+
+    def head(self, url: str, **_kwargs: object) -> _TextResponse:
+        self.heads.append(url)
+        return _TextResponse("", headers=self.headers)
+
+
+def test_acquire_dated_india_pbf_reuses_matching_checksum(tmp_path: Path) -> None:
+    from chennai_routing.data.osm_snapshot import (
+        GEOFABRIK_INDIA_MD5_URL,
+        GEOFABRIK_INDIA_PBF_FILENAME,
+        acquire_dated_india_pbf,
+        md5_file,
+    )
+
+    empty_md5 = "d41d8cd98f00b204e9800998ecf8427e"
+    existing = tmp_path / GEOFABRIK_INDIA_PBF_FILENAME
+    existing.write_bytes(b"")
+    session = _OsmSession(f"{empty_md5}  {GEOFABRIK_INDIA_PBF_FILENAME}\n")
+
+    path, record = acquire_dated_india_pbf(
+        tmp_path,
+        session=session,  # type: ignore[arg-type]
+        retrieved_at_utc="2026-09-08T00:00:00+00:00",
+    )
+
+    assert path == existing
+    assert record["reused_existing_pbf"] is True
+    assert record["computed_md5"] == empty_md5 == md5_file(existing)
+    assert session.gets == [GEOFABRIK_INDIA_MD5_URL]
+    assert session.heads
+
+
+def test_acquire_dated_india_pbf_downloads_when_checksum_differs(tmp_path: Path) -> None:
+    from chennai_routing.data.osm_snapshot import (
+        GEOFABRIK_INDIA_PBF_FILENAME,
+        acquire_dated_india_pbf,
+        md5_file,
+    )
+
+    payload = b"pbf-bytes"
+    expected_md5 = hashlib.md5(payload).hexdigest()
+    stale = tmp_path / GEOFABRIK_INDIA_PBF_FILENAME
+    stale.write_bytes(b"stale")
+    session = _OsmSession(f"{expected_md5}  {GEOFABRIK_INDIA_PBF_FILENAME}\n", pbf_bytes=payload)
+
+    path, record = acquire_dated_india_pbf(
+        tmp_path,
+        session=session,  # type: ignore[arg-type]
+        retrieved_at_utc="2026-09-08T00:00:00+00:00",
+    )
+
+    assert path.read_bytes() == payload
+    assert record["reused_existing_pbf"] is False
+    assert record["computed_md5"] == expected_md5 == md5_file(path)
+    assert any(url.endswith(".osm.pbf") for url in session.gets)
+
+
+def test_clip_geojson_is_rfc7946_without_crs_member(tmp_path: Path) -> None:
+    from chennai_routing.data.osm_snapshot import write_clip_geojson
+
+    source = _two_ward_fixture(tmp_path / "wards.geojson")
+    _wards, union, _audit = load_and_audit_gcc_2022_wards(
+        source,
+        expected_feature_count=2,
+        repair_invalid=True,
+    )
+    clip_path = tmp_path / "clip.geojson"
+    write_clip_geojson(union, clip_path)
+    payload = json.loads(clip_path.read_text(encoding="utf-8"))
+    assert payload["type"] == "FeatureCollection"
+    assert "crs" not in payload
+    assert payload["features"][0]["geometry"]["type"] in {"Polygon", "MultiPolygon"}
+
+
+def test_clip_geojson_requires_single_union_feature(tmp_path: Path) -> None:
+    from chennai_routing.data.osm_snapshot import write_clip_geojson
+
+    source = _two_ward_fixture(tmp_path / "wards.geojson")
+    wards, union, _audit = load_and_audit_gcc_2022_wards(
+        source,
+        expected_feature_count=2,
+        repair_invalid=True,
+    )
+    clip_path = tmp_path / "clip.geojson"
+    write_clip_geojson(union, clip_path)
+    clipped = gpd.read_file(clip_path)
+    assert len(clipped) == 1
+    with pytest.raises(ValueError, match="single union"):
+        write_clip_geojson(wards, tmp_path / "invalid.geojson")
+
+
+def test_boundary_coverage_and_qa_map_use_normalized_toy_graph(tmp_path: Path) -> None:
+    from chennai_routing.stage3_graph import audit_nodes_against_boundary
+    from chennai_routing.visualization.maps import plot_stage3_qa_map
+
+    source = _two_ward_fixture(tmp_path / "wards.geojson")
+    _wards, union, _audit = load_and_audit_gcc_2022_wards(
+        source,
+        expected_feature_count=2,
+        repair_invalid=True,
+    )
+    graph = normalize_road_graph(_road_graph())
+    coverage = audit_nodes_against_boundary(graph, union)
+    assert coverage["node_count"] == 2
+    assert coverage["nodes_inside_or_touching_union"] == 2
+    qa_path = tmp_path / "qa.png"
+    plot_stage3_qa_map(graph, union, qa_path)
+    assert qa_path.is_file()
+    assert qa_path.stat().st_size > 0

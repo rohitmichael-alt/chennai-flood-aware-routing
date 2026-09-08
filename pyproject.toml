@@ -26,6 +26,9 @@ test = [
 cch = [
     "routingkit-cch>=0.1.4",
 ]
+stage3 = [
+    "pyrosm>=0.6",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]

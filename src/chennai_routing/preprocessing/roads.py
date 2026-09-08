@@ -14,6 +14,79 @@ import networkx as nx
 from shapely.geometry import LineString
 from shapely.geometry.base import BaseGeometry
 
+ROAD_GRAPH_DATA_DICTIONARY = {
+    "stage3_arc_id": {
+        "meaning": "SHA-256 of canonical u, v, key, osmid, and geometry identity",
+        "classification": "OBSERVED",
+        "unit": None,
+    },
+    "osmid": {
+        "meaning": "OpenStreetMap way identifier copied from the dated extract",
+        "classification": "OBSERVED",
+        "unit": None,
+    },
+    "highway": {
+        "meaning": "OSM highway class tag",
+        "classification": "OBSERVED",
+        "unit": None,
+    },
+    "maxspeed": {
+        "meaning": "Raw OSM maxspeed tag; missing or compound values are not imputed",
+        "classification": "OBSERVED",
+        "unit": "tag text",
+    },
+    "stage3_explicit_speed_kph": {
+        "meaning": "Parsed unambiguous maxspeed in kilometres per hour, else missing",
+        "classification": "OBSERVED",
+        "unit": "km/h",
+    },
+    "length": {
+        "meaning": "Edge length from the OSM geometry",
+        "classification": "OBSERVED",
+        "unit": "m",
+    },
+    "stage3_free_flow_time_seconds": {
+        "meaning": "length / explicit speed; missing when speed or length is unavailable",
+        "classification": "OBSERVED",
+        "unit": "s",
+    },
+    "lanes": {
+        "meaning": "Raw OSM lanes tag; missing values stay missing",
+        "classification": "UNAVAILABLE when absent",
+        "unit": None,
+    },
+    "oneway": {
+        "meaning": "Raw OSM oneway tag",
+        "classification": "OBSERVED",
+        "unit": None,
+    },
+    "access": {
+        "meaning": "Raw OSM access tag when present",
+        "classification": "UNAVAILABLE when absent",
+        "unit": None,
+    },
+    "bridge": {
+        "meaning": "Raw OSM bridge tag when present",
+        "classification": "UNAVAILABLE when absent",
+        "unit": None,
+    },
+    "tunnel": {
+        "meaning": "Raw OSM tunnel tag when present",
+        "classification": "UNAVAILABLE when absent",
+        "unit": None,
+    },
+    "layer": {
+        "meaning": "Raw OSM layer tag when present",
+        "classification": "UNAVAILABLE when absent",
+        "unit": None,
+    },
+    "geometry": {
+        "meaning": "Source linestring, or a two-point line from node coordinates",
+        "classification": "OBSERVED",
+        "unit": "EPSG:4326",
+    },
+}
+
 _MAXSPEED_PATTERN = re.compile(
     r"^(?P<value>[0-9]+(?:\.[0-9]+)?)\s*(?P<unit>km/h|kmh|kph|mph)?$",
     re.IGNORECASE,

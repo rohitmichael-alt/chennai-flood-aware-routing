@@ -79,3 +79,48 @@ def plot_stage1_before_after(
     fig.savefig(output_path, dpi=180)
     plt.close(fig)
     return output_path
+
+
+def plot_stage3_qa_map(
+    graph: nx.MultiDiGraph,
+    union: gpd.GeoDataFrame,
+    output_path: Path,
+    *,
+    max_edges: int = 25000,
+) -> Path:
+    """Plot the GCC union and a sampled driving graph for Stage 3 QA."""
+
+    from shapely.geometry.base import BaseGeometry
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    geometries = [
+        data["geometry"]
+        for _, _, _, data in graph.edges(keys=True, data=True)
+        if isinstance(data.get("geometry"), BaseGeometry)
+    ]
+    sampled = False
+    if len(geometries) > max_edges:
+        step = max(1, len(geometries) // max_edges)
+        geometries = geometries[::step]
+        sampled = True
+    if not geometries:
+        raise ValueError("Stage 3 QA map requires at least one edge geometry.")
+
+    roads = gpd.GeoDataFrame(geometry=geometries, crs="EPSG:4326")
+    boundary = union.to_crs("EPSG:4326")
+    target_crs = roads.estimate_utm_crs() or "EPSG:32644"
+    roads = roads.to_crs(target_crs)
+    boundary = boundary.to_crs(target_crs)
+
+    fig, ax = plt.subplots(figsize=(9, 11))
+    boundary.plot(ax=ax, facecolor="#e8eef7", edgecolor="#1f4e79", linewidth=1.2)
+    roads.plot(ax=ax, linewidth=0.25, color="#4a4a4a", alpha=0.85)
+    title = "Stage 3 Greater Chennai driving graph clipped to GCC 2022"
+    if sampled:
+        title += f" (sampled {len(geometries)} edges)"
+    ax.set_title(title)
+    ax.set_axis_off()
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=150)
+    plt.close(fig)
+    return output_path

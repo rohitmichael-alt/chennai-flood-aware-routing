@@ -13,6 +13,7 @@ class ProjectPaths:
     processed_data: Path
     outputs: Path
     raw_boundary: Path
+    raw_osm: Path
     raw_flood: Path
     processed_boundary: Path
     processed_roads: Path
@@ -31,6 +32,7 @@ def get_project_paths() -> ProjectPaths:
         processed_data=root / "data" / "processed",
         outputs=root / "outputs",
         raw_boundary=root / "data" / "raw" / "boundary",
+        raw_osm=root / "data" / "raw" / "osm",
         raw_flood=root / "data" / "raw" / "flood",
         processed_boundary=root / "data" / "processed" / "boundary",
         processed_roads=root / "data" / "processed" / "roads",
