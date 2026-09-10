@@ -27,7 +27,7 @@ fixtures; it is therefore not publication-grade Chennai evidence yet.
 - eager-refresh baseline;
 - synthetic monotone and mixed-update experiments;
 - partial generic utilities for uncertainty, accessibility/population, compliance, and directed-edge criticality; no Chennai factor-level experiment;
-- 45 passing tests.
+- 55 passing tests when `.[cch]` is installed (4 skip without it).
 
 ## What Finds the Path?
 

@@ -23,6 +23,8 @@ class AccessibilitySummary:
     disconnected_population: float
     disconnected_population_share: float
     connected_weighted_mean_time: float | None
+    connected_population_weighted_p50_time: float | None
+    connected_population_weighted_p90_time: float | None
     population_weighted_p90_time: float
     population_share_over_threshold: float
     threshold: float
@@ -103,6 +105,18 @@ def summarize_accessibility(
         for time, population in zip(travel_times, populations)
         if time > threshold
     )
+    connected_times = [time for time, _ in connected]
+    connected_weights = [weight for _, weight in connected]
+    connected_p50 = (
+        _weighted_quantile(connected_times, connected_weights, 0.5)
+        if connected_weights
+        else None
+    )
+    connected_p90 = (
+        _weighted_quantile(connected_times, connected_weights, 0.9)
+        if connected_weights
+        else None
+    )
     return AccessibilitySummary(
         origin_count=len(travel_times),
         total_population=total_population,
@@ -112,6 +126,8 @@ def summarize_accessibility(
             disconnected_population / total_population
         ),
         connected_weighted_mean_time=weighted_mean,
+        connected_population_weighted_p50_time=connected_p50,
+        connected_population_weighted_p90_time=connected_p90,
         population_weighted_p90_time=_weighted_quantile(
             travel_times,
             populations,

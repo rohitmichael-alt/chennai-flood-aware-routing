@@ -17,7 +17,9 @@ def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Compare certificate-gated metric synchronization with eager "
-            "repeated-snapshot NetworkX Dijkstra."
+            "refresh for NetworkX Dijkstra and/or native CCH. Default size is "
+            "100 nodes / 40 epochs. The published 5,000-query table is "
+            "scripts/run_certified_lazy_sweep.py."
         )
     )
     parser.add_argument(

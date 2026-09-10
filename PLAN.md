@@ -6,7 +6,7 @@
 
 | Stage | Description | Status |
 |---|---|---|
-| 1 | Historical flood-to-road closure proof of concept | **DONE** |
+| 1 | Historical flood-to-road closure proof of concept | **DONE WITH LIMITATIONS** (demo, not publication evidence) |
 | 2 | Certificate controller and routing-engine experiment | **DONE — preliminary synthetic evidence** |
 | 3 | Reproducible Chennai graph | PENDING |
 | 4 | Flood/rainfall road-state pipeline | PENDING |
@@ -23,7 +23,7 @@
 **Inputs:** OSM road graph and OpenCity 2015 historical flood hotspots.  
 **Method:** CRS-safe nearest-road mapping, controlled hard closure, effective capacity, BPR, two Dijkstra snapshots.  
 **Evidence:** CSV/JSON/GraphML/PNG outputs and Stage 1 tests.  
-**Status:** **DONE.**
+**Status:** **DONE WITH LIMITATIONS.** Fixture-tested demo. Outputs are gitignored; 2015 hotspots are mapped onto a live OSM extract; BPR uses labelled SCENARIO uniform flow/capacity.
 
 **Claim limit:** It demonstrates closure avoidance, not calibrated congestion-sensitive routing or current flooding.
 
@@ -40,7 +40,7 @@
 - mandatory refresh when the stale lower bound is invalid;
 - eager-refresh baseline;
 - deterministic experiment traces and machine-readable results;
-- 45 tests.
+- 55 collected tests when `routingkit-cch` is installed; 4 skip without it.
 
 **Status:** **DONE as preliminary synthetic evidence.**
 
@@ -127,6 +127,8 @@ CCH remains interchangeable: if feasibility fails, use ALT-guided bidirectional 
 ## Stage 7 — Stable Projected-Load Rerouting
 
 **Objective:** Prevent route churn and self-created congestion.
+
+**Status:** Tasks 1–2 implemented as a labelled SCENARIO filter (degradation and infeasibility override cooldown; reservations unimplemented).
 
 Tasks:
 
@@ -227,7 +229,10 @@ source .venv/bin/activate
 python -m pip install -e ".[test,cch]"
 python -m pytest
 python scripts/run_certified_lazy_experiment.py --engine both --mode both
+python scripts/run_certified_lazy_sweep.py
 ```
+
+The first command uses the CLI defaults (100 nodes, 40 epochs). The published 5,000-query table is produced by `run_certified_lazy_sweep.py`.
 
 ## Research Integrity Rules
 

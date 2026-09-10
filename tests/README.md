@@ -18,4 +18,6 @@ Current tests verify:
 - evidence lag and false-positive/false-negative perturbation;
 - facility-oriented road-criticality ranking.
 
-Latest recorded result: **45 passed**.
+Latest recorded result: **55 passed** when `routingkit-cch` is installed (4 skip without it).
+
+Pathway tests also cover BPR/capacity validation, Stage 1 graph preservation, identity updates, explained-state snapshots, and the adoption filter.

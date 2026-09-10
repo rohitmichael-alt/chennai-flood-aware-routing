@@ -52,6 +52,11 @@ class RoutingKitCCHEngine:
         self._edge_ids: tuple[EdgeId, ...] = tuple(
             (u, v, key) for u, v, key in graph.edges(keys=True)
         )
+        if any(u == v for u, v, _key in self._edge_ids):
+            raise ValueError(
+                "RoutingKitCCHEngine rejects self-loops; they can desynchronize "
+                "the CCH weight vector from original arc identities."
+            )
         self._edge_set = frozenset(self._edge_ids)
         tail = [self._node_to_index[edge[0]] for edge in self._edge_ids]
         head = [self._node_to_index[edge[1]] for edge in self._edge_ids]
@@ -92,7 +97,7 @@ class RoutingKitCCHEngine:
             raise ValueError("Metric topology does not match the CCH topology.")
         if metric.version < 0 or (
             self._metric_version is not None
-            and metric.version < self._metric_version
+            and metric.version <= self._metric_version
         ):
             raise ValueError(
                 "Metric version must be non-negative and cannot move backwards."

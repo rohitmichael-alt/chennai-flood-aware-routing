@@ -5,8 +5,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from time import perf_counter_ns
 from types import MappingProxyType
+import math
 
-from chennai_routing.routing.dynamic import WeightUpdateBatch
+from chennai_routing.routing.dynamic import WeightUpdateBatch, _validate_certifiable_weight, _validate_engine_weight
 from chennai_routing.routing.engine import (
     EdgeId,
     EngineQuery,
@@ -57,15 +58,29 @@ class EagerRefreshRouter:
             raise ValueError("Update base version does not match eager metric version.")
         if batch.version != batch.base_version + 1:
             raise ValueError("Update versions must be contiguous.")
+        if not batch.replacements:
+            raise ValueError("Update batches must contain at least one replacement.")
         candidate = dict(self._weights)
         seen: set[EdgeId] = set()
+        changed = False
         for edge, weight in batch.replacements:
             if edge in seen:
                 raise ValueError(f"Update contains duplicate edge {edge!r}.")
             if edge not in candidate:
                 raise ValueError(f"Update contains unknown edge {edge!r}.")
+            _validate_certifiable_weight(weight)
+            _validate_engine_weight(self._engine, weight)
             seen.add(edge)
-            candidate[edge] = weight
+            integer_or_inf = (
+                weight
+                if isinstance(weight, float) and math.isinf(weight)
+                else int(weight)
+            )
+            if candidate[edge] != integer_or_inf:
+                changed = True
+            candidate[edge] = integer_or_inf
+        if not changed:
+            return
 
         snapshot = MetricSnapshot(
             topology_id=self._engine.topology_id,

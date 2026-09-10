@@ -1,4 +1,1 @@
-"""Elevation data access boundary.
-
-Future Stage 3 work belongs here when SRTM elevation processing is introduced.
-"""
+"""Elevation data access boundary for Stage 4. Unimplemented."""

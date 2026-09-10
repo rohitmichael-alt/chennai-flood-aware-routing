@@ -31,29 +31,29 @@ Closest certificate prior art includes [CPD-Search](https://doi.org/10.24963/ijc
 ## Technical Model
 
 ```text
-road/flood/rain/incident evidence
+road/flood evidence (Stage 1 demo / planned Stage 4)
 → explained road state
-→ effective capacity
-→ assigned demand / capacity
-→ BPR integer edge metric
-→ certificate refresh gate
-→ CCH shortest path
-→ stability/priority/compliance policy
-→ projected load reservation
-→ SUMO outcome
-→ travel, stability and accessibility evaluation
+→ effective capacity  [implemented]
+→ assigned demand / capacity  [Stage 1 uses labelled SCENARIO uniform flow]
+→ BPR → integer milliseconds  [implemented glue]
+→ certificate refresh gate  [implemented]
+→ Dijkstra or prototype CCH  [implemented; city CCH not claimed]
+→ adoption-threshold filter  [implemented SCENARIO policy]
+→ projected load reservation  [unimplemented]
+→ SUMO outcome  [unimplemented]
+→ accessibility evaluation utilities  [implemented, no Chennai run]
 ```
 
 ### Path and Control Responsibilities
 
 | Component | Responsibility |
 |---|---|
-| CCH | Proposed high-throughput exact path engine for synchronized integer weights |
-| Dijkstra | Correctness oracle and baseline |
-| ALT-guided bidirectional A* | Backup/comparator |
-| Certificate controller | Decides whether the synchronized metric remains accurate enough for one query |
-| Stability policy | Decides whether a vehicle should adopt a candidate route |
-| SUMO | Simulates traffic, queues, incidents, compliance, and realized outcomes |
+| CCH | Prototype exact engine for finite integer metrics; not a city-scale production claim |
+| Dijkstra | Correctness oracle and Stage 1/2 path engine |
+| ALT-guided bidirectional A* | Unimplemented backup/comparator |
+| Certificate controller | Engine-neutral gate: refresh or keep the synchronized metric |
+| Stability policy | SCENARIO threshold/cooldown filter; reservations unimplemented |
+| SUMO | Unimplemented on this branch |
 
 ## Certificate Assumptions
 
@@ -73,7 +73,7 @@ U\le(1+\epsilon)L.
 
 Any current weight below its synchronized value invalidates this lower bound and forces refresh unless another valid lower-bound metric is available.
 
-The implemented controller uses complete fixed-topology snapshots and non-negative integer weights. Native CCH closure-sentinel and turn-expanded topology behavior remain unvalidated.
+The implemented controller uses complete fixed-topology snapshots and non-negative integer weights. Closures are +inf on Dijkstra and rejected on native CCH. Turn-expanded topology is unimplemented.
 
 ## Data Principles
 
@@ -97,12 +97,14 @@ The implemented controller uses complete fixed-topology snapshots and non-negati
 6. Deterministic synthetic experiment runner.
 7. Population-weighted accessibility, partial-compliance, evidence-robustness, and facility-road-criticality utilities.
 8. Differential, certificate, closure/recovery, parallel-edge, and CCH tests.
+9. Integer BPR snapshot glue from explained states.
+10. SCENARIO route-adoption filter: cooldown does not block degradation or infeasible incumbents.
 
 ### Preliminary Evidence
 
 The main synthetic experiment used 200 nodes, 600 extra arcs, 100 update epochs, 5 updates and 50 queries per epoch.
 
-- 45 tests pass.
+- 55 tests pass with `.[cch]` installed.
 - 20,000 main route queries across Dijkstra/CCH and monotone/mixed workloads produced zero certificate violations.
 - Monotone CCH workload avoided 94 of 100 eager update refreshes.
 - Mixed CCH workload avoided 14 of 100 because decreases invalidated the lower bound.

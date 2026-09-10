@@ -10,6 +10,7 @@ from __future__ import annotations
 import math
 import threading
 from dataclasses import dataclass
+from numbers import Integral
 from time import perf_counter_ns
 from types import MappingProxyType
 from typing import Literal
@@ -116,8 +117,8 @@ class RouteResult:
 def _validate_certifiable_weight(weight: Weight) -> None:
     if isinstance(weight, bool):
         raise TypeError("Certified metrics require integer weights or positive infinity.")
-    if isinstance(weight, int):
-        if weight < 0:
+    if isinstance(weight, Integral):
+        if int(weight) < 0:
             raise ValueError("Certified metric weights must be non-negative.")
         return
     if isinstance(weight, float) and weight == math.inf:
@@ -237,8 +238,11 @@ class CertifiedLazySynchronizer:
             if batch.version != batch.base_version + 1:
                 raise ValueError("Update versions must be contiguous.")
 
+            if not batch.replacements:
+                raise ValueError("Update batches must contain at least one replacement.")
             seen: set[EdgeId] = set()
             candidate = dict(self._current_weights)
+            changed_count = 0
             for edge, weight in batch.replacements:
                 if edge in seen:
                     raise ValueError(f"Update contains duplicate edge {edge!r}.")
@@ -247,7 +251,17 @@ class CertifiedLazySynchronizer:
                 _validate_certifiable_weight(weight)
                 _validate_engine_weight(self._engine, weight)
                 seen.add(edge)
-                candidate[edge] = weight
+                integer_or_inf = int(weight) if isinstance(weight, Integral) else weight
+                if candidate[edge] != integer_or_inf:
+                    changed_count += 1
+                candidate[edge] = integer_or_inf
+            if changed_count == 0:
+                return UpdateReceipt(
+                    version=self._current_version,
+                    replacement_count=0,
+                    pending_edge_count=len(self._pending_edges),
+                    lower_bound_violation_count=len(self._violating_edges),
+                )
 
             self._current_weights = candidate
             self._current_version = batch.version
@@ -264,7 +278,7 @@ class CertifiedLazySynchronizer:
             self._update_batch_count += 1
             return UpdateReceipt(
                 version=batch.version,
-                replacement_count=len(batch.replacements),
+                replacement_count=changed_count,
                 pending_edge_count=len(self._pending_edges),
                 lower_bound_violation_count=len(self._violating_edges),
             )
