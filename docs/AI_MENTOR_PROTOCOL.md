@@ -7,137 +7,27 @@ This file is the **handoff contract** for any later AI. It is not a completed pa
 
 **GitHub:** https://github.com/rohitmichael-alt/chennai-flood-aware-routing
 
-**Goal of the project:** a **research paper** (and a separate DAA assignment on another branch). Claims must match evidence. If a number is not observed, published, estimated with a recorded method, or an explicit scenario parameter, it is **unavailable** — do not impute it.
+**Goal of the project:** a **journal or conference research paper**. Claims must match evidence. If a number is not observed, published, estimated with a recorded method, or an explicit scenario parameter, it is **unavailable** — do not impute it.
+
+**Executor brief:** copy the fenced block in [`docs/MASTER_PROMPT_FOR_EXECUTOR_AI.md`](MASTER_PROMPT_FOR_EXECUTOR_AI.md).
 
 ---
 
-## 0. Stop and answer these questions before executing Stages 3–10
+## 0. Student decisions (locked 11 September 2026)
 
-The writing agent does **not** know the student’s answers. Do not guess.
-
-1. **Which Git line is authoritative for the next run?**  
-   This checkout’s paper branch treats Stages 3–6 as PENDING.  
-   Branch `cursor/stage-execution-plan-8597` (PR #3) already recorded Stages 3–6 as **PASS WITH LIMITATIONS** / missingness.  
-   Those large GraphML/PBF/SUMO files are **gitignored**; only JSON/PNG evidence was committed. Re-running is required unless the student’s laptop still has `data/`.
-
-2. **Is the deliverable the research-and-evidence document, the DAA Word file, or both?**  
-   `docs/PROJECT_RESEARCH_AND_EVIDENCE.md` is the research packet on this line.  
-   `docs/DAA_ASSIGNMENT.md` exists on the stage-execution branch only.  
-   Student named on the DAA file: Rohit Michael Raj, 24BCE5108, VIT Chennai.
-
-3. **Target venue and claim strength?**  
-   Integration/evaluation paper vs coursework write-up. That choice changes whether SYNTHETIC SUMO demand is acceptable as a result or only as a limitation.
-
-4. **Credentials?**  
-   Official IMERG and SRTM/NASADEM need Earthdata. The documented no-key core is Open-Meteo ERA5 + OSM + OpenCity. Do not use paid APIs as if they were the reproducible core.
-
-5. **Locked study boundary?**  
-   PR #3 used Greater Chennai Corporation 2022 wards (OpenCity resource `e90176d4-319a-45bd-918e-ecce4f048c4d`) and Geofabrik `india-260901.osm.pbf`. Re-justify or reuse; do not silently pick a new bbox.
-
-6. **Stage 6?**  
-   An earlier instruction on the paper agent was “no need to do Stage 6.” A later instruction asked for stages 0 through end. The student must restate which rule wins. PR #3 already ran inertial CCH vs Dijkstra with limitations (SCENARIO 30 km/h where maxspeed is missing; turns not modelled).
-
-Until (1)–(6) are answered in writing in this file’s “Student decisions” section below, **do not start Stage 3+ as if the answers were known.**
-
-### Student decisions (fill before Stage 3+)
-
-| Question | Answer (student or later agent, dated) |
+| Question | Locked answer |
 |---|---|
-| Authoritative git line | _unanswered_ |
-| Deliverable set | _unanswered_ |
-| Venue / claim strength | _unanswered_ |
-| Earthdata / extra credentials | _unanswered_ |
-| Study boundary | _unanswered_ |
-| Stage 6 in or out | _unanswered_ |
+| Authoritative git line | Combine `cursor/model-pathways-audit-8597` with `cursor/stage-execution-plan-8597`. Re-run city experiments. |
+| Deliverable set | Journal or conference research paper (integration / evaluation). |
+| Venue / claim strength | Journal/conference bar. SYNTHETIC SUMO is an abstract-level limitation, not a calibration result. |
+| Earthdata / extra credentials | None. No-key core only. |
+| Study boundary | GCC 2022 wards + dated Geofabrik India extract (verify, then reuse). |
+| Stage 6 | In. City CCH is required. |
+| Student data | None. Executor AI acquires all public sources. |
 
----
+## 1. Prompt to give the executor AI
 
-## 1. Prompt to give the critic / executor AI
-
-Copy everything in this section as the system or first user message.
-
-```text
-ROLE
-You are three people in sequence, never a co-author who wants the paper to “look good”:
-
-A) Research-integrity officer. Fail any sentence that calls a certificate new, calls
-   historical flood live, calls SUMO observed Chennai traffic, or treats a silent
-   default as a measurement.
-
-B) Independent methods reviewer (transportation science / experimental algorithms).
-   Ask: what claim is supported by which artifact? Is the work paper-worthy at the
-   stated venue, or only a prototype report?
-
-C) Reproducibility engineer. Re-run or re-check commands. If you cannot reproduce
-   a number, the number is not a result.
-
-PERSONA RULES
-- Dijkstra is the correctness oracle.
-- CCH is the (optional) path engine.
-- CLMS / the certificate controller is a refresh gate, not a shortest-path algorithm.
-- BPR is a route-cost model; SUMO (when present) is the realized-traffic model.
-- You may not “fix” a gap by inventing speeds, capacities, OD matrices, flood depths,
-  compliance rates, ambulance AVL, or signal preemption.
-- You may label a value SCENARIO or UNAVAILABLE.
-- You may run a sensitivity sweep over a declared range.
-- You may not average those into a single “Chennai calibration” without a cited method
-  and held-out check.
-
-MANDATORY READING ORDER (do not skip)
-1. docs/AI_MENTOR_PROTOCOL.md          (this contract)
-2. CONTEXT.md
-3. PLAN.md
-4. README.md
-5. docs/PROJECT_RESEARCH_AND_EVIDENCE.md
-6. STAGE1_HANDOFF.md                   (historical; its “DONE” is not publication-complete)
-7. PROJECT_EXPLANATION_FOR_RESEARCH_PAPER.md
-8. data/README.md, scripts/README.md, tests/README.md
-9. docs/evidence/*.json that exist on the current checkout
-10. Then the code: src/, scripts/, tests/, pyproject.toml, .gitignore
-11. If the student authorized the other line: git show / checkout
-    origin/cursor/stage-execution-plan-8597 and read its PLAN.md, DAA file,
-    and docs/evidence/STAGE{3,4,5,6}_*.json
-
-CRITICAL METHOD
-For every stage 0–10:
-- List files that implement it.
-- List artifacts that exist in git vs only on disk vs missing.
-- Classify every scientific constant: OBSERVED / PUBLISHED / ESTIMATED /
-  SCENARIO / UNAVAILABLE.
-- Quote the claim the paper currently makes and mark SUPPORT / OVERCLAIM / SILENCE.
-- Decision: PASS | PASS WITH LIMITATIONS | BLOCKED | FAIL.
-A stage is not complete because a function exists.
-
-ETHICS
-- Do not scrape or fabricate personal location traces.
-- Facility catalogues are locations, not capacity or trauma capability.
-- Population surfaces are not equity analysis.
-- Do not present coursework as a peer-reviewed result or vice versa.
-- Keep student identity consistent with the document being written.
-
-EXECUTION ORDER AFTER THE AUDIT
-Only if Student decisions in docs/AI_MENTOR_PROTOCOL.md are filled:
-Stage 0 docs alignment
-→ 1 (publication-grade demo evidence or keep labelled demo)
-→ 2 (already synthetic; do not over-claim)
-→ 3 dated graph
-→ 4 explained road states
-→ 5 SUMO with demand class labelled
-→ 6 city CCH if in scope
-→ 7 reservations (filter already partial)
-→ 8 Chennai facilities/population
-→ 9 emergency scenario
-→ 10 evaluation + manuscript whose claims match generated evidence
-
-If a gate FAILS or is BLOCKED, stop that chain. Do not write Stage 10 “results”
-from missing Stages 3–9.
-
-OUTPUT
-1. A written audit (update this protocol’s audit log).
-2. Code/doc changes only where they remove overclaims or implement a gated task.
-3. Tests.
-4. Regenerated Word/PDF only after markdown claims match code.
-```
+Copy **the entire fenced block** in [`docs/MASTER_PROMPT_FOR_EXECUTOR_AI.md`](MASTER_PROMPT_FOR_EXECUTOR_AI.md) (section “COPY FROM HERE”). Do not use a shortened paraphrase.
 
 ---
 
@@ -320,18 +210,13 @@ Tests on the writing agent’s last run of this line: **55 passed** with `routin
 
 ---
 
-## 9. What the writing agent did **not** do (11 Sep 2026)
+## 9. What the writing agent did **not** do
 
+- Did not execute Stages 3–10 on this pass.  
 - Did not merge PR #3 into this branch.  
-- Did not re-download the India PBF or re-run SUMO/CCH at city scale.  
-- Did not fill Student decisions.  
-- Did not claim the work is submission-ready as a full Chennai evaluation.  
-- Did not find Claude-plugin superpowers in that cloud environment.
+- Did not re-download the India PBF.
 
-**Authorized next coding step after decisions are filled:**  
-If PR #3 is accepted as the data line → continue **Stage 7** on a branch that contains those scripts **and** a restored `data/` tree.  
-If this paper line stays isolated → Stage 3 graph first, then 4–10 in PLAN.md order.  
-If Stage 6 remains out of scope → Dijkstra stays the only city engine; say so in the paper.
+**Authorized next step:** another AI runs [`docs/MASTER_PROMPT_FOR_EXECUTOR_AI.md`](MASTER_PROMPT_FOR_EXECUTOR_AI.md) in full, including Stage 6, acquiring no-key data itself.
 
 ---
 
@@ -339,5 +224,5 @@ If Stage 6 remains out of scope → Dijkstra stays the only city engine; say so 
 
 | Date | Agent | Action |
 |---|---|---|
-| 2026-09-11 | Paper-line agent | Wrote this protocol after a claims-vs-code and cross-branch evidence read. Did not execute Stages 3–10. |
+| 2026-09-11 | Paper-line agent | Wrote protocol; later locked student decisions and added the master executor prompt. Did not execute Stages 3–10. |
 | | | _later agents append here_ |

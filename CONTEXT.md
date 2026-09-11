@@ -137,11 +137,12 @@ Do not add unsupported vehicle-specific flood depth or invented physical recover
 
 Before changing implementation:
 
-1. `docs/AI_MENTOR_PROTOCOL.md`
-2. `CONTEXT.md`
-3. `PLAN.md`
-4. `README.md`
-5. `docs/PROJECT_RESEARCH_AND_EVIDENCE.md`
-6. `STAGE1_HANDOFF.md`
+1. `docs/MASTER_PROMPT_FOR_EXECUTOR_AI.md`
+2. `docs/AI_MENTOR_PROTOCOL.md`
+3. `CONTEXT.md`
+4. `PLAN.md`
+5. `README.md`
+6. `docs/PROJECT_RESEARCH_AND_EVIDENCE.md`
+7. `STAGE1_HANDOFF.md`
 
-Implementation must distinguish completed evidence from planned work and must report negative results. Do not start Stages 3–10 until the Student decisions table in `docs/AI_MENTOR_PROTOCOL.md` is filled. Do not invent missing speeds, demand, or flood depth.
+Implementation must distinguish completed evidence from planned work and must report negative results. Student decisions are locked in the protocol. The executor AI acquires all no-key data. Do not invent missing speeds, demand, or flood depth.
