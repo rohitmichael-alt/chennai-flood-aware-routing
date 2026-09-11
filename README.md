@@ -14,6 +14,8 @@ This project does not introduce a new shortest-path algorithm or a new route-cer
 
 See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE.md) for the research gap, proof, three-road example, prior art, datasets, preliminary results, and limitations.
 
+Any later AI reviewer or executor must start with [`docs/AI_MENTOR_PROTOCOL.md`](docs/AI_MENTOR_PROTOCOL.md).
+
 ## Current Status
 
 | Stage | Status |

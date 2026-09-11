@@ -22,3 +22,5 @@ def test_authoritative_documents_exist() -> None:
     assert (root / "CONTEXT.md").is_file()
     assert (root / "PLAN.md").is_file()
     assert (root / "CODEX_SETUP_PROMPT.md").is_file()
+    assert (root / "docs" / "AI_MENTOR_PROTOCOL.md").is_file()
+    assert (root / "docs" / "PROJECT_RESEARCH_AND_EVIDENCE.md").is_file()

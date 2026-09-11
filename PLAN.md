@@ -2,6 +2,8 @@
 
 **Authoritative research direction:** certificate-gated CCH routing under compound Chennai flood, incident, and traffic disruption.
 
+**Mentor / no-assumption contract:** [`docs/AI_MENTOR_PROTOCOL.md`](docs/AI_MENTOR_PROTOCOL.md). Any later AI must follow that file before changing stages. Stages 3–10 on **this** branch stay PENDING until the protocol’s Student decisions table is filled. Do not treat `STAGE1_HANDOFF.md` as publication-complete.
+
 ## Status Summary
 
 | Stage | Description | Status |
