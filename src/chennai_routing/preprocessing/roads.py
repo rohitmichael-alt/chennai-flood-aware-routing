@@ -1,1 +1,1 @@
-"""Road-network preprocessing boundary for future implementation stages."""
+"""Road-network preprocessing boundary for Stage 3. Unimplemented on this branch."""

@@ -15,8 +15,8 @@ import pandas as pd
 from chennai_routing.config import get_project_paths
 from chennai_routing.data.flood import download_opencity_flood_kml, parse_kml_points
 from chennai_routing.data.osm import build_bbox_around_point, download_drive_graph_for_bbox, save_graphml
-from chennai_routing.models.bpr import bpr_travel_time
 from chennai_routing.models.capacity import effective_capacity
+from chennai_routing.models.pathway import ExplainedArcState, integer_metric_from_states, travel_time_seconds
 from chennai_routing.preprocessing.geospatial import map_flood_points_to_nearest_roads
 from chennai_routing.preprocessing.validation import require_same_crs, validate_routable_graph
 from chennai_routing.routing.dijkstra import path_cost, shortest_path
@@ -43,34 +43,76 @@ class Stage1Result:
     bbox: tuple[float, float, float, float]
 
 
+SCENARIO_DEFAULT_SPEED_KPH = 30.0
+SCENARIO_UNIFORM_CAPACITY = 1200.0
+SCENARIO_UNIFORM_FLOW = 600.0
+
+
 def _edge_free_flow_time(data: dict[str, object]) -> float:
-    if "travel_time" in data and data["travel_time"] is not None:
-        return float(data["travel_time"])
-    length = float(data.get("length", 1.0))
-    speed_kph = float(data.get("speed_kph", 30.0))
-    return length / (speed_kph * 1000.0 / 3600.0)
+    travel_time = data.get("travel_time")
+    if travel_time is not None:
+        value = float(travel_time)
+        if not math.isfinite(value) or value < 0:
+            raise ValueError("travel_time must be finite and non-negative.")
+        if value == 0:
+            raise ValueError("travel_time of 0 hides congestion in BPR.")
+        return value
+    if "length" not in data:
+        raise ValueError("Edge is missing length and travel_time.")
+    length = float(data["length"])
+    if not math.isfinite(length) or length <= 0:
+        raise ValueError("Edge length must be a positive finite number.")
+    speed_kph = data.get("speed_kph", SCENARIO_DEFAULT_SPEED_KPH)
+    speed = float(speed_kph)
+    if not math.isfinite(speed) or speed <= 0:
+        raise ValueError("speed_kph must be a positive finite number.")
+    data["speed_kph_class"] = (
+        "OBSERVED" if "speed_kph" in data else "SCENARIO"
+    )
+    return length / (speed * 1000.0 / 3600.0)
 
 
 def apply_stage1_costs(
     graph: nx.MultiDiGraph,
     blocked_edges: set[tuple[int, int, int]] | None = None,
     *,
-    normal_capacity: float = 1200.0,
-    flow: float = 600.0,
+    normal_capacity: float = SCENARIO_UNIFORM_CAPACITY,
+    flow: float = SCENARIO_UNIFORM_FLOW,
 ) -> None:
-    """Apply transparent capacity and BPR costs to graph edges in place."""
+    """Apply labelled SCENARIO capacity/flow and BPR costs in place.
+
+    Uniform capacity 1200 and flow 600 make BPR a near-constant scale factor.
+    They are demonstration values, not Chennai counts.
+    """
 
     blocked_edges = blocked_edges or set()
+    states: dict[tuple[int, int, int], ExplainedArcState] = {}
     for u, v, key, data in graph.edges(keys=True, data=True):
-        road_state = "BLOCKED" if (u, v, key) in blocked_edges else "NORMAL"
-        capacity = effective_capacity(normal_capacity, road_state)
+        edge = (u, v, key)
+        road_state = "BLOCKED" if edge in blocked_edges else "NORMAL"
         free_flow_time = _edge_free_flow_time(data)
+        explained = ExplainedArcState(
+            edge=edge,
+            state=road_state,
+            assigned_flow=flow,
+            free_flow_time_seconds=free_flow_time,
+            normal_capacity=normal_capacity,
+            evidence_class="SCENARIO",
+            reason="stage1_uniform_bpr",
+        )
+        states[edge] = explained
+        seconds = travel_time_seconds(explained)
         data["road_condition"] = road_state
         data["normal_capacity"] = normal_capacity
-        data["effective_capacity"] = capacity
+        data["effective_capacity"] = effective_capacity(normal_capacity, road_state)
         data["current_flow"] = flow
-        data["bpr_travel_time"] = bpr_travel_time(free_flow_time, flow, capacity)
-        data["stage1_weight"] = data["bpr_travel_time"]
+        data["bpr_travel_time"] = seconds
+        data["stage1_weight"] = seconds
+        data["evidence_class"] = explained.evidence_class
+    snapshot, classes = integer_metric_from_states(graph, states)
+    for edge, weight in snapshot.weights.items():
+        graph.edges[edge]["stage1_weight_ms"] = weight
+        graph.edges[edge]["evidence_class"] = classes[edge]
 
 
 def select_route_change_edge(
@@ -104,10 +146,6 @@ def select_route_change_edge(
             before_cost = path_cost(graph, before, weight="stage1_weight")
             after_cost = path_cost(blocked_graph, after, weight="stage1_weight")
             if math.isfinite(after_cost):
-                graph.clear()
-                graph.add_nodes_from(blocked_graph.nodes(data=True))
-                graph.add_edges_from(blocked_graph.edges(keys=True, data=True))
-                graph.graph.update(blocked_graph.graph)
                 return edge, before, after, before_cost, after_cost
 
     raise RuntimeError(
@@ -174,7 +212,15 @@ def run_stage1_poc() -> Stage1Result:
             affected_edge, before, after, before_cost, after_cost = select_route_change_edge(
                 graph, affected_edges
             )
-            graph_path = save_graphml(graph, paths.processed_roads / "stage1_chennai_osm_graph.graphml")
+            blocked_graph = graph.copy()
+            apply_stage1_costs(blocked_graph, {affected_edge})
+            graph_path = save_graphml(
+                graph, paths.processed_roads / "stage1_chennai_osm_graph.graphml"
+            )
+            save_graphml(
+                blocked_graph,
+                paths.processed_roads / "stage1_chennai_osm_graph_blocked.graphml",
+            )
 
             affected_csv = paths.output_tables / "stage1_affected_roads.csv"
             affected_edges.drop(columns="geometry").to_csv(affected_csv, index=False)
@@ -185,7 +231,7 @@ def run_stage1_poc() -> Stage1Result:
                 & (affected_edges["key"] == affected_edge[2])
             )
             map_path = plot_stage1_before_after(
-                graph,
+                blocked_graph,
                 local_flood_points,
                 affected_edges[selected_affected_mask],
                 before,

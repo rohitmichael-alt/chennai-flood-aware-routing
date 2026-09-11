@@ -26,6 +26,8 @@ def test_population_weighted_accessibility_reports_disconnection() -> None:
     assert summary.disconnected_population_share == 0.7
     assert summary.connected_weighted_mean_time == pytest.approx(50 / 3)
     assert summary.population_weighted_p90_time == math.inf
+    assert summary.connected_population_weighted_p50_time == pytest.approx(20.0)
+    assert summary.connected_population_weighted_p90_time == pytest.approx(20.0)
     assert summary.population_share_over_threshold == 0.9
 
 

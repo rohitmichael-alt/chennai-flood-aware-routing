@@ -1,1 +1,1 @@
-"""SUMO integration boundary for future Stage 8 implementation."""
+"""SUMO integration boundary for Stage 5. Acquisition and calibration are unimplemented."""

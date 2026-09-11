@@ -78,8 +78,9 @@ def map_flood_points_to_nearest_roads(
     if "road_geometry" in nearest.columns:
         result["geometry"] = nearest["road_geometry"]
     result["road_state"] = "BLOCKED"
+    result["state_class"] = "SCENARIO"
     result["state_basis"] = (
         "MODEL ASSUMPTION for controlled Stage 1 demo: historical hotspot nearest road "
-        "is treated as unavailable after disruption."
+        "is treated as unavailable after disruption. This is not an observed 2015 closure."
     )
     return gpd.GeoDataFrame(pd.DataFrame(result), geometry="geometry", crs=flood_metric.crs)

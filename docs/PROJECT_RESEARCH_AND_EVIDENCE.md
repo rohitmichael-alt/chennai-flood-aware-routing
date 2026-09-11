@@ -155,7 +155,7 @@ t_{e,t}=t^0_e\left[
 
 where adjacency denotes multiplication. For software and CCH, seconds are quantized to non-negative integer milliseconds. Flow and capacity use the same interval and units. Discharged throughput is retained as an outcome, not substituted for assigned entering demand.
 
-When \(c^{eff}_{e,t}=0\), the edge is excluded and its routing cost is \(+\infty\); the finite BPR expression is not evaluated. The native CCH experiment currently rejects closures until a finite sentinel and overflow bound are validated.
+When \(c^{eff}_{e,t}=0\), the edge is excluded and its routing cost is \(+\infty\); the finite BPR expression is not evaluated. Native CCH currently rejects \(+\infty\) closures; Dijkstra omits those edges. An integer-millisecond conversion is implemented for the Stage 2 snapshot glue.
 
 ### 5.2 Which Algorithm Finds the Path?
 
@@ -263,15 +263,13 @@ A closure represented as an increase is safe for the lower-bound direction, but 
 
 ### 5.6 Route Adoption and Projected Load
 
-The certificate controls **metric synchronization**. A separate policy controls **whether a vehicle changes route**:
+The certificate controls **metric synchronization**. A separate SCENARIO filter can then decide **whether a vehicle changes route**:
 
 1. current route becomes infeasible, or degradation exceeds \(\theta_{deg}\);
 2. candidate improvement exceeds \(\theta_{gain}\);
-3. cooldown has expired unless safety requires immediate action;
-4. accepted compliant demand is reserved on projected edge-entry intervals;
-5. later requests use the updated projected metric.
+3. cooldown has expired unless safety requires immediate action.
 
-This greedy policy is not claimed to achieve traffic equilibrium.
+Items 1–3 are implemented as `decide_route_adoption`. Time-indexed reservations (items previously 4–5) remain unimplemented. The filter is not claimed to achieve traffic equilibrium.
 
 ### 5.7 Emergency and Public-Service Evaluation
 
@@ -490,6 +488,8 @@ flowchart TD
     Dijkstra[Dijkstra_Oracle] --> Evaluation
 ```
 
+Implemented now: integer BPR snapshot glue, certificate gate, Dijkstra/CCH engines, and a SCENARIO adoption-threshold filter. SUMO, projected reservations, and Chennai road-state ingestion remain unimplemented on this branch.
+
 ## 10. Implementation Status and Revised Stages
 
 ### Stage 1 — Previously Executed Historical-Hotspot-Seeded Controlled Demo
@@ -511,7 +511,7 @@ OSM and OpenCity historical hotspots were joined to roads; one real mapped edge 
 - eager baseline and deterministic experiment runner;
 - accessibility/compliance evaluation utilities;
 - uncertainty and facility-road-criticality utilities;
-- 45 passing tests.
+- 55 collected tests when `routingkit-cch` is installed (4 skip without it).
 
 ### Stage 3 — Reproducible Chennai Graph
 
@@ -535,8 +535,7 @@ Geometry-aware ordering, turn-expanded topology, finite closure sentinel, intege
 
 ### Stage 7 — Stable Projected-Load Rerouting
 
-**Status:** Planned.  
-Threshold, minimum gain, cooldown, time-indexed route reservations, and compliance sensitivity.
+**Status:** SCENARIO threshold/cooldown adoption filter implemented; cooldown does not delay degradation or infeasible incumbents. Time-indexed reservations and SUMO comparison are unimplemented.
 
 ### Stage 8 — Accessibility, Population, Compliance, and Road Criticality
 
@@ -563,7 +562,7 @@ Paired scenarios, baselines, ablations, uncertainty, statistical reporting, repr
 - 5 edge updates and 50 OD queries per epoch;
 - 5% certificate tolerance;
 - identical trace for Dijkstra and CCH;
-- monotone-increase and mixed increase/decrease workloads;
+- monotone-increase and mixed increase/decrease workloads (a changed edge decreases with probability 0.3);
 - Python 3.12.3, NetworkX 3.6.1, `routingkit-cch` 0.1.4.
 
 ### 11.2 Main Results
@@ -674,6 +673,8 @@ The proposed core remains feasible as historical-evidence-conditioned scenario r
 16. A literature audit cannot prove universal novelty.
 17. All five strengthening factors currently have only generic utility portions, not completed Chennai experiments.
 18. OpenCity historical layers do not provide authoritative timestamped road-state truth.
+19. Stage 1 uniform flow/capacity makes BPR almost a scale factor; congestion response is not validated.
+20. The adoption filter is a labelled policy, not observed driver behaviour or an equilibrium model.
 
 ## 16. Final Project Summary
 

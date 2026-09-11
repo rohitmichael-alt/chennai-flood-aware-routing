@@ -1,1 +1,1 @@
-"""Road-condition model boundary for future Stage 5 implementation."""
+"""Incident/road-condition model boundary for Stage 4. Unimplemented."""

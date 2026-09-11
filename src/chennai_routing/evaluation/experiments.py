@@ -192,7 +192,6 @@ def run_certified_lazy_experiment(
             version=version + 1,
             replacements=tuple(replacements),
         )
-        version += 1
         if epoch % 2 == 0:
             lazy_update_started = perf_counter_ns()
             lazy.apply_updates(batch)
@@ -208,6 +207,11 @@ def run_certified_lazy_experiment(
             lazy.apply_updates(batch)
             lazy_total_ns += perf_counter_ns() - lazy_update_started
         oracle.apply_updates(batch)
+        version = lazy.state().current_version
+        if version != eager.state().metric_version:
+            raise RuntimeError(
+                "Lazy and eager routers diverged after an update batch."
+            )
         events.append(
             {
                 "epoch": epoch,
@@ -336,7 +340,9 @@ def run_certified_lazy_experiment(
             "binding with degree ordering. Total durations use symmetric "
             "wall-clock boundaries for updates and routes, exclude engine "
             "construction/initial synchronization, and are single-run values. "
-            "Neither establishes Chennai traffic outcomes."
+            "Neither establishes Chennai traffic outcomes. Mixed updates "
+            "decrease a changed edge with probability 0.3. refreshes_avoided "
+            "is eager post-initial syncs minus lazy refreshes, clamped at 0."
         ),
     )
 

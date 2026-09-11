@@ -22,10 +22,21 @@ def validate_routable_graph(graph: nx.MultiDiGraph) -> None:
         raise ValueError("OSM graph has no nodes.")
     if graph.number_of_edges() == 0:
         raise ValueError("OSM graph has no edges.")
-    missing_lengths = [
+    missing_or_invalid = [
         (u, v, k)
         for u, v, k, data in graph.edges(keys=True, data=True)
         if "length" not in data
+        or not _positive_finite(data.get("length"))
     ]
-    if missing_lengths:
-        raise ValueError(f"OSM graph has edges without length: {missing_lengths[:5]}")
+    if missing_or_invalid:
+        raise ValueError(
+            f"OSM graph has edges without a positive finite length: {missing_or_invalid[:5]}"
+        )
+
+
+def _positive_finite(value: object) -> bool:
+    try:
+        number = float(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return False
+    return number == number and number > 0

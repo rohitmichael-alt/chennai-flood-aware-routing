@@ -59,7 +59,7 @@ class SyncReport:
 
 
 class ShortestPathEngine(Protocol):
-    """Protocol implemented by Dijkstra now and a CCH adapter later."""
+    """Dijkstra now and the optional native CCH adapter."""
 
     @property
     def topology_id(self) -> str:

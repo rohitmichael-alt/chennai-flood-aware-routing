@@ -75,7 +75,7 @@ class NetworkXDijkstraEngine:
             raise ValueError("Metric topology does not match the engine topology.")
         if metric.version < 0 or (
             self._metric_version is not None
-            and metric.version < self._metric_version
+            and metric.version <= self._metric_version
         ):
             raise ValueError(
                 "Metric version must be non-negative and cannot move backwards."

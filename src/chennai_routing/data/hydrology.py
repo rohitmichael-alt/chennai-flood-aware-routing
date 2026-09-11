@@ -1,4 +1,1 @@
-"""Hydrology data access boundary.
-
-Future Stage 3 work belongs here when drainage and water-body context is introduced.
-"""
+"""Hydrology data access boundary for Stage 4. Unimplemented."""

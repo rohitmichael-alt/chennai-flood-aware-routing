@@ -1,6 +1,6 @@
 # Chennai Compound-Disruption Dynamic Routing
 
-Research prototype for flood-, incident-, and congestion-aware routing using:
+Research prototype for flood-conditioned and congestion-aware routing using:
 
 - OpenStreetMap and Chennai flood evidence;
 - effective road capacity and BPR travel-time costs;
@@ -14,20 +14,24 @@ This project does not introduce a new shortest-path algorithm or a new route-cer
 
 See [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE.md) for the research gap, proof, three-road example, prior art, datasets, preliminary results, and limitations.
 
+Any later AI executor must use the copy-paste brief in [`docs/MASTER_PROMPT_FOR_EXECUTOR_AI.md`](docs/MASTER_PROMPT_FOR_EXECUTOR_AI.md).
+
 ## Current Status
 
 | Stage | Status |
 |---|---|
-| Historical flood-to-road Dijkstra proof of concept | Implemented |
+| Historical flood-to-road Dijkstra proof of concept | Implemented as a **controlled demo**, not publication evidence |
 | Certificate-gated synchronization controller | Implemented |
 | Exact NetworkX Dijkstra adapter | Implemented |
 | Native `routingkit-cch` adapter | Implemented for finite integer experimental metrics |
 | Eager baseline and deterministic experiments | Implemented |
-| Uncertainty, accessibility, compliance, and road-criticality methods | Implemented |
+| Uncertainty, accessibility, compliance, and road-criticality methods | Generic utilities implemented; no Chennai run |
+| Integer BPR snapshot pathway glue | Implemented |
+| SCENARIO route-adoption filter | Implemented; reservations/SUMO planned |
 | Chennai graph/flood/rainfall/SUMO integration | Planned |
 | Full publication evaluation | Planned |
 
-Current tests: **45 passing** at the latest recorded verification.
+Current tests: run `python -m pytest`. Count is 55 passed when `.[cch]` is installed.
 
 ## Install
 

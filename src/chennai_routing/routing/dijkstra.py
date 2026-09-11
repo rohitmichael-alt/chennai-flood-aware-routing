@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import math
-
 import networkx as nx
 
 
@@ -21,6 +19,10 @@ def path_cost(graph: nx.MultiDiGraph, path: list[int], *, weight: str) -> float:
         edge_options = graph.get_edge_data(u, v)
         if not edge_options:
             raise ValueError(f"Path contains non-edge step: {u} -> {v}")
-        step_cost = min(data.get(weight, math.inf) for data in edge_options.values())
-        total += step_cost
+        costs = []
+        for data in edge_options.values():
+            if weight not in data:
+                raise ValueError(f"Edge {u}->{v} is missing weight attribute {weight!r}.")
+            costs.append(data[weight])
+        total += min(costs)
     return total
