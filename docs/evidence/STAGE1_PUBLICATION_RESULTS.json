@@ -1,0 +1,25 @@
+{
+  "after_cost_seconds": 18.686999999999998,
+  "artifacts": {
+    "csv": "outputs\\tables\\stage1_publication_routes.csv",
+    "graphml": "data\\processed\\stage1_publication\\stage1_dated_route_extract.graphml",
+    "png": "outputs\\maps\\stage1_publication_before_after.png"
+  },
+  "before_cost_seconds": 9.916,
+  "blocked_arc": {
+    "classification": "SCENARIO based on Stage 4 historical-hotspot overlay",
+    "osm_way_id": "335960139",
+    "stage3_arc_id": "ea16634a4846d51d928cfde4e1b86b7f50467ccc4540760d7046a4c1c16c053c",
+    "u": "11649025350",
+    "v": "2272593618"
+  },
+  "claim_limit": "The blockage and uniform 1200/600 capacity-flow values are SCENARIO demonstration inputs, not a calibrated reconstruction or current Chennai road condition.",
+  "decision": "PASS WITH LIMITATIONS",
+  "generated_at_utc": "2026-09-12T18:31:46.184337+00:00",
+  "graph_extract_definition": "Union of the before/after route arcs selected from the dated Stage 3 graph.",
+  "scenario_uniform_capacity": 1200,
+  "scenario_uniform_flow": 600,
+  "source_graph": "data/processed/roads/stage3_chennai_gcc_2022.graphml",
+  "source_graph_arc_count": 331545,
+  "stage": 1
+}

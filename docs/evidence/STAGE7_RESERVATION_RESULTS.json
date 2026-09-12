@@ -1,0 +1,329 @@
+{
+  "claim_limit": "This seeded four-node engineering experiment measures recommendation herding under scenario BPR parameters. It is not a Chennai traffic result, calibrated assignment, Wardrop equilibrium, or fleet optimum.",
+  "classification": "SYNTHETIC / SCENARIO",
+  "decision": "PASS WITH LIMITATIONS",
+  "generated_at_utc": "2026-09-11T18:31:35.930141+00:00",
+  "invariants": {
+    "compliant_only_reservation": true,
+    "edge_entry_time_bins": true,
+    "equilibrium_claim": false,
+    "metric_update_before_certificate": true
+  },
+  "policy": {
+    "bpr_alpha": 0.15,
+    "bpr_beta": 4.0,
+    "capacity_pce_per_bin": 20.0,
+    "classification": "SCENARIO",
+    "reservation_bin_seconds": 300,
+    "vehicle_pce": 1.0
+  },
+  "runs": [
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 0,
+        "current_version": 0,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 0,
+        "refresh_count": 0,
+        "synchronized_version": 0
+      },
+      "compliance": 0.0,
+      "compliant_vehicle_count": 0,
+      "maximum_realized_bpr_seconds": 68.0,
+      "maximum_volume_capacity_ratio": 2.0,
+      "mean_realized_bpr_seconds": 68.0,
+      "route_counts": {
+        "a-t": 40
+      },
+      "seed": 8597,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 0,
+        "current_version": 0,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 0,
+        "refresh_count": 0,
+        "synchronized_version": 0
+      },
+      "compliance": 0.0,
+      "compliant_vehicle_count": 0,
+      "maximum_realized_bpr_seconds": 68.0,
+      "maximum_volume_capacity_ratio": 2.0,
+      "mean_realized_bpr_seconds": 68.0,
+      "route_counts": {
+        "a-t": 40
+      },
+      "seed": 8598,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 0,
+        "current_version": 0,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 0,
+        "refresh_count": 0,
+        "synchronized_version": 0
+      },
+      "compliance": 0.0,
+      "compliant_vehicle_count": 0,
+      "maximum_realized_bpr_seconds": 68.0,
+      "maximum_volume_capacity_ratio": 2.0,
+      "mean_realized_bpr_seconds": 68.0,
+      "route_counts": {
+        "a-t": 40
+      },
+      "seed": 8599,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 7,
+        "current_version": 7,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 2,
+        "refresh_count": 0,
+        "synchronized_version": 0
+      },
+      "compliance": 0.25,
+      "compliant_vehicle_count": 10,
+      "maximum_realized_bpr_seconds": 68.0,
+      "maximum_volume_capacity_ratio": 2.0,
+      "mean_realized_bpr_seconds": 68.0,
+      "route_counts": {
+        "a-t": 40
+      },
+      "seed": 8597,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 7,
+        "current_version": 7,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 2,
+        "refresh_count": 0,
+        "synchronized_version": 0
+      },
+      "compliance": 0.25,
+      "compliant_vehicle_count": 10,
+      "maximum_realized_bpr_seconds": 68.0,
+      "maximum_volume_capacity_ratio": 2.0,
+      "mean_realized_bpr_seconds": 68.0,
+      "route_counts": {
+        "a-t": 40
+      },
+      "seed": 8598,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 7,
+        "current_version": 7,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 2,
+        "refresh_count": 0,
+        "synchronized_version": 0
+      },
+      "compliance": 0.25,
+      "compliant_vehicle_count": 10,
+      "maximum_realized_bpr_seconds": 68.0,
+      "maximum_volume_capacity_ratio": 2.0,
+      "mean_realized_bpr_seconds": 68.0,
+      "route_counts": {
+        "a-t": 40
+      },
+      "seed": 8599,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 15,
+        "current_version": 17,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 0,
+        "refresh_count": 2,
+        "synchronized_version": 17
+      },
+      "compliance": 0.5,
+      "compliant_vehicle_count": 20,
+      "maximum_realized_bpr_seconds": 68.0,
+      "maximum_volume_capacity_ratio": 2.0,
+      "mean_realized_bpr_seconds": 68.0,
+      "route_counts": {
+        "a-t": 40
+      },
+      "seed": 8597,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 15,
+        "current_version": 17,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 0,
+        "refresh_count": 2,
+        "synchronized_version": 17
+      },
+      "compliance": 0.5,
+      "compliant_vehicle_count": 20,
+      "maximum_realized_bpr_seconds": 68.0,
+      "maximum_volume_capacity_ratio": 2.0,
+      "mean_realized_bpr_seconds": 68.0,
+      "route_counts": {
+        "a-t": 40
+      },
+      "seed": 8598,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 15,
+        "current_version": 17,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 0,
+        "refresh_count": 2,
+        "synchronized_version": 17
+      },
+      "compliance": 0.5,
+      "compliant_vehicle_count": 20,
+      "maximum_realized_bpr_seconds": 68.0,
+      "maximum_volume_capacity_ratio": 2.0,
+      "mean_realized_bpr_seconds": 68.0,
+      "route_counts": {
+        "a-t": 40
+      },
+      "seed": 8599,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 21,
+        "current_version": 25,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 2,
+        "refresh_count": 4,
+        "synchronized_version": 21
+      },
+      "compliance": 0.75,
+      "compliant_vehicle_count": 30,
+      "maximum_realized_bpr_seconds": 42.23601875,
+      "maximum_volume_capacity_ratio": 1.65,
+      "mean_realized_bpr_seconds": 39.05416940625,
+      "route_counts": {
+        "a-t": 33,
+        "b-t": 7
+      },
+      "seed": 8597,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 21,
+        "current_version": 25,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 2,
+        "refresh_count": 4,
+        "synchronized_version": 21
+      },
+      "compliance": 0.75,
+      "compliant_vehicle_count": 30,
+      "maximum_realized_bpr_seconds": 42.23601875,
+      "maximum_volume_capacity_ratio": 1.65,
+      "mean_realized_bpr_seconds": 39.05416940625,
+      "route_counts": {
+        "a-t": 33,
+        "b-t": 7
+      },
+      "seed": 8598,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 21,
+        "current_version": 25,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 2,
+        "refresh_count": 4,
+        "synchronized_version": 21
+      },
+      "compliance": 0.75,
+      "compliant_vehicle_count": 30,
+      "maximum_realized_bpr_seconds": 42.23601875,
+      "maximum_volume_capacity_ratio": 1.65,
+      "mean_realized_bpr_seconds": 39.05416940625,
+      "route_counts": {
+        "a-t": 33,
+        "b-t": 7
+      },
+      "seed": 8599,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 30,
+        "current_version": 35,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 0,
+        "refresh_count": 5,
+        "synchronized_version": 35
+      },
+      "compliance": 1.0,
+      "compliant_vehicle_count": 40,
+      "maximum_realized_bpr_seconds": 26.2208,
+      "maximum_volume_capacity_ratio": 1.2,
+      "mean_realized_bpr_seconds": 25.922304,
+      "route_counts": {
+        "a-t": 24,
+        "b-t": 16
+      },
+      "seed": 8597,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 30,
+        "current_version": 35,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 0,
+        "refresh_count": 5,
+        "synchronized_version": 35
+      },
+      "compliance": 1.0,
+      "compliant_vehicle_count": 40,
+      "maximum_realized_bpr_seconds": 26.2208,
+      "maximum_volume_capacity_ratio": 1.2,
+      "mean_realized_bpr_seconds": 25.922304,
+      "route_counts": {
+        "a-t": 24,
+        "b-t": 16
+      },
+      "seed": 8598,
+      "vehicle_count": 40
+    },
+    {
+      "certificate_state": {
+        "certified_stale_query_count": 30,
+        "current_version": 35,
+        "lower_bound_violation_count": 0,
+        "pending_edge_count": 0,
+        "refresh_count": 5,
+        "synchronized_version": 35
+      },
+      "compliance": 1.0,
+      "compliant_vehicle_count": 40,
+      "maximum_realized_bpr_seconds": 26.2208,
+      "maximum_volume_capacity_ratio": 1.2,
+      "mean_realized_bpr_seconds": 25.922304,
+      "route_counts": {
+        "a-t": 24,
+        "b-t": 16
+      },
+      "seed": 8599,
+      "vehicle_count": 40
+    }
+  ],
+  "unavailable_comparator": "The Stage 5 city network is regenerated, but a matched SUMO periodic-rerouting experiment has not been executed."
+}

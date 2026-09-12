@@ -1,0 +1,577 @@
+{
+  "benchmark": {
+    "break_even_queries_vs_dijkstra": 2.251988246375751,
+    "cch_construct_ns": 3593776300,
+    "cch_query_count": 80,
+    "differential_query_count": 24,
+    "full_customize_ns": 778234600,
+    "maxrss_kb": null,
+    "mean_cch_query_ns": 799171.25,
+    "mean_differential_cch_query_ns": 1063475.0,
+    "mean_dijkstra_query_ns": 346375841.6666667,
+    "metric_reset_ns": 415329600,
+    "order_method": "inertial",
+    "order_ns": 5751034900,
+    "partial_update_arc_count": 50,
+    "partial_update_ns": 209200
+  },
+  "claim_limit": "Stage 6 validates inertial CCH against Dijkstra on a labelled integer millisecond metric for the Stage 3 graph. Missing OSM maxspeed uses SCENARIO 30 km/h. Turn restrictions are not modelled. BLOCKED sentinels are Stage 4 scenario overlays, not observed 2015 closures. Timings are one-machine measurements, not traffic outcomes.",
+  "closure": {
+    "closed_arc_class": "SCENARIO historical-hotspot overlay, not observed closures",
+    "closed_arc_count": 20,
+    "mismatch_count": 0,
+    "overflow_note": "Closed arcs use the declared geographic bound as a finite weight. Dijkstra and CCH receive the same integer metric.",
+    "paths_using_closed_edge": 0,
+    "queries": [
+      {
+        "cch_arc_count": 105,
+        "cch_cost_ms": 442837,
+        "cch_query_ns": 512100,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 442837,
+        "dijkstra_query_ns": 25066200,
+        "dijkstra_status": "FOUND",
+        "source": "338250047",
+        "target": "10120160539"
+      },
+      {
+        "cch_arc_count": 105,
+        "cch_cost_ms": 555298,
+        "cch_query_ns": 469600,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 555298,
+        "dijkstra_query_ns": 47394700,
+        "dijkstra_status": "FOUND",
+        "source": "306531524",
+        "target": "6802372962"
+      },
+      {
+        "cch_arc_count": 145,
+        "cch_cost_ms": 464234,
+        "cch_query_ns": 870900,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 464234,
+        "dijkstra_query_ns": 31083400,
+        "dijkstra_status": "FOUND",
+        "source": "10279732345",
+        "target": "11702543466"
+      },
+      {
+        "cch_arc_count": 793,
+        "cch_cost_ms": 3625210,
+        "cch_query_ns": 1839400,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 3625210,
+        "dijkstra_query_ns": 708120500,
+        "dijkstra_status": "FOUND",
+        "source": "290018524",
+        "target": "11491202891"
+      },
+      {
+        "cch_arc_count": 184,
+        "cch_cost_ms": 774994,
+        "cch_query_ns": 599300,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 774994,
+        "dijkstra_query_ns": 94069800,
+        "dijkstra_status": "FOUND",
+        "source": "6755406565",
+        "target": "9910886370"
+      },
+      {
+        "cch_arc_count": 540,
+        "cch_cost_ms": 2214921,
+        "cch_query_ns": 1273300,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2214921,
+        "dijkstra_query_ns": 510735000,
+        "dijkstra_status": "FOUND",
+        "source": "11041816921",
+        "target": "6305080299"
+      },
+      {
+        "cch_arc_count": 506,
+        "cch_cost_ms": 1833525,
+        "cch_query_ns": 1031100,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 1833525,
+        "dijkstra_query_ns": 287814900,
+        "dijkstra_status": "FOUND",
+        "source": "7027538386",
+        "target": "6069243424"
+      },
+      {
+        "cch_arc_count": 525,
+        "cch_cost_ms": 2317799,
+        "cch_query_ns": 1421400,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2317799,
+        "dijkstra_query_ns": 680509900,
+        "dijkstra_status": "FOUND",
+        "source": "11795190004",
+        "target": "7819525991"
+      }
+    ],
+    "recovery_mismatch_count": 0,
+    "representation": "finite_sentinel",
+    "sentinel_ms": 137418160
+  },
+  "decision": "PASS WITH LIMITATIONS",
+  "differential": {
+    "mismatch_count": 0,
+    "queries": [
+      {
+        "cch_arc_count": 105,
+        "cch_cost_ms": 442837,
+        "cch_query_ns": 685400,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 442837,
+        "dijkstra_query_ns": 30127400,
+        "dijkstra_status": "FOUND",
+        "source": "338250047",
+        "target": "10120160539"
+      },
+      {
+        "cch_arc_count": 105,
+        "cch_cost_ms": 555298,
+        "cch_query_ns": 544500,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 555298,
+        "dijkstra_query_ns": 40954400,
+        "dijkstra_status": "FOUND",
+        "source": "306531524",
+        "target": "6802372962"
+      },
+      {
+        "cch_arc_count": 145,
+        "cch_cost_ms": 464234,
+        "cch_query_ns": 543900,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 464234,
+        "dijkstra_query_ns": 29749700,
+        "dijkstra_status": "FOUND",
+        "source": "10279732345",
+        "target": "11702543466"
+      },
+      {
+        "cch_arc_count": 793,
+        "cch_cost_ms": 3625210,
+        "cch_query_ns": 2166000,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 3625210,
+        "dijkstra_query_ns": 704613200,
+        "dijkstra_status": "FOUND",
+        "source": "290018524",
+        "target": "11491202891"
+      },
+      {
+        "cch_arc_count": 184,
+        "cch_cost_ms": 774994,
+        "cch_query_ns": 910000,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 774994,
+        "dijkstra_query_ns": 96715800,
+        "dijkstra_status": "FOUND",
+        "source": "6755406565",
+        "target": "9910886370"
+      },
+      {
+        "cch_arc_count": 540,
+        "cch_cost_ms": 2214921,
+        "cch_query_ns": 1210600,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2214921,
+        "dijkstra_query_ns": 515604900,
+        "dijkstra_status": "FOUND",
+        "source": "11041816921",
+        "target": "6305080299"
+      },
+      {
+        "cch_arc_count": 506,
+        "cch_cost_ms": 1833525,
+        "cch_query_ns": 1043800,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 1833525,
+        "dijkstra_query_ns": 284497900,
+        "dijkstra_status": "FOUND",
+        "source": "7027538386",
+        "target": "6069243424"
+      },
+      {
+        "cch_arc_count": 525,
+        "cch_cost_ms": 2317799,
+        "cch_query_ns": 1088700,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2317799,
+        "dijkstra_query_ns": 716703800,
+        "dijkstra_status": "FOUND",
+        "source": "11795190004",
+        "target": "7819525991"
+      },
+      {
+        "cch_arc_count": 634,
+        "cch_cost_ms": 2746310,
+        "cch_query_ns": 1278200,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2746310,
+        "dijkstra_query_ns": 619981800,
+        "dijkstra_status": "FOUND",
+        "source": "338461732",
+        "target": "12958794287"
+      },
+      {
+        "cch_arc_count": 191,
+        "cch_cost_ms": 711443,
+        "cch_query_ns": 666600,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 711443,
+        "dijkstra_query_ns": 72268200,
+        "dijkstra_status": "FOUND",
+        "source": "11936472990",
+        "target": "11922551471"
+      },
+      {
+        "cch_arc_count": 603,
+        "cch_cost_ms": 2218485,
+        "cch_query_ns": 1314300,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2218485,
+        "dijkstra_query_ns": 464115700,
+        "dijkstra_status": "FOUND",
+        "source": "6586230003",
+        "target": "2000996861"
+      },
+      {
+        "cch_arc_count": 413,
+        "cch_cost_ms": 1527232,
+        "cch_query_ns": 1159500,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 1527232,
+        "dijkstra_query_ns": 355073200,
+        "dijkstra_status": "FOUND",
+        "source": "9416863244",
+        "target": "269768123"
+      },
+      {
+        "cch_arc_count": 365,
+        "cch_cost_ms": 1516606,
+        "cch_query_ns": 1146500,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 1516606,
+        "dijkstra_query_ns": 237731700,
+        "dijkstra_status": "FOUND",
+        "source": "1467480201",
+        "target": "11347911008"
+      },
+      {
+        "cch_arc_count": 495,
+        "cch_cost_ms": 2521329,
+        "cch_query_ns": 1126400,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2521329,
+        "dijkstra_query_ns": 646966300,
+        "dijkstra_status": "FOUND",
+        "source": "618609737",
+        "target": "3878060892"
+      },
+      {
+        "cch_arc_count": 46,
+        "cch_cost_ms": 215182,
+        "cch_query_ns": 393500,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 215182,
+        "dijkstra_query_ns": 6968700,
+        "dijkstra_status": "FOUND",
+        "source": "9189488913",
+        "target": "11896790674"
+      },
+      {
+        "cch_arc_count": 267,
+        "cch_cost_ms": 1310676,
+        "cch_query_ns": 787600,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 1310676,
+        "dijkstra_query_ns": 228019300,
+        "dijkstra_status": "FOUND",
+        "source": "249797790",
+        "target": "342785829"
+      },
+      {
+        "cch_arc_count": 556,
+        "cch_cost_ms": 2438495,
+        "cch_query_ns": 1720000,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2438495,
+        "dijkstra_query_ns": 544491900,
+        "dijkstra_status": "FOUND",
+        "source": "2172865553",
+        "target": "11668414010"
+      },
+      {
+        "cch_arc_count": 658,
+        "cch_cost_ms": 2830863,
+        "cch_query_ns": 1336300,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2830863,
+        "dijkstra_query_ns": 580078500,
+        "dijkstra_status": "FOUND",
+        "source": "7819678013",
+        "target": "2078285441"
+      },
+      {
+        "cch_arc_count": 303,
+        "cch_cost_ms": 1066952,
+        "cch_query_ns": 787600,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 1066952,
+        "dijkstra_query_ns": 98399500,
+        "dijkstra_status": "FOUND",
+        "source": "3887387496",
+        "target": "7809144227"
+      },
+      {
+        "cch_arc_count": 808,
+        "cch_cost_ms": 2871066,
+        "cch_query_ns": 1411300,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2871066,
+        "dijkstra_query_ns": 773653300,
+        "dijkstra_status": "FOUND",
+        "source": "300455065",
+        "target": "7823044359"
+      },
+      {
+        "cch_arc_count": 437,
+        "cch_cost_ms": 2053504,
+        "cch_query_ns": 1245900,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2053504,
+        "dijkstra_query_ns": 658672400,
+        "dijkstra_status": "FOUND",
+        "source": "338406779",
+        "target": "2166981148"
+      },
+      {
+        "cch_arc_count": 342,
+        "cch_cost_ms": 1202013,
+        "cch_query_ns": 871500,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 1202013,
+        "dijkstra_query_ns": 146341200,
+        "dijkstra_status": "FOUND",
+        "source": "2172986492",
+        "target": "7800024675"
+      },
+      {
+        "cch_arc_count": 364,
+        "cch_cost_ms": 1564837,
+        "cch_query_ns": 1087300,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 1564837,
+        "dijkstra_query_ns": 152326600,
+        "dijkstra_status": "FOUND",
+        "source": "610889027",
+        "target": "7794276043"
+      },
+      {
+        "cch_arc_count": 468,
+        "cch_cost_ms": 2241937,
+        "cch_query_ns": 998000,
+        "cch_status": "FOUND",
+        "cch_used_closed_edge": false,
+        "cost_mismatch": false,
+        "dijkstra_cost_ms": 2241937,
+        "dijkstra_query_ns": 308964800,
+        "dijkstra_status": "FOUND",
+        "source": "2989495766",
+        "target": "10567938662"
+      }
+    ],
+    "seed": 8597
+  },
+  "engine_selection": "CCH is faster per query than Dijkstra on this represented metric. Retain CCH for repeated queries after one customization.",
+  "graphml": "data\\processed\\roads\\stage3_chennai_gcc_2022.graphml",
+  "maps_path": "data\\processed\\cch\\stage6_osm_to_cch_maps.json",
+  "maps_sha256": "8892421c77deb124013006fb354985f0820d326c0f20916ab086faa42d7a7094",
+  "maps_summary": {
+    "arc_count": 331545,
+    "node_count": 155345,
+    "order_method": "inertial",
+    "sample_arcs": [
+      {
+        "cch_index": 0,
+        "key": "0",
+        "stage3_arc_id": "1aa9ca3830811c5d39f5cf82f166e19bb4a52af37b3f9c8983b4a30b7e74c080",
+        "u": "2271543426",
+        "v": "303284181"
+      },
+      {
+        "cch_index": 1,
+        "key": "0",
+        "stage3_arc_id": "d72f8f655ba957a0a53636a9df8b45f68c80eb3669de335da97c94f3d94be434",
+        "u": "303284181",
+        "v": "247435315"
+      },
+      {
+        "cch_index": 2,
+        "key": "0",
+        "stage3_arc_id": "e1c4c10eb1925ec8aeb119e7b6d9c508a14bab7b13d0be1b159df7b65a85cbc0",
+        "u": "247435315",
+        "v": "247435314"
+      },
+      {
+        "cch_index": 3,
+        "key": "0",
+        "stage3_arc_id": "874ee9a141c3fd0cb3725574245d3cc2f7df8318e2a014e73cdd76eed5a462b5",
+        "u": "247435314",
+        "v": "303283585"
+      },
+      {
+        "cch_index": 4,
+        "key": "0",
+        "stage3_arc_id": "5a615e05bb580f8669d35d9797606c805706c7e21d70fd8ec9841f66c5723c6f",
+        "u": "303283585",
+        "v": "30037398"
+      }
+    ],
+    "sample_nodes": [
+      {
+        "cch_index": 0,
+        "osm_id": "2271543426"
+      },
+      {
+        "cch_index": 1,
+        "osm_id": "303284181"
+      },
+      {
+        "cch_index": 2,
+        "osm_id": "247435315"
+      },
+      {
+        "cch_index": 3,
+        "osm_id": "247435314"
+      },
+      {
+        "cch_index": 4,
+        "osm_id": "303283585"
+      }
+    ]
+  },
+  "max_finite_weight": 137418160,
+  "metric": {
+    "bbox_wgs84": [
+      80.1229024,
+      12.8542216,
+      80.3308684,
+      13.23249
+    ],
+    "detour_factor": 4.0,
+    "max_arc_ms": 94808,
+    "min_speed_kph": 5.0,
+    "observed_speed_count": 6092,
+    "overflow": {
+      "bbox_diameter_m": 47714.63881357431,
+      "bound_ms": 137418160,
+      "claim_limit": "This bound keeps represented shortest-path sums below RoutingKit's 32-bit infinity for geographically plausible Chennai detours. It does not prove that an adversarial walk of every arc is representable.",
+      "classification": "SCENARIO",
+      "detour_factor": 4.0,
+      "geodesic_travel_ms": 34354539.945773505,
+      "max_arc_ms": 94808,
+      "min_speed_kph": 5.0,
+      "policy": "geographic_diameter",
+      "routingkit_infinity": 2147483647,
+      "unit": "millisecond"
+    },
+    "quantization": {
+      "classification_note": "Millisecond rounding is a declared representation. Missing OSM maxspeed uses a labelled SCENARIO 30 km/h default matching Stage 5.",
+      "longest_simple_path_error_bound_ms": 77672.0,
+      "per_arc_error_bound_ms": 0.5,
+      "rounding": "round",
+      "scale": 1000,
+      "unit": "millisecond"
+    },
+    "scenario_default_speed_kph": 30.0,
+    "scenario_speed_count": 325453,
+    "unit": "millisecond"
+  },
+  "next_gate": "Stage 7 stable projected-load rerouting, only after this Stage 6 differential test is not FAIL.",
+  "routingkit_infinity": 2147483647,
+  "seed": 8597,
+  "software_versions": {
+    "networkx": "3.6.1",
+    "python": "3.11.16",
+    "routingkit-cch": "0.1.4"
+  },
+  "stage": 6,
+  "topology_id": "d83277deb3a29d8689c23b7b02fb7b21a76b4551336042e7760fca148c83dfe6",
+  "turn_model": {
+    "claim_limit": "This is not a Chennai turn-restriction model. Legal U-turn and signed-turn constraints were not imported from OSM relations.",
+    "classification": "UNAVAILABLE",
+    "decision": "RESTRICTED_TOPOLOGY_NO_TURN_EXPANSION",
+    "evaluated_topology": "Directed OSM arc graph from Stage 3. Node turns are unrestricted except where OSM oneway or a missing reverse arc already removes the movement.",
+    "restriction_attribute_count": 0,
+    "restriction_attribute_names": []
+  }
+}

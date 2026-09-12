@@ -61,3 +61,6 @@ tmp/
 presentations/*/
 presentations/*.inspect.ndjson
 presentations/~$*
+.tools/
+.micromamba/
+.pytest_tmp/

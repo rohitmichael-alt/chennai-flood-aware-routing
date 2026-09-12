@@ -1,0 +1,95 @@
+{
+  "artifacts": {
+    "audit": "docs\\evidence\\STAGE3_GRAPH_AUDIT.json",
+    "clip_geojson": "data\\raw\\osm\\gcc_boundary_2022_clip.geojson",
+    "clipped_pbf": "data\\raw\\osm\\chennai_gcc_2022_india-260901.osm.pbf",
+    "data_dictionary": "docs\\evidence\\STAGE3_GRAPH_DATA_DICTIONARY.json",
+    "graphml": "data\\processed\\roads\\stage3_chennai_gcc_2022.graphml",
+    "india_pbf": "data\\raw\\osm\\india-260901.osm.pbf",
+    "qa_map": "docs\\evidence\\STAGE3_GRAPH_QA_MAP.png"
+  },
+  "audit": {
+    "arc_count": 331545,
+    "arcs_in_parallel_directed_pairs": 0,
+    "derived_geometry_count": 0,
+    "directed_pairs_with_parallel_arcs": 0,
+    "duplicate_arc_id_count": 0,
+    "explicit_speed_count": 6092,
+    "free_flow_time_count": 6092,
+    "largest_weak_component_nodes": 155345,
+    "missing_access_count": 329552,
+    "missing_geometry_count": 0,
+    "missing_grade_separation_tag_count": 328783,
+    "missing_highway_count": 0,
+    "missing_lanes_count": 318131,
+    "missing_maxspeed_count": 325453,
+    "missing_node_coordinate_count": 0,
+    "missing_oneway_count": 301419,
+    "missing_or_invalid_length_count": 0,
+    "missing_osmid_count": 0,
+    "node_count": 155345,
+    "self_loop_count": 0,
+    "strong_component_count": 1,
+    "unparseable_maxspeed_count": 0,
+    "weak_component_count": 1
+  },
+  "boundary_coverage": {
+    "node_count": 155345,
+    "nodes_inside_or_touching_union": 152898,
+    "nodes_outside_union": 2447
+  },
+  "claim_limit": "This is a dated, GCC-clipped driving graph with explicit-speed coverage reported. It does not assign capacity, demand, flood state, or calibrated free-flow time to arcs whose OSM maxspeed is missing or unparseable.",
+  "command": "python scripts/run_stage3_graph.py",
+  "component": "chennai_road_graph",
+  "decision": "PASS WITH REPORTED ATTRIBUTE MISSINGNESS",
+  "provenance": {
+    "checksum_url": "https://download.geofabrik.de/asia/india-260901.osm.pbf.md5",
+    "clip_boundary_resource_id": "e90176d4-319a-45bd-918e-ecce4f048c4d",
+    "clipped_pbf_bytes": 13862862,
+    "clipped_pbf_sha256": "38db220c72991736149dd3e9ed15a8c40ea0086e0a115b15308dae1a23d297e7",
+    "computed_md5": "44ec6a7dff8ff2f3382da80a546b505f",
+    "declared_content_length": 1705764974,
+    "downloaded_bytes": 1705764974,
+    "etag_header": "\"65abe86e-65a792d7def03\"",
+    "extract_strategy": "smart",
+    "filename": "india-260901.osm.pbf",
+    "last_modified_header": "Wed, 02 Sep 2026 05:19:21 GMT",
+    "network_type": "driving",
+    "osm_attribution": "Map data \u00a9 OpenStreetMap contributors",
+    "osm_license": "ODbL 1.0",
+    "osm_license_url": "https://www.openstreetmap.org/copyright",
+    "osmium_version": "osmium version 1.19.1",
+    "provider_md5": "44ec6a7dff8ff2f3382da80a546b505f",
+    "retrieved_at_utc": "2026-09-12T18:35:06.835874+00:00",
+    "reused_existing_pbf": true,
+    "source_url": "https://download.geofabrik.de/asia/india-260901.osm.pbf"
+  },
+  "reproducibility_check": {
+    "baseline": {
+      "arc_count": 331545,
+      "node_count": 155345,
+      "sorted_node_id_sha256": "af539844c8faec70eabda615e01fa1b5e8a33b79800f96f5ecf64e137d3501f8",
+      "sorted_stage3_arc_id_sha256": "02429f88f5e247d8467630bda6739df29636a3490e8f7f095d87fd98926aec27"
+    },
+    "independent_build_count": 2,
+    "second_build": {
+      "arc_count": 331545,
+      "node_count": 155345,
+      "sorted_node_id_sha256": "af539844c8faec70eabda615e01fa1b5e8a33b79800f96f5ecf64e137d3501f8",
+      "sorted_stage3_arc_id_sha256": "02429f88f5e247d8467630bda6739df29636a3490e8f7f095d87fd98926aec27"
+    },
+    "topology_and_arc_id_digests_match": true,
+    "verified_at_utc": "2026-09-12T18:39:02.091595+00:00"
+  },
+  "software_versions": {
+    "geopandas": "1.1.4",
+    "networkx": "3.6.1",
+    "osmium": "osmium version 1.19.1",
+    "osmnx": "2.1.1",
+    "pandas": "3.0.5",
+    "pyrosm": "0.13.1",
+    "python": "3.11.16",
+    "shapely": "2.1.2"
+  },
+  "stage": 3
+}

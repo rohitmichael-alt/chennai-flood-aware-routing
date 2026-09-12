@@ -8,16 +8,17 @@
 
 | Stage | Description | Status |
 |---|---|---|
-| 1 | Historical flood-to-road closure proof of concept | **DONE WITH LIMITATIONS** (demo, not publication evidence) |
-| 2 | Certificate controller and routing-engine experiment | **DONE — preliminary synthetic evidence** |
-| 3 | Reproducible Chennai graph | PENDING |
-| 4 | Flood/rainfall road-state pipeline | PENDING |
-| 5 | Chennai traffic and SUMO calibration | PENDING |
-| 6 | Production Chennai CCH integration | PENDING |
-| 7 | Stable projected-load rerouting | PENDING |
-| 8 | Facility/population/compliance/criticality evaluation | PARTIAL — generic methods implemented |
-| 9 | Emergency scenario | PENDING |
-| 10 | Full experiments and publication package | PENDING |
+| 0 | Repository, branch, and claim alignment | **PASS** — pathway safeguards merged with Stage 3–6 runners; integrated tests pass |
+| 1 | Historical flood-to-road closure proof of concept | **PASS WITH LIMITATIONS** — dated Stage 3 extract, CSV, PNG, JSON |
+| 2 | Certificate controller and routing-engine experiment | **PASS — synthetic functional evidence** |
+| 3 | Reproducible Chennai graph | **PASS WITH MISSINGNESS** — two matching ID-set digests |
+| 4 | Flood/rainfall road-state pipeline | **PASS WITH LIMITATIONS** — historical-evidence scenario states |
+| 5 | Chennai traffic and SUMO calibration | **PASS WITH LIMITATIONS** — network import; demand SYNTHETIC; outcomes pending |
+| 6 | Production Chennai CCH integration | **PASS WITH LIMITATIONS** — 0/24 mismatches; turns omitted |
+| 7 | Stable projected-load rerouting | **PASS WITH LIMITATIONS** — four-node SCENARIO; SUMO comparator pending |
+| 8 | Facility/population/compliance/criticality evaluation | **PASS WITH LIMITATIONS** — city graph + WorldPop/catalogues |
+| 9 | Emergency scenario | **PASS WITH LIMITATIONS** — paired SCENARIO; not operational |
+| 10 | Full experiments and publication package | **PARTIAL** — explicit comparator/ablation gaps retained |
 
 ## Stage 1 — Historical Flood Closure Proof of Concept
 

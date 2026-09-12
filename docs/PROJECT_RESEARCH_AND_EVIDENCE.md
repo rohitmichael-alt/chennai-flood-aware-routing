@@ -1,5 +1,9 @@
 # Certificate-Gated Dynamic Routing under Compound Urban Disruptions
 
+## Abstract
+
+This work implements and audits a Chennai-oriented routing framework that joins a reproducible dated OpenStreetMap road graph, historical flood evidence, scenario road-state overlays, an integer-metric Customizable Contraction Hierarchy (CCH), certificate-gated metric refresh, projected-load reservations, public-facility accessibility, and an emergency-priority policy. The regenerated graph contains 155,345 nodes and 331,545 directed arcs; two independent builds produced identical sorted node- and arc-ID digests. On 24 city-graph differential queries, unpacked CCH costs matched Dijkstra exactly. A historical-hotspot-conditioned blockage scenario disconnected about 9,965 of 3.59 million represented WorldPop residents (0.277%) in the accessibility projection. Synthetic four-node reservation experiments showed no improvement at 25% or 50% compliance, but lower mean BPR travel time at 75% and 100%; a paired emergency scenario reduced arrival time by 60 seconds while adding 15 seconds of ordinary-user external delay. These are integration and functional-evaluation results, not a calibrated 2015 flood reconstruction or operational Chennai traffic outcomes. Most OSM speeds and lanes are missing and replaced only by labelled scenario defaults; matched citywide SUMO scenarios and several planned ablations remain unexecuted. The contribution is therefore the reproducible integration and evidence discipline, with an established route-cost certificate used as a CCH refresh gate - not a new shortest-path algorithm.
+
 ## 1. Problem Statement
 
 Road conditions in Chennai can change during monsoon flooding, incidents, and congestion. A road may remain physically connected while losing speed or capacity; redirected vehicles may then overload the remaining alternatives. Recomputing every route after every small update is expensive, but using stale road costs for too long can produce poor routes.
@@ -159,11 +163,11 @@ When \(c^{eff}_{e,t}=0\), the edge is excluded and its routing cost is \(+\infty
 
 ### 5.2 Which Algorithm Finds the Path?
 
-Stage 1 uses Dijkstra. Stage 2 can select Dijkstra or the native CCH adapter on synthetic graphs. The planned Chennai implementation will use CCH only after Stage 6 validates topology conversion, turns, closures, quantization, ordering, and path equality.
+Stage 1 uses Dijkstra. Stage 2 can select Dijkstra or the native CCH adapter on synthetic graphs. Stage 6 validates the Chennai topology conversion, finite closure handling, quantization, inertial ordering, customization, unpacking, and path equality; turn restrictions remain unavailable and are explicitly excluded from the validated claim.
 
 - **Dijkstra:** implemented correctness oracle and Stage 1 baseline.
-- **CCH:** implemented prototype adapter; planned final Chennai path engine after validation.
-- **ALT-guided bidirectional A\*:** unimplemented planned comparator/backup.
+- **CCH:** implemented and validated against Dijkstra on sampled city-graph queries, subject to the stated turn-restriction limitation.
+- **ALT-guided bidirectional A\*:** not implemented and excluded from the executed comparison matrix.
 - **Certificate gate:** decides whether CCH must be refreshed; it is not a path-finding replacement.
 
 The repository now contains:
@@ -488,18 +492,18 @@ flowchart TD
     Dijkstra[Dijkstra_Oracle] --> Evaluation
 ```
 
-Implemented now: integer BPR snapshot glue, certificate gate, Dijkstra/CCH engines, and a SCENARIO adoption-threshold filter. SUMO, projected reservations, and Chennai road-state ingestion remain unimplemented on this branch.
+Implemented now: dated Chennai graph and historical-evidence ingestion; explained road states; integer BPR snapshot glue; Dijkstra/CCH engines and certificate gate; SUMO network import with synthetic demand; projected-load reservations; WorldPop/facility accessibility; and deterministic emergency policy. Matched citywide SUMO outcomes and several Stage 10 ablations remain unexecuted.
 
 ## 10. Implementation Status and Revised Stages
 
-### Stage 1 — Previously Executed Historical-Hotspot-Seeded Controlled Demo
+### Stage 1 — Dated Historical-Hotspot Scenario Demonstration
 
-**Status:** Previously executed; implementation remains, but publication-grade evidence is not versioned.  
-OSM and OpenCity historical hotspots were joined to roads; one real mapped edge was controlled as blocked; BPR weights and two Dijkstra snapshots demonstrated closure avoidance. Inputs/outputs are ignored and current tests use fixtures. This becomes publication evidence only after dated inputs, checksums, configuration, and a compact result manifest are preserved. Finite congestion response is not validated.
+**Status:** PASS WITH LIMITATIONS.
+A documented extract of the dated Stage 3 graph, route CSV, PNG, and evidence manifest are versioned. Blocking one Stage 4 historical-hotspot arc increased the represented route cost from 9.916 to 18.687 seconds. The blockage and uniform 1200/600 capacity-flow values are SCENARIO inputs, not calibration.
 
 ### Stage 2 — Certificate and Routing-Engine Validation
 
-**Status:** Implemented as a synthetic preliminary experiment.
+**Status:** PASS as synthetic functional evidence; rerun under Python 3.11.16.
 
 - engine-neutral complete metric snapshots;
 - exact NetworkX Dijkstra engine;
@@ -511,46 +515,47 @@ OSM and OpenCity historical hotspots were joined to roads; one real mapped edge 
 - eager baseline and deterministic experiment runner;
 - accessibility/compliance evaluation utilities;
 - uncertainty and facility-road-criticality utilities;
-- 55 collected tests when `routingkit-cch` is installed (4 skip without it).
+- zero certificate, exact-refresh, and engine-oracle mismatches in the committed sweep.
 
 ### Stage 3 — Reproducible Chennai Graph
 
-**Status:** Planned.  
-Dated OSM extract, stable arc IDs, validated directions/turns/parallel arcs, free-flow times, and documented capacity assumptions.
+**Status:** PASS WITH REPORTED ATTRIBUTE MISSINGNESS.
+The pinned Geofabrik India extract passed provider MD5 verification. The GCC-clipped graph has 155,345 nodes, 331,545 arcs, one strong component, no self-loops, and no duplicate stable arc IDs. Two independent builds produced identical sorted node- and arc-ID hashes. Only 6,092 arcs have explicit speeds; 325,453 use no observed speed.
 
 ### Stage 4 — Flood and Road-State Evidence
 
-**Status:** Synthetic binary lag/error utility implemented; dated Chennai road-state truth and temporal integration are unimplemented.  
-Historical susceptibility, IMERG or no-key reanalysis rainfall, optional current evidence, source freshness, confidence, and explained `NORMAL/DEGRADED/SEVERE/BLOCKED` states.
+**Status:** PASS WITH LIMITATIONS.
+OpenCity flood/drain evidence, ERA5 rainfall, and a public coarse DEM are preserved with provenance. The generated `NORMAL/DEGRADED/SEVERE/BLOCKED` table is a historical-evidence-conditioned scenario, not timestamped road truth or current flooding.
 
 ### Stage 5 — Chennai Traffic and SUMO Calibration
 
-**Status:** Planned.  
-Heterogeneous demand, entering PCE flow, incidents, queues, BPR calibration/sensitivity, and no double counting of SUMO delay.
+**Status:** PASS WITH LIMITATIONS for network import; traffic outcomes remain unexecuted.
+Portable Eclipse SUMO 1.27.1 imported all 331,545 Stage 3 arcs through plain node/edge files and generated 60 seeded synthetic trips. Demand, lane defaults, and most speeds are SCENARIO; no Chennai counts or OD matrix were acquired.
 
 ### Stage 6 — Chennai CCH Integration
 
-**Status:** Planned.  
-Geometry-aware ordering, turn-expanded topology, finite closure sentinel, integer quantization, full/partial customization, and Dijkstra differential validation.
+**Status:** PASS WITH LIMITATIONS.
+Inertial CCH ordering, exact OSM-to-CCH maps, millisecond quantization, finite closure bound, full/partial customization, and path unpacking are implemented. All 24 city-graph differential queries matched Dijkstra. Turn restrictions are not modelled.
 
 ### Stage 7 — Stable Projected-Load Rerouting
 
-**Status:** SCENARIO threshold/cooldown adoption filter implemented; cooldown does not delay degradation or infeasible incumbents. Time-indexed reservations and SUMO comparison are unimplemented.
+**Status:** PASS WITH LIMITATIONS on a four-node SCENARIO network.
+Time-binned compliant-only reservations and update-before-certificate ordering are implemented. The matched SUMO periodic comparator is unexecuted; no equilibrium or fleet-optimum claim is made.
 
 ### Stage 8 — Accessibility, Population, Compliance, and Road Criticality
 
-**Status:** Generic utility portions implemented; no Chennai factor-level experiment has run.  
-Hospitals, fire stations, relief centres, disconnection, p90 access, population-weighted loss, partial compliance, and facility-oriented road criticality.
+**Status:** PASS WITH LIMITATIONS.
+Verified UPHC, UCHC, and fire-station catalogues were snapped to a streaming projection of the Stage 3 graph and weighted by 2015 WorldPop. Baseline and historical-hotspot scenario accessibility, connected/all-origin p50/p90 statistics, seeded compliance, directed-arc dependency, and OSM-way grouping are reported. Relief centres were excluded because their coordinates were not independently verified; health centres are not labelled trauma hospitals and population is not equity.
 
 ### Stage 9 — Emergency Scenario
 
-**Status:** Planned.  
-Response time, deadline success, safety exposure, and ordinary-user external delay.
+**Status:** PASS WITH LIMITATIONS on a paired SCENARIO candidate set.
+Safety/feasibility precedes deadline and bounded ordinary-user delay, with deterministic ties. Priority changed arrival by -60 seconds and ordinary-user external delay by +15 seconds in three deterministic seeds. There is no signal pre-emption, live AVL, or operational calibration.
 
 ### Stage 10 — Full Evaluation and Paper
 
-**Status:** Preliminary method evidence available; Chennai/SUMO evidence pending.  
-Paired scenarios, baselines, ablations, uncertainty, statistical reporting, reproducibility package, and final manuscript.
+**Status:** PARTIAL - publication package with explicit experiment gaps.
+The evidence synthesis reports executed and unexecuted baselines/scenarios/ablations, paired-seed intervals, and negative results. Citywide SUMO scenario outcomes, a matched stability ablation, and a matched population-weighting ablation remain unexecuted and are not presented as results.
 
 ## 11. Preliminary Certificate Experiment
 
@@ -563,16 +568,16 @@ Paired scenarios, baselines, ablations, uncertainty, statistical reporting, repr
 - 5% certificate tolerance;
 - identical trace for Dijkstra and CCH;
 - monotone-increase and mixed increase/decrease workloads (a changed edge decreases with probability 0.3);
-- Python 3.12.3, NetworkX 3.6.1, `routingkit-cch` 0.1.4.
+- Python 3.11.16, NetworkX 3.6.1, `routingkit-cch` 0.1.4.
 
 ### 11.2 Main Results
 
 | Prototype adapter/workload | Queries | Certified stale | Lazy refreshes | Eager update refreshes | Avoided | Bound violations | Lazy total | Eager total |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Dijkstra/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 587 ms | 705 ms |
-| Dijkstra/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 707 ms | 736 ms |
-| CCH/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 120 ms | 203 ms |
-| CCH/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 209 ms | 202 ms |
+| Dijkstra/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 4,172.1 ms | 4,701.6 ms |
+| Dijkstra/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 2,185.5 ms | 2,178.4 ms |
+| CCH/increases | 5,000 | 4,840 | 6 | 100 | 94 | 0 | 266.0 ms | 429.2 ms |
+| CCH/mixed | 5,000 | 700 | 86 | 100 | 14 | 0 | 448.2 ms | 432.5 ms |
 
 There were zero certificate violations, zero exact post-refresh mismatches, and zero CCH-versus-independent-Dijkstra oracle mismatches. The monotone workload produced the largest reduction because the lower bound remained valid. Mixed decreases correctly forced frequent refreshes; in this single run, lazy CCH was slightly slower than eager CCH.
 
@@ -625,25 +630,24 @@ Machine-readable results are stored in [`docs/evidence/CERTIFIED_LAZY_SYNC_RESUL
 
 ## 13. Reproducibility
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-python -m pip install -e ".[test,cch]"
+```text
 python -m pytest
-python scripts/run_certified_lazy_experiment.py \
-  --engine both --mode both --seed 8597 \
-  --nodes 200 --extra-edges 600 \
-  --epochs 100 --updates-per-epoch 5 \
-  --queries-per-epoch 50 --epsilon-percent 5
+python scripts/run_stage3_boundary.py
+python scripts/run_stage3_graph.py
+python scripts/check_stage3_reproducibility.py record
+python scripts/run_stage3_graph.py
+python scripts/check_stage3_reproducibility.py verify
+python scripts/run_stage4_road_state.py
+python scripts/run_stage5_sumo.py
+python scripts/run_stage6_cch.py
+python scripts/run_stage7_reservations.py
+python scripts/run_stage8_accessibility.py
+python scripts/run_stage9_emergency.py
+python scripts/run_certified_lazy_sweep.py
+python scripts/run_stage10_evaluation.py
 ```
 
-Stage 1:
-
-```bash
-python scripts/run_stage1_poc.py
-```
-
-Remote OSM/OpenCity inputs remain mutable until dated snapshots and checksums are committed. Synthetic experiment results are deterministic apart from timing.
+Stage 1 publication artifacts are regenerated with `python scripts/run_stage1_publication.py`. Raw and processed binaries are ignored; committed JSON manifests record provider URLs, checksums, retrieval times, software versions, classifications, and claim limits. The dated OSM PBF is pinned by provider MD5. Synthetic logical results are deterministic apart from measured timings.
 
 ## 14. Feasibility and Remaining Uncertainty
 
@@ -651,60 +655,65 @@ Remote OSM/OpenCity inputs remain mutable until dated snapshots and checksums ar
 
 **Uncertain/optional:** public live Chennai speeds, machine-readable closures/incidents, signal-controller data, ambulance AVL, street-level satellite flood depth, and facility capacity.
 
-The proposed core remains feasible as historical-evidence-conditioned scenario reconstruction and labelled simulation without paid APIs; end-to-end acquisition and Chennai execution are not yet demonstrated.
+The core is demonstrated as a historical-evidence-conditioned scenario reconstruction using public/no-key inputs. End-to-end topology, state mapping, SUMO network import, city CCH validation, and accessibility have run. Calibrated Chennai demand and full citywide traffic outcomes are not demonstrated.
 
 ## 15. Limitations
 
 1. The certificate principle has close prior art; algorithmic novelty is not claimed.
-2. Preliminary experiments are synthetic and do not establish Chennai outcomes.
-3. Native CCH uses degree ordering; production Chennai ordering is unvalidated.
-4. CCH closure sentinel, turns, and quantization require further tests.
+2. Traffic, reservation, and emergency experiments are synthetic and do not establish Chennai operational outcomes.
+3. City CCH uses inertial ordering and passed cost differential tests, but timings are single-machine measurements.
+4. Turn restrictions are not represented; closures use a proven finite geographic sentinel and quantized milliseconds.
 5. Any weight decrease invalidates the stale lower bound and usually forces refresh.
 6. The certificate controls represented route cost, not model accuracy.
 7. BPR parameters and flood-capacity multipliers are not Chennai-calibrated.
 8. BPR does not represent queue spillback; SUMO must measure it.
 9. Historical flood observations are not live closures.
 10. IMERG is coarse and delayed relative to streets.
-11. SUMO demand is simulated and requires local calibration.
+11. SUMO demand is synthetic; no matched citywide scenario outcome or local calibration is reported.
 12. Population exposure is not socioeconomic equity.
 13. Facility catalogues do not provide capacity or guaranteed emergency capability.
 14. Partial compliance is a sensitivity assumption, not observed behaviour.
 15. Projected greedy reservations do not guarantee equilibrium.
 16. A literature audit cannot prove universal novelty.
-17. All five strengthening factors currently have only generic utility portions, not completed Chennai experiments.
+17. Accessibility and criticality use a least-cost directed-arc projection and modelled WorldPop; dependency ranking is not causal road importance.
 18. OpenCity historical layers do not provide authoritative timestamped road-state truth.
 19. Stage 1 uniform flow/capacity makes BPR almost a scale factor; congestion response is not validated.
-20. The adoption filter is a labelled policy, not observed driver behaviour or an equilibrium model.
+20. The adoption and reservation policies are labelled scenarios, not observed driver behaviour or equilibrium models.
+21. Relief-centre addresses were excluded because coordinates were not independently verified.
+22. Stage 10 remains partial: matched stability, population-weighting, compound citywide, and SUMO-periodic comparisons are unexecuted.
 
 ## 16. Final Project Summary
 
 | Component | Final decision |
 |---|---|
 | Problem | Repeated routing under compound flood, incident, and congestion updates |
-| Path engine | Dijkstra implemented; prototype CCH implemented; Chennai CCH planned after Stage 6; ALT unimplemented comparator |
+| Path engine | Dijkstra oracle and inertial CCH validated on the 155,345-node Chennai graph; ALT unimplemented and excluded |
 | Certificate | Established LB/UB principle used as a CCH refresh gate |
 | Defensible novelty | Chennai integration, workload characterization, and compound-disruption evaluation |
-| Flood model | Susceptibility + rainfall + optional observation → explained state |
-| Traffic model | BPR route estimate + SUMO realized outcome |
-| Stability | Trigger, minimum gain, cooldown, projected time-indexed load |
+| Flood model | Historical OpenCity inventory + rainfall/terrain context -> explained scenario state; not road-state truth |
+| Traffic model | BPR route estimate + imported SUMO network; matched SUMO outcomes unexecuted |
+| Stability | Trigger, cooldown, and compliant-only time-indexed projected reservations implemented |
 | Additional factors | Uncertainty, facility access, population-weighted loss, partial compliance, road criticality |
 | Emergency | Secondary scenario with external-delay reporting |
-| Current evidence | Tested synthetic CCH/Dijkstra method experiment; Stage 1 demo was previously run but lacks versioned publication evidence |
-| Required next evidence | Chennai graph, flood/rain pipeline, SUMO calibration and full ablations |
+| Current evidence | Dated reproducible graph, road-state overlay, city CCH differential, synthetic reservations/emergency, and population-weighted access |
+| Required next evidence | Calibrated demand, matched citywide SUMO scenarios, stability/population ablations, and external validation |
 
 ## 17. Research Claim Boundary
 
 The completed implementation supports this statement:
 
-> On deterministic synthetic fixed-topology workloads, the implemented monotone metric certificate returned routes within its declared represented-cost bound, matched exact routing after refresh, and reduced eager metric refreshes for both Dijkstra and CCH adapters.
+> A reproducible 155,345-node, 331,545-arc Chennai road graph was rebuilt twice with identical node- and arc-ID digests. On that represented integer metric, inertial CCH matched Dijkstra on all 24 sampled differential queries. Public historical/modelled evidence can be mapped to explicit scenario road states and population-weighted facility-access summaries, while synthetic reservation and emergency experiments expose compliance and external-delay trade-offs. The certificate is an established represented-cost CCH refresh gate, not a new shortest-path method.
 
-It does **not yet** support:
+It does **not** support:
 
 - improved Chennai travel time or emergency response;
 - operational real-time flood routing;
 - a new shortest-path algorithm;
 - a new approximation-certificate theorem;
-- city-scale CCH performance;
-- publication-ready causal claims.
+- calibrated 2015 or current flood depths/closures;
+- calibrated Chennai OD demand, queues, spillback, or citywide SUMO outcomes;
+- trauma-hospital capability, relief-centre activation, or socioeconomic equity;
+- equilibrium, optimal fleet assignment, or causal road-criticality claims;
+- completion of every planned Stage 10 comparator and ablation.
 
-Those claims require completion of Stages 3–10.
+The Stage 10 synthesis is therefore a transparent partial publication package. Its defensible novelty is Chennai-oriented integration, reproducibility, and evaluation design; remaining experiment gaps are enumerated in `docs/evidence/STAGE10_EVALUATION_RESULTS.json` rather than silently converted into results.

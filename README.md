@@ -6,7 +6,7 @@ Research prototype for flood-conditioned and congestion-aware routing using:
 - effective road capacity and BPR travel-time costs;
 - NetworkX Dijkstra and native Customizable Contraction Hierarchies;
 - certificate-gated metric synchronization;
-- planned stable projected-load rerouting and SUMO evaluation.
+- time-binned projected-load reservations and a reproducible SUMO network import.
 
 ## Research Claim
 
@@ -20,18 +20,18 @@ Any later AI executor must use the copy-paste brief in [`docs/MASTER_PROMPT_FOR_
 
 | Stage | Status |
 |---|---|
-| Historical flood-to-road Dijkstra proof of concept | Implemented as a **controlled demo**, not publication evidence |
+| Historical flood-to-road Dijkstra proof of concept | Dated Stage 3 extract; **PASS WITH LIMITATIONS** |
 | Certificate-gated synchronization controller | Implemented |
 | Exact NetworkX Dijkstra adapter | Implemented |
-| Native `routingkit-cch` adapter | Implemented for finite integer experimental metrics |
+| Native `routingkit-cch` adapter | City graph validated against Dijkstra; 0/24 cost mismatches |
 | Eager baseline and deterministic experiments | Implemented |
-| Uncertainty, accessibility, compliance, and road-criticality methods | Generic utilities implemented; no Chennai run |
+| Accessibility, compliance, and road criticality | Chennai graph/WorldPop/catalogues run; **PASS WITH LIMITATIONS** |
 | Integer BPR snapshot pathway glue | Implemented |
-| SCENARIO route-adoption filter | Implemented; reservations/SUMO planned |
-| Chennai graph/flood/rainfall/SUMO integration | Planned |
-| Full publication evaluation | Planned |
+| SCENARIO route-adoption/reservation policy | Implemented; matched SUMO periodic comparator unexecuted |
+| Chennai graph/flood/rainfall/SUMO integration | Graph/state/network import complete; traffic outcomes synthetic/unexecuted |
+| Full publication evaluation | **PARTIAL**; explicit comparator and ablation gaps in Stage 10 evidence |
 
-Current tests: run `python -m pytest`. Count is 55 passed when `.[cch]` is installed.
+Current tests: run `python -m pytest`; optional Stage 8 requires `.[stage8]`.
 
 ## Install
 
@@ -94,23 +94,27 @@ In one seeded 5,000-query CCH workload:
 
 These are synthetic functional/performance measurements, not Chennai traffic outcomes.
 
-## Run Stage 1
+## Run the dated Stage 1 publication demonstration
 
 ```bash
-python scripts/run_stage1_poc.py
+python scripts/run_stage1_publication.py
 ```
 
 Stage 1:
 
-1. downloads OpenCity 2015 historical flood hotspots;
-2. downloads a small Chennai OSM driving graph;
-3. maps historical points to nearby roads;
+1. loads the pinned Stage 3 Chennai graph and Stage 4 historical-evidence state table;
+2. selects an affected directed arc with a finite alternative;
+3. preserves the route union as a documented GraphML extract;
 4. applies a controlled hard closure to one real mapped edge;
 5. computes BPR weights;
 6. runs Dijkstra before and after closure;
 7. writes CSV, JSON, GraphML, and PNG outputs.
 
-Stage 1 proves controlled closure avoidance. It does not prove current flooding, calibrated congestion behaviour, or city-wide performance.
+Stage 1 demonstrates controlled scenario closure avoidance. It does not prove current flooding, calibrated congestion behaviour, or city-wide traffic outcomes.
+
+## Run the full evidence pipeline
+
+Use the Stage 3-10 scripts in numeric order. Machine-readable committed outputs are under `docs/evidence/`; `STAGE10_EVALUATION_RESULTS.json` is the authoritative executed/unexecuted matrix.
 
 ## Routing Components
 

@@ -1,0 +1,65 @@
+{
+  "claim_limit": "This paired candidate-choice experiment validates deterministic policy order and reports emergency arrival together with ordinary-user external delay. All times and deadlines are SCENARIO values; it is not a Chennai operational result.",
+  "classification": "SCENARIO",
+  "decision": "PASS WITH LIMITATIONS",
+  "explicit_exclusions": [
+    "No traffic-signal pre-emption",
+    "No live ambulance AVL",
+    "No observed response-time calibration"
+  ],
+  "generated_at_utc": "2026-09-11T18:32:19.452129+00:00",
+  "paired_runs": [
+    {
+      "blocked_shortcut_rejected": true,
+      "emergency_arrival_change_seconds": -60.0,
+      "no_priority_arrival_seconds": 540.0,
+      "no_priority_deadline_met": true,
+      "no_priority_external_delay_seconds": 5,
+      "no_priority_route": "balanced_safe",
+      "ordinary_external_delay_change_seconds": 15,
+      "priority_arrival_seconds": 480.0,
+      "priority_deadline_met": true,
+      "priority_external_delay_seconds": 20,
+      "priority_route": "fast_safe",
+      "seed": 8597
+    },
+    {
+      "blocked_shortcut_rejected": true,
+      "emergency_arrival_change_seconds": -60.0,
+      "no_priority_arrival_seconds": 548.0,
+      "no_priority_deadline_met": true,
+      "no_priority_external_delay_seconds": 5,
+      "no_priority_route": "balanced_safe",
+      "ordinary_external_delay_change_seconds": 15,
+      "priority_arrival_seconds": 488.0,
+      "priority_deadline_met": true,
+      "priority_external_delay_seconds": 20,
+      "priority_route": "fast_safe",
+      "seed": 8598
+    },
+    {
+      "blocked_shortcut_rejected": true,
+      "emergency_arrival_change_seconds": -60.0,
+      "no_priority_arrival_seconds": 534.0,
+      "no_priority_deadline_met": true,
+      "no_priority_external_delay_seconds": 5,
+      "no_priority_route": "balanced_safe",
+      "ordinary_external_delay_change_seconds": 15,
+      "priority_arrival_seconds": 474.0,
+      "priority_deadline_met": true,
+      "priority_external_delay_seconds": 20,
+      "priority_route": "fast_safe",
+      "seed": 8599
+    }
+  ],
+  "policy": {
+    "classification": "SCENARIO",
+    "deadline_seconds": 600,
+    "ordinary_delay_cap_seconds": 25
+  },
+  "summary": {
+    "blocked_shortcut_selected_count": 0,
+    "mean_emergency_arrival_change_seconds": -60.0,
+    "mean_ordinary_external_delay_change_seconds": 15.0
+  }
+}

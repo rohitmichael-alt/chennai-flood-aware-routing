@@ -225,4 +225,8 @@ Tests on the writing agent’s last run of this line: **55 passed** with `routin
 | Date | Agent | Action |
 |---|---|---|
 | 2026-09-11 | Paper-line agent | Wrote protocol; later locked student decisions and added the master executor prompt. Did not execute Stages 3–10. |
+| 2026-09-11 | Executor AI | Created `codex/full-executor-8597`; fetched and merged Stage 3–6 runners/evidence into the pathway line while preserving the master prompt, pathway glue, and integrity rules. Restored CCH self-loop and non-finite-quantization guards, added Windows-safe Stage 6 memory reporting, and obtained 98 passing integrated tests. Reverified the pinned GCC boundary and began checksum-gated dated-PBF acquisition. |
+| 2026-09-13 | Executor AI | Verified the India PBF against provider MD5; rebuilt the 155,345-node/331,545-arc Stage 3 graph twice with identical node/arc ID-set digests; reran historical-evidence road states, portable SUMO 1.27.1 import, and city CCH with 0/24 Dijkstra cost mismatches. |
+| 2026-09-13 | Executor AI | Implemented and tested compliant-only time-binned reservations, update-before-certificate ordering, public-facility/WorldPop accessibility, directed-arc/OSM-way dependency rankings, and deterministic emergency-priority selection. Historical-hotspot access disconnected 9,965.325 of 3.59 million represented residents; this remains a scenario, not observed road truth. |
+| 2026-09-13 | Executor AI | Generated the Stage 10 evidence matrix and manuscript update. It explicitly leaves matched citywide SUMO scenarios and stability/population-weighting ablations unexecuted rather than inventing results. |
 | | | _later agents append here_ |

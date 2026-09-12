@@ -1,0 +1,183 @@
+{
+  "ablation_matrix": {
+    "cch_vs_dijkstra_same_policy": "EXECUTED Stage 2 and Stage 6; zero cost mismatches",
+    "certificate_on_off": "EXECUTED Stage 2 synthetic",
+    "emergency_priority_on_off": "EXECUTED Stage 9 paired SCENARIO",
+    "population_weighting_on_off": "NOT EXECUTED as a matched ablation",
+    "reservations_on_off": "EXECUTED Stage 7 four-node SCENARIO",
+    "stability_on_off": "NOT EXECUTED as a matched outcome ablation"
+  },
+  "baseline_matrix": {
+    "alt": "NOT IMPLEMENTED; excluded",
+    "certificate_gated_cch": "EXECUTED: Stage 2 synthetic sweep; city policy outcome not executed",
+    "eager_cch": "EXECUTED: Stage 2 synthetic sweep and Stage 6 city metric validation",
+    "eager_repeated_dijkstra": "EXECUTED: Stage 2 synthetic fixed-topology sweep",
+    "independent_assignment": "EXECUTED only on the Stage 7 four-node scenario",
+    "projected_load_assignment": "EXECUTED only on the Stage 7 four-node scenario",
+    "route_once_dijkstra": "EXECUTED: dated Stage 1 route-change demonstration",
+    "sumo_periodic": "NOT EXECUTED"
+  },
+  "claim_limit": "This evidence package combines a dated Chennai topology and historical/modelled public data with synthetic traffic, reservation, and emergency scenarios. It is not a calibrated 2015 flood reconstruction, live routing system, operational emergency policy, or complete execution of every planned Stage 10 comparator.",
+  "decision": "PARTIAL \u2014 PUBLICATION PACKAGE WITH EXPLICIT EXPERIMENT GAPS",
+  "evidence_gate_decisions": {
+    "stage1": "PASS WITH LIMITATIONS",
+    "stage2": "PRELIMINARY SYNTHETIC EVIDENCE",
+    "stage3": "PASS WITH REPORTED ATTRIBUTE MISSINGNESS",
+    "stage4": "PASS WITH LIMITATIONS",
+    "stage5": "PASS WITH LIMITATIONS",
+    "stage6": "PASS WITH LIMITATIONS",
+    "stage7": "PASS WITH LIMITATIONS",
+    "stage8": "PASS WITH LIMITATIONS",
+    "stage9": "PASS WITH LIMITATIONS"
+  },
+  "generated_at_utc": "2026-09-12T18:40:36.216012+00:00",
+  "key_results": {
+    "stage3_arc_count": 331545,
+    "stage3_node_count": 155345,
+    "stage3_reproducible_ids": true,
+    "stage6_differential_mismatches": 0,
+    "stage8_represented_population": 3591253.333087921,
+    "stage8_scenario_disconnected_population": 9965.3251953125
+  },
+  "negative_results": [
+    "At 25% and 50% compliance, the Stage 7 scenario showed no mean travel-time benefit over 0% compliance.",
+    "A direct OSM-to-SUMO attempt with SUMO 1.18 failed; the successful reproducible path used Stage 3 GraphML plain node/edge import with netconvert 1.27.1.",
+    "The relief-centre PDF was excluded because coordinates were not independently verified.",
+    "Matched citywide SUMO scenarios, stability ablation, and population-weighting ablation remain unexecuted."
+  ],
+  "positioning": "The defensible contribution is integration and evaluation of a Chennai-oriented compound-disruption framework. The certificate is an established bounded-cost CCH refresh gate, not a new shortest-path algorithm.",
+  "scenario_matrix": {
+    "compliance": "EXECUTED on the Stage 7 four-node SCENARIO network",
+    "compound_flood_incident_peak": "NOT EXECUTED",
+    "dry_off_peak": "NOT EXECUTED in SUMO",
+    "dry_peak": "NOT EXECUTED in SUMO",
+    "emergency": "EXECUTED on a paired SCENARIO candidate set",
+    "false_positive_delayed_evidence": "METHOD/UNIT TESTS ONLY; no city outcome",
+    "flood_only": "EXECUTED as historical-evidence-conditioned SCENARIO overlay",
+    "incident_only": "NOT EXECUTED citywide",
+    "recovery_decrease": "EXECUTED as Stage 6 routing-engine differential"
+  },
+  "source_evidence": {
+    "stage1": "STAGE1_PUBLICATION_RESULTS.json",
+    "stage2": "CERTIFIED_LAZY_SYNC_RESULTS.json",
+    "stage3": "STAGE3_GRAPH_RESULTS.json",
+    "stage4": "STAGE4_ROAD_STATE_RESULTS.json",
+    "stage5": "STAGE5_SUMO_RESULTS.json",
+    "stage6": "STAGE6_CCH_RESULTS.json",
+    "stage7": "STAGE7_RESERVATION_RESULTS.json",
+    "stage8": "STAGE8_ACCESSIBILITY_RESULTS.json",
+    "stage9": "STAGE9_EMERGENCY_RESULTS.json"
+  },
+  "stage": 10,
+  "statistics": {
+    "compliance_three_seed_normal_approximation_ci95": {
+      "0.0": {
+        "maximum_volume_capacity_ratio": {
+          "ci95": [
+            2.0,
+            2.0
+          ],
+          "mean": 2.0,
+          "n": 3
+        },
+        "mean_realized_bpr_seconds": {
+          "ci95": [
+            68.0,
+            68.0
+          ],
+          "mean": 68.0,
+          "n": 3
+        }
+      },
+      "0.25": {
+        "maximum_volume_capacity_ratio": {
+          "ci95": [
+            2.0,
+            2.0
+          ],
+          "mean": 2.0,
+          "n": 3
+        },
+        "mean_realized_bpr_seconds": {
+          "ci95": [
+            68.0,
+            68.0
+          ],
+          "mean": 68.0,
+          "n": 3
+        }
+      },
+      "0.5": {
+        "maximum_volume_capacity_ratio": {
+          "ci95": [
+            2.0,
+            2.0
+          ],
+          "mean": 2.0,
+          "n": 3
+        },
+        "mean_realized_bpr_seconds": {
+          "ci95": [
+            68.0,
+            68.0
+          ],
+          "mean": 68.0,
+          "n": 3
+        }
+      },
+      "0.75": {
+        "maximum_volume_capacity_ratio": {
+          "ci95": [
+            1.6499999999999997,
+            1.6499999999999997
+          ],
+          "mean": 1.6499999999999997,
+          "n": 3
+        },
+        "mean_realized_bpr_seconds": {
+          "ci95": [
+            39.05416940625,
+            39.05416940625
+          ],
+          "mean": 39.05416940625,
+          "n": 3
+        }
+      },
+      "1.0": {
+        "maximum_volume_capacity_ratio": {
+          "ci95": [
+            1.2,
+            1.2
+          ],
+          "mean": 1.2,
+          "n": 3
+        },
+        "mean_realized_bpr_seconds": {
+          "ci95": [
+            25.922304,
+            25.922304
+          ],
+          "mean": 25.922304,
+          "n": 3
+        }
+      }
+    },
+    "emergency_arrival_change_seconds": {
+      "ci95": [
+        -60.0,
+        -60.0
+      ],
+      "mean": -60.0,
+      "n": 3
+    },
+    "ordinary_external_delay_change_seconds": {
+      "ci95": [
+        15.0,
+        15.0
+      ],
+      "mean": 15.0,
+      "n": 3
+    },
+    "qualification": "Three identical deterministic-seed outcomes yield zero-width normal-approximation intervals; this is not evidence of real-world variance."
+  }
+}

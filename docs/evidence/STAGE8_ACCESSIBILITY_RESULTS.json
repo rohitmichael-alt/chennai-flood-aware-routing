@@ -1,0 +1,978 @@
+{
+  "accessibility": {
+    "fire": {
+      "connected_population": 3591253.333087921,
+      "connected_population_weighted_p50_time": 276.8940000000001,
+      "connected_population_weighted_p90_time": 716.1860000000004,
+      "connected_weighted_mean_time": 360.7134220265873,
+      "disconnected_population": 0.0,
+      "disconnected_population_share": 0.0,
+      "origin_count": 525,
+      "population_share_over_threshold": 0.006578711018077694,
+      "population_weighted_p90_time": 716.1860000000004,
+      "threshold": 1800.0,
+      "total_population": 3591253.333087921
+    },
+    "uchc": {
+      "connected_population": 3591253.333087921,
+      "connected_population_weighted_p50_time": 395.30899999999997,
+      "connected_population_weighted_p90_time": 703.7889999999999,
+      "connected_weighted_mean_time": 417.3404728978986,
+      "disconnected_population": 0.0,
+      "disconnected_population_share": 0.0,
+      "origin_count": 525,
+      "population_share_over_threshold": 0.0,
+      "population_weighted_p90_time": 703.7889999999999,
+      "threshold": 1800.0,
+      "total_population": 3591253.333087921
+    },
+    "uphc": {
+      "connected_population": 3591253.333087921,
+      "connected_population_weighted_p50_time": 135.532,
+      "connected_population_weighted_p90_time": 288.90000000000003,
+      "connected_weighted_mean_time": 160.76448034741188,
+      "disconnected_population": 0.0,
+      "disconnected_population_share": 0.0,
+      "origin_count": 525,
+      "population_share_over_threshold": 0.0,
+      "population_weighted_p90_time": 288.90000000000003,
+      "threshold": 1800.0,
+      "total_population": 3591253.333087921
+    }
+  },
+  "claim_limit": "Catalogue and modelled-population accessibility on a declared Stage 3 projection. Most road speeds use a labelled SCENARIO value; facility capacity, opening status, trauma capability, turn restrictions, and traffic calibration are unavailable. Population weighting is not an equity measure.",
+  "compliance_sweep": {
+    "classification": "SYNTHETIC / SCENARIO",
+    "probabilities": [
+      0.0,
+      0.25,
+      0.5,
+      0.75,
+      1.0
+    ],
+    "runs": [
+      {
+        "compliance": 0.0,
+        "maximum_volume_capacity_ratio": 2.0,
+        "mean_realized_bpr_seconds": 68.0,
+        "seed": 8597
+      },
+      {
+        "compliance": 0.0,
+        "maximum_volume_capacity_ratio": 2.0,
+        "mean_realized_bpr_seconds": 68.0,
+        "seed": 8598
+      },
+      {
+        "compliance": 0.0,
+        "maximum_volume_capacity_ratio": 2.0,
+        "mean_realized_bpr_seconds": 68.0,
+        "seed": 8599
+      },
+      {
+        "compliance": 0.25,
+        "maximum_volume_capacity_ratio": 2.0,
+        "mean_realized_bpr_seconds": 68.0,
+        "seed": 8597
+      },
+      {
+        "compliance": 0.25,
+        "maximum_volume_capacity_ratio": 2.0,
+        "mean_realized_bpr_seconds": 68.0,
+        "seed": 8598
+      },
+      {
+        "compliance": 0.25,
+        "maximum_volume_capacity_ratio": 2.0,
+        "mean_realized_bpr_seconds": 68.0,
+        "seed": 8599
+      },
+      {
+        "compliance": 0.5,
+        "maximum_volume_capacity_ratio": 2.0,
+        "mean_realized_bpr_seconds": 68.0,
+        "seed": 8597
+      },
+      {
+        "compliance": 0.5,
+        "maximum_volume_capacity_ratio": 2.0,
+        "mean_realized_bpr_seconds": 68.0,
+        "seed": 8598
+      },
+      {
+        "compliance": 0.5,
+        "maximum_volume_capacity_ratio": 2.0,
+        "mean_realized_bpr_seconds": 68.0,
+        "seed": 8599
+      },
+      {
+        "compliance": 0.75,
+        "maximum_volume_capacity_ratio": 1.65,
+        "mean_realized_bpr_seconds": 39.05416940625,
+        "seed": 8597
+      },
+      {
+        "compliance": 0.75,
+        "maximum_volume_capacity_ratio": 1.65,
+        "mean_realized_bpr_seconds": 39.05416940625,
+        "seed": 8598
+      },
+      {
+        "compliance": 0.75,
+        "maximum_volume_capacity_ratio": 1.65,
+        "mean_realized_bpr_seconds": 39.05416940625,
+        "seed": 8599
+      },
+      {
+        "compliance": 1.0,
+        "maximum_volume_capacity_ratio": 1.2,
+        "mean_realized_bpr_seconds": 25.922304,
+        "seed": 8597
+      },
+      {
+        "compliance": 1.0,
+        "maximum_volume_capacity_ratio": 1.2,
+        "mean_realized_bpr_seconds": 25.922304,
+        "seed": 8598
+      },
+      {
+        "compliance": 1.0,
+        "maximum_volume_capacity_ratio": 1.2,
+        "mean_realized_bpr_seconds": 25.922304,
+        "seed": 8599
+      }
+    ],
+    "seeds": [
+      8597,
+      8598,
+      8599
+    ],
+    "source_evidence": "docs/evidence/STAGE7_RESERVATION_RESULTS.json"
+  },
+  "decision": "PASS WITH LIMITATIONS",
+  "directed_arc_criticality": {
+    "claim_limit": "Dependency exposure is not recomputed closure impact and is not causal road importance.",
+    "directed_arc_ranking": [
+      {
+        "dependent_population": 274282.0897216797,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 1,
+        "stage3_arc_id": "3e97a59d3a5e43041c18dd03d33f54c3aed1cef4e269c89461be6fe810cd1375",
+        "u": "300464595",
+        "v": "300464745"
+      },
+      {
+        "dependent_population": 234942.47131347656,
+        "key": "0",
+        "osm_way_id": "23761085",
+        "rank": 2,
+        "stage3_arc_id": "14125f5e098345c4ff364de2905d49bcbd04f8ea1782109eba104dfb51a829cb",
+        "u": "310535914",
+        "v": "318069500"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "1500200433",
+        "rank": 3,
+        "stage3_arc_id": "d8509fb675c32ac051ef58dbcf9829aa58efb4208764dc10fd0a7f62084981a6",
+        "u": "5456056205",
+        "v": "10547872878"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "424525934",
+        "rank": 4,
+        "stage3_arc_id": "53f6206bad3057fe3807917841485a866f31e8026896f1556934262ae885aee8",
+        "u": "4450539390",
+        "v": "338461071"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "424525934",
+        "rank": 5,
+        "stage3_arc_id": "9625cb7ecdab4aebafaddebf2944190262e3cb26997363d75f0e0828825c0ffd",
+        "u": "338461071",
+        "v": "338461031"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "424525934",
+        "rank": 6,
+        "stage3_arc_id": "072362bbffa9698d86a028be6521b3086868618f29f0761c8aa5a3b951a83e5e",
+        "u": "300464597",
+        "v": "1457503505"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "424525934",
+        "rank": 7,
+        "stage3_arc_id": "2f9436d479e6e00be361d0a6af16f0312d5baff9d2e3c279483951bac8095ce8",
+        "u": "338461031",
+        "v": "338461089"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "424525924",
+        "rank": 8,
+        "stage3_arc_id": "5e45e695bbd3241aac6b04c3295fe2b5b075c861d217b8def692900b86e60d74",
+        "u": "300464596",
+        "v": "300464595"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "424525934",
+        "rank": 9,
+        "stage3_arc_id": "99b4a2a55e8d5936ba7f544ff3252f9ced9a54b17cd7b42ef5addf1340ac6f69",
+        "u": "338461089",
+        "v": "300464596"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "424525934",
+        "rank": 10,
+        "stage3_arc_id": "d4657ae33a2ea3b759f0e2b571f2df4851dab72ea8d0a6f56318d72fd3d7e3a7",
+        "u": "1457503505",
+        "v": "4450539390"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "447993875",
+        "rank": 11,
+        "stage3_arc_id": "9402151e0c74ad6d47d381d15dc2abdd47a6f5d50a25da6af4bddd5c302b819f",
+        "u": "11402765953",
+        "v": "300464597"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "447993875",
+        "rank": 12,
+        "stage3_arc_id": "ea5448e910eb86a07d549f9a3fc3492182f3a4072d7431f9be7ac545a523837c",
+        "u": "300464598",
+        "v": "11402765953"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "447993875",
+        "rank": 13,
+        "stage3_arc_id": "959a9f0c13a1b872e0c0d676ab2cd99b65062eb8c350e29fef13325fca31a790",
+        "u": "4450539395",
+        "v": "300464598"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "447993875",
+        "rank": 14,
+        "stage3_arc_id": "d8ccbc3f805ef9c429bb9f0f3adce315d752ab9aac1101d016536fb7e56ca512",
+        "u": "4450539392",
+        "v": "4450539395"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "1131429188",
+        "rank": 15,
+        "stage3_arc_id": "b0d694c8df3bda32accc7688117f30ab3ea8efe045aa381cef45d7696bcabe3d",
+        "u": "12156990400",
+        "v": "1457503511"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "1313404270",
+        "rank": 16,
+        "stage3_arc_id": "15d129ec25dac078fde4919de3b74a00d3601c152aea2d1b6a9e018777017d22",
+        "u": "1457503511",
+        "v": "4450539392"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "1500200433",
+        "rank": 17,
+        "stage3_arc_id": "5dbff180439a3cddc7dac14b32a764f05df5486bbe008d336d54a7536e64cb88",
+        "u": "10547872878",
+        "v": "13737048894"
+      },
+      {
+        "dependent_population": 198088.02795410156,
+        "key": "0",
+        "osm_way_id": "1500200434",
+        "rank": 18,
+        "stage3_arc_id": "d92f86760a6dbf1761772757ba2123613040ed859d66b7ef44e2b6ba09842344",
+        "u": "13737048894",
+        "v": "12156990400"
+      },
+      {
+        "dependent_population": 196984.40560913086,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 19,
+        "stage3_arc_id": "018e7b32521e55a009340922accd3831fd9b38e580c45593e0d7ff7a3337d792",
+        "u": "300464670",
+        "v": "2168576097"
+      },
+      {
+        "dependent_population": 196984.40560913086,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 20,
+        "stage3_arc_id": "55f4ef6995ad412f9a8a5a44e114aff5e01b8701e63632c61e3e1a9d2731a7a1",
+        "u": "300464594",
+        "v": "300464756"
+      },
+      {
+        "dependent_population": 196984.40560913086,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 21,
+        "stage3_arc_id": "35c2d96f4827875b57337e2b1233099f2277050e6bd49206b526b1a271797ac2",
+        "u": "300464756",
+        "v": "300464745"
+      },
+      {
+        "dependent_population": 196984.40560913086,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 22,
+        "stage3_arc_id": "dfd36053d27365556a7f652f826874a6d4c7a9adf03cda33f5e51dab752144fb",
+        "u": "300464841",
+        "v": "300464670"
+      },
+      {
+        "dependent_population": 196984.40560913086,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 23,
+        "stage3_arc_id": "36ba0ff9a2033ce9a296b0ce482f0a642e587aff34bef5f49f07d7f44d0d30e4",
+        "u": "300464593",
+        "v": "11066208341"
+      },
+      {
+        "dependent_population": 196984.40560913086,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 24,
+        "stage3_arc_id": "6923866d9239b441da901e924f1e9e10949863ca5618bffd7925ce834416a667",
+        "u": "11066208341",
+        "v": "11066208349"
+      },
+      {
+        "dependent_population": 196984.40560913086,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 25,
+        "stage3_arc_id": "dc4da178e2906e97b024bb95a4cabb7fd436c08a3351f08772a5f439d15fb347",
+        "u": "11066208349",
+        "v": "300464841"
+      },
+      {
+        "dependent_population": 196984.40560913086,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 26,
+        "stage3_arc_id": "3a9cd3c1e05b38d8c5ecba6fd65af1d328eecb239462afbd53b3a3bdf6553f9a",
+        "u": "2168576097",
+        "v": "300464753"
+      },
+      {
+        "dependent_population": 196984.40560913086,
+        "key": "0",
+        "osm_way_id": "132509244",
+        "rank": 27,
+        "stage3_arc_id": "392f208ccb285b2d381592841a44bf90b5eed716d42fc4d79951b3b5ab2e0666",
+        "u": "300464753",
+        "v": "300464594"
+      },
+      {
+        "dependent_population": 188475.30517578125,
+        "key": "0",
+        "osm_way_id": "25689918",
+        "rank": 28,
+        "stage3_arc_id": "e1196cd2d602f84142b821c774a3d863dee5f926c4b89d61987909ded3f96918",
+        "u": "4450473918",
+        "v": "338417906"
+      },
+      {
+        "dependent_population": 188475.30517578125,
+        "key": "0",
+        "osm_way_id": "25689918",
+        "rank": 29,
+        "stage3_arc_id": "f5cf0677b066b8b2b6319794e79dfd75e57bab32cc82c2885cce964543af4453",
+        "u": "338417906",
+        "v": "325209831"
+      },
+      {
+        "dependent_population": 188475.30517578125,
+        "key": "0",
+        "osm_way_id": "25689918",
+        "rank": 30,
+        "stage3_arc_id": "0ce92dbd7a07dd35832bc021c20180751a87e740dca25a45d7d528bea4bae40b",
+        "u": "325209831",
+        "v": "4226485574"
+      },
+      {
+        "dependent_population": 188475.30517578125,
+        "key": "0",
+        "osm_way_id": "25689918",
+        "rank": 31,
+        "stage3_arc_id": "d0e9e152bc4020bcb91bb9e19922ceb3aac6f05270fd75a70f463304d528be78",
+        "u": "4226485574",
+        "v": "6588259895"
+      },
+      {
+        "dependent_population": 188475.30517578125,
+        "key": "0",
+        "osm_way_id": "25689918",
+        "rank": 32,
+        "stage3_arc_id": "adc1d49569d5be5737c309c177564cc25f6b89184d25a8f6bc9d3adefa7f29df",
+        "u": "6588259895",
+        "v": "5456056205"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "27319930",
+        "rank": 33,
+        "stage3_arc_id": "cad991c6886aa6ea9ab2967ecb6de6f0da1297bfe5a64b59a1738522f2621b14",
+        "u": "10029118614",
+        "v": "12756955464"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "1377733994",
+        "rank": 34,
+        "stage3_arc_id": "8ee9ec16272bdf0a8099297b6318c25cf64c0340dae28e60347af64676771e49",
+        "u": "12756955464",
+        "v": "4239255895"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "447993869",
+        "rank": 35,
+        "stage3_arc_id": "1740f91b7b6b0e5eec1a6f794412434406a564e1fafd457ef1ffb9427e8e806e",
+        "u": "300464612",
+        "v": "300464599"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "151332202",
+        "rank": 36,
+        "stage3_arc_id": "6e9c5c39321c2126e4294aff4b58a74dbb4893504094861d6d28dc1ab56ee326",
+        "u": "300464599",
+        "v": "4278284248"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "151332202",
+        "rank": 37,
+        "stage3_arc_id": "4fb60ce4a982e5641752d8782e1f73a291cf6852d83fa14e2e99ee7780ca2a7c",
+        "u": "4278284248",
+        "v": "300464593"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "424516684",
+        "rank": 38,
+        "stage3_arc_id": "ae992f302f23feba8b0fe658852ac7802de63b119aa9f3288d08aa1856de694c",
+        "u": "1765261170",
+        "v": "300464612"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "424516684",
+        "rank": 39,
+        "stage3_arc_id": "04af50971d69552b2f9dec2bdcb4e512ceca34e6a044786448a13fcbf006f88f",
+        "u": "2168576080",
+        "v": "4239255897"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "424516684",
+        "rank": 40,
+        "stage3_arc_id": "32bd0aefcc929032941f4ed7d96a0563dfd7a783da46203597aa4d67af142885",
+        "u": "4239255897",
+        "v": "1765261170"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "424516684",
+        "rank": 41,
+        "stage3_arc_id": "e91af2549e4feb400a4cdaa258e41b4e1043c5f1fc0ed794386299cdfe4f3d9a",
+        "u": "11054537023",
+        "v": "2168576080"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "424516684",
+        "rank": 42,
+        "stage3_arc_id": "330505166d0a9083bfe60df665e3038adf5ade7e4e7173a78437b91531a26c5a",
+        "u": "14137325189",
+        "v": "11054537023"
+      },
+      {
+        "dependent_population": 178241.4323425293,
+        "key": "0",
+        "osm_way_id": "424516684",
+        "rank": 43,
+        "stage3_arc_id": "d12243d8ab7e7d12fb980bbe43cb0e4f5ead4f094b1deb2447ac0ed669949347",
+        "u": "4239255895",
+        "v": "14137325189"
+      },
+      {
+        "dependent_population": 177542.04150390625,
+        "key": "0",
+        "osm_way_id": "209549882",
+        "rank": 44,
+        "stage3_arc_id": "5547bda30fcaea3d19e61612c163c26720ee4018ae6e9c53eb7c55a10b008f39",
+        "u": "10120161726",
+        "v": "10120161745"
+      },
+      {
+        "dependent_population": 177542.04150390625,
+        "key": "0",
+        "osm_way_id": "422927231",
+        "rank": 45,
+        "stage3_arc_id": "a8f5385568ecfaf3502fcc8cb61810fb00d7686c31173d6db24998a5ed0f1151",
+        "u": "10120161745",
+        "v": "10120161746"
+      },
+      {
+        "dependent_population": 177542.04150390625,
+        "key": "0",
+        "osm_way_id": "422927231",
+        "rank": 46,
+        "stage3_arc_id": "501838ca16ea750b157088807f7c72fa980f51e9cd7f64c514c832ebe015e1b3",
+        "u": "10120161746",
+        "v": "10120161747"
+      },
+      {
+        "dependent_population": 177542.04150390625,
+        "key": "0",
+        "osm_way_id": "422927231",
+        "rank": 47,
+        "stage3_arc_id": "83d3be654ea7235b3582ff1806257d6fb09149200e7abcee1a67dba4815afeb0",
+        "u": "10120161747",
+        "v": "9572383281"
+      },
+      {
+        "dependent_population": 177542.04150390625,
+        "key": "0",
+        "osm_way_id": "422927231",
+        "rank": 48,
+        "stage3_arc_id": "d535ccccebd23b9285f20dd4db56a7965d255d24f4d443ea8c84ae7872ab6f68",
+        "u": "9572383281",
+        "v": "10156952014"
+      },
+      {
+        "dependent_population": 177542.04150390625,
+        "key": "0",
+        "osm_way_id": "422927231",
+        "rank": 49,
+        "stage3_arc_id": "2925b4e1a351d59bcfc04a9ff580e13f3f30464b62c0dcb7d07ef2c513359dd2",
+        "u": "10156952014",
+        "v": "10120161717"
+      },
+      {
+        "dependent_population": 177542.04150390625,
+        "key": "0",
+        "osm_way_id": "1288649399",
+        "rank": 50,
+        "stage3_arc_id": "4ecce5936e6811977d9f049596d8223cd9ba54c503f70f2fce26a897845a9fd3",
+        "u": "10120161717",
+        "v": "10120161756"
+      }
+    ],
+    "facility_class": "fire",
+    "metric": "Population whose deterministic baseline nearest-facility path uses the directed arc.",
+    "osm_way_group_ranking": [
+      {
+        "osm_way_id": "31020449",
+        "rank": 1,
+        "summed_arc_dependency_population": 7941616.568557739
+      },
+      {
+        "osm_way_id": "611986879",
+        "rank": 2,
+        "summed_arc_dependency_population": 5049925.3427734375
+      },
+      {
+        "osm_way_id": "102470560",
+        "rank": 3,
+        "summed_arc_dependency_population": 4860352.643066406
+      },
+      {
+        "osm_way_id": "1255201324",
+        "rank": 4,
+        "summed_arc_dependency_population": 2871509.4376220703
+      },
+      {
+        "osm_way_id": "132191998",
+        "rank": 5,
+        "summed_arc_dependency_population": 2669993.6984558105
+      },
+      {
+        "osm_way_id": "830789705",
+        "rank": 6,
+        "summed_arc_dependency_population": 2299270.8426971436
+      },
+      {
+        "osm_way_id": "765700978",
+        "rank": 7,
+        "summed_arc_dependency_population": 2198818.339904785
+      },
+      {
+        "osm_way_id": "132509244",
+        "rank": 8,
+        "summed_arc_dependency_population": 2103370.660003662
+      },
+      {
+        "osm_way_id": "179259799",
+        "rank": 9,
+        "summed_arc_dependency_population": 2015904.3264312744
+      },
+      {
+        "osm_way_id": "209549882",
+        "rank": 10,
+        "summed_arc_dependency_population": 1944443.6525878906
+      },
+      {
+        "osm_way_id": "82881760",
+        "rank": 11,
+        "summed_arc_dependency_population": 1753786.7864990234
+      },
+      {
+        "osm_way_id": "132191992",
+        "rank": 12,
+        "summed_arc_dependency_population": 1727642.9813537598
+      },
+      {
+        "osm_way_id": "27368930",
+        "rank": 13,
+        "summed_arc_dependency_population": 1727642.9813537598
+      },
+      {
+        "osm_way_id": "1327226616",
+        "rank": 14,
+        "summed_arc_dependency_population": 1716256.3094482422
+      },
+      {
+        "osm_way_id": "1409647909",
+        "rank": 15,
+        "summed_arc_dependency_population": 1683085.2653808594
+      },
+      {
+        "osm_way_id": "131889967",
+        "rank": 16,
+        "summed_arc_dependency_population": 1615062.6171875
+      },
+      {
+        "osm_way_id": "1056551447",
+        "rank": 17,
+        "summed_arc_dependency_population": 1603680.7265625
+      },
+      {
+        "osm_way_id": "131884970",
+        "rank": 18,
+        "summed_arc_dependency_population": 1522437.15625
+      },
+      {
+        "osm_way_id": "911275606",
+        "rank": 19,
+        "summed_arc_dependency_population": 1490241.5693359375
+      },
+      {
+        "osm_way_id": "183979598",
+        "rank": 20,
+        "summed_arc_dependency_population": 1413526.0756530762
+      },
+      {
+        "osm_way_id": "837031433",
+        "rank": 21,
+        "summed_arc_dependency_population": 1350065.8780517578
+      },
+      {
+        "osm_way_id": "25116883",
+        "rank": 22,
+        "summed_arc_dependency_population": 1278316.0366210938
+      },
+      {
+        "osm_way_id": "696642743",
+        "rank": 23,
+        "summed_arc_dependency_population": 1263889.3850097656
+      },
+      {
+        "osm_way_id": "422927582",
+        "rank": 24,
+        "summed_arc_dependency_population": 1243424.5341796875
+      },
+      {
+        "osm_way_id": "843594856",
+        "rank": 25,
+        "summed_arc_dependency_population": 1208021.5442199707
+      },
+      {
+        "osm_way_id": "424525934",
+        "rank": 26,
+        "summed_arc_dependency_population": 1188528.1677246094
+      },
+      {
+        "osm_way_id": "26518996",
+        "rank": 27,
+        "summed_arc_dependency_population": 1104813.1508789062
+      },
+      {
+        "osm_way_id": "1041950212",
+        "rank": 28,
+        "summed_arc_dependency_population": 1075195.4248046875
+      },
+      {
+        "osm_way_id": "424516684",
+        "rank": 29,
+        "summed_arc_dependency_population": 1069448.5940551758
+      },
+      {
+        "osm_way_id": "833439136",
+        "rank": 30,
+        "summed_arc_dependency_population": 1065254.980545044
+      },
+      {
+        "osm_way_id": "29201406",
+        "rank": 31,
+        "summed_arc_dependency_population": 1048240.9694824219
+      },
+      {
+        "osm_way_id": "425879801",
+        "rank": 32,
+        "summed_arc_dependency_population": 1022430.4524536133
+      },
+      {
+        "osm_way_id": "1124804536",
+        "rank": 33,
+        "summed_arc_dependency_population": 1009894.8176879883
+      },
+      {
+        "osm_way_id": "206852521",
+        "rank": 34,
+        "summed_arc_dependency_population": 997449.8466796875
+      },
+      {
+        "osm_way_id": "41497335",
+        "rank": 35,
+        "summed_arc_dependency_population": 996274.5943603516
+      },
+      {
+        "osm_way_id": "1105956373",
+        "rank": 36,
+        "summed_arc_dependency_population": 978186.5822753906
+      },
+      {
+        "osm_way_id": "27368933",
+        "rank": 37,
+        "summed_arc_dependency_population": 956508.3274536133
+      },
+      {
+        "osm_way_id": "30312948",
+        "rank": 38,
+        "summed_arc_dependency_population": 950156.7077636719
+      },
+      {
+        "osm_way_id": "131884976",
+        "rank": 39,
+        "summed_arc_dependency_population": 943286.5439453125
+      },
+      {
+        "osm_way_id": "25689918",
+        "rank": 40,
+        "summed_arc_dependency_population": 942376.5258789062
+      },
+      {
+        "osm_way_id": "25377566",
+        "rank": 41,
+        "summed_arc_dependency_population": 934652.06640625
+      },
+      {
+        "osm_way_id": "95669980",
+        "rank": 42,
+        "summed_arc_dependency_population": 909493.0444335938
+      },
+      {
+        "osm_way_id": "206632052",
+        "rank": 43,
+        "summed_arc_dependency_population": 901823.6865234375
+      },
+      {
+        "osm_way_id": "422927231",
+        "rank": 44,
+        "summed_arc_dependency_population": 887710.2075195312
+      },
+      {
+        "osm_way_id": "26518353",
+        "rank": 45,
+        "summed_arc_dependency_population": 882971.4963378906
+      },
+      {
+        "osm_way_id": "1149819100",
+        "rank": 46,
+        "summed_arc_dependency_population": 859426.0375976562
+      },
+      {
+        "osm_way_id": "25562107",
+        "rank": 47,
+        "summed_arc_dependency_population": 854070.9677734375
+      },
+      {
+        "osm_way_id": "25852152",
+        "rank": 48,
+        "summed_arc_dependency_population": 852591.826171875
+      },
+      {
+        "osm_way_id": "206835304",
+        "rank": 49,
+        "summed_arc_dependency_population": 852025.3770446777
+      },
+      {
+        "osm_way_id": "721922454",
+        "rank": 50,
+        "summed_arc_dependency_population": 813639.4182128906
+      }
+    ],
+    "ranking_scope": "All projected directed arcs used by represented population origins; top 50 reported."
+  },
+  "facility_provenance": {
+    "fire": {
+      "bytes": 13664,
+      "classification": "OBSERVED_CATALOGUE",
+      "expected_sha256": "f41a5afb44e316aea26403f8403b08e14fcac9f13c2d5947d3e5ba859736dad9",
+      "feature_count": 47,
+      "file": "fire_stations.kml",
+      "meaning": "Fire-station catalogue; operating readiness unverified.",
+      "sha256": "f41a5afb44e316aea26403f8403b08e14fcac9f13c2d5947d3e5ba859736dad9",
+      "url": "https://data.opencity.in/dataset/ea5bb2ae-3fa7-46cd-8af6-9e8da42810bb/resource/39d3601b-cd42-4c11-a6c3-8fc4b057b38a/download/9097a4c9-cd79-4df1-8552-1c67f280ede3.kml"
+    },
+    "uchc": {
+      "bytes": 14155,
+      "classification": "OBSERVED_CATALOGUE",
+      "expected_sha256": "45e31b7dc026f54dd4e03191c2b91278a9722af5ace5425ebeb44de5c1c637ed",
+      "feature_count": 14,
+      "file": "uchc.kml",
+      "meaning": "Community health centre catalogue; capability/status unverified.",
+      "sha256": "45e31b7dc026f54dd4e03191c2b91278a9722af5ace5425ebeb44de5c1c637ed",
+      "url": "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/cd4effee-997f-4fe0-b376-8801080c6962/download/a604ea86-6bed-45ab-89cf-074fb5a59bfc.kml"
+    },
+    "uphc": {
+      "bytes": 100497,
+      "classification": "OBSERVED_CATALOGUE",
+      "expected_sha256": "a700d7e837a5466d38e99a6ed1b67a2ff27be9638605f77b5051fef3b85055eb",
+      "feature_count": 140,
+      "file": "uphc.kml",
+      "meaning": "Primary health centre catalogue; not a trauma-hospital list.",
+      "sha256": "a700d7e837a5466d38e99a6ed1b67a2ff27be9638605f77b5051fef3b85055eb",
+      "url": "https://data.opencity.in/dataset/e08b7485-40ab-4401-861f-f790ed8e5328/resource/5a81427f-0aa1-4270-8df4-5d4cef250912/download/a33b403b-f341-4214-8613-88e2ec227359.kml"
+    }
+  },
+  "generated_at_utc": "2026-09-12T18:22:45.950238+00:00",
+  "graph_projection": {
+    "method": "Streaming GraphML; least-cost arc retained for each ordered node pair",
+    "node_count": 155345,
+    "original_directed_arc_count": 331545,
+    "projected_ordered_pair_count": 331545
+  },
+  "metric": {
+    "observed_speed_arc_count": 6092,
+    "scenario_default_speed_kph": 30.0,
+    "scenario_speed_arc_count": 325453,
+    "unit": "seconds"
+  },
+  "population_provenance": {
+    "bytes": 16235952,
+    "classification": "MODELLED",
+    "expected_sha256": "e4c629155db214d22fc5f2b3bb29e018e6261e8855e30f727131f5c1d9a25013",
+    "file": "ind_pop_2015_CN_1km_R2025A_UA_v1.tif",
+    "item": "ind_pop_2015_CN_1km_R2025A_UA_v1",
+    "positive_cells_in_boundary": 526,
+    "represented_population": 3591253.333087921,
+    "sha256": "e4c629155db214d22fc5f2b3bb29e018e6261e8855e30f727131f5c1d9a25013",
+    "url": "https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/2015/IND/v1/1km_ua/constrained/ind_pop_2015_CN_1km_R2025A_UA_v1.tif"
+  },
+  "relief_centres": {
+    "claim_limit": "The PDF address list is preserved but not geocoded or treated as activated centres.",
+    "file": "relief_centres_2024.pdf",
+    "sha256": "9d68bb27098d81b161badb721a12d7cd36ba5e856a6a033590876b61cf16ac57",
+    "status": "EXCLUDED_UNVERIFIED_COORDINATES"
+  },
+  "snapping": {
+    "facility_count": 201,
+    "facility_max_distance_m": 1223.249132869366,
+    "method": "EPSG:32644 Euclidean nearest Stage 3 node",
+    "population_cell_max_distance_m": 1218.683428793251,
+    "population_origin_node_count": 525
+  },
+  "stage": 8,
+  "stage4_blocked_overlay": {
+    "accessibility": {
+      "fire": {
+        "connected_population": 3581288.0078926086,
+        "connected_population_weighted_p50_time": 278.5789999999999,
+        "connected_population_weighted_p90_time": 732.5630000000002,
+        "connected_weighted_mean_time": 365.4834623648566,
+        "disconnected_population": 9965.3251953125,
+        "disconnected_population_share": 0.0027748878374848217,
+        "origin_count": 525,
+        "population_share_over_threshold": 0.0104272775791981,
+        "population_weighted_p90_time": 740.2759999999994,
+        "threshold": 1800.0,
+        "total_population": 3591253.333087921
+      },
+      "uchc": {
+        "connected_population": 3581288.0078926086,
+        "connected_population_weighted_p50_time": 397.3119999999999,
+        "connected_population_weighted_p90_time": 720.2740000000001,
+        "connected_weighted_mean_time": 420.93576886,
+        "disconnected_population": 9965.3251953125,
+        "disconnected_population_share": 0.0027748878374848217,
+        "origin_count": 525,
+        "population_share_over_threshold": 0.0027748878374848217,
+        "population_weighted_p90_time": 720.5660000000001,
+        "threshold": 1800.0,
+        "total_population": 3591253.333087921
+      },
+      "uphc": {
+        "connected_population": 3581288.0078926086,
+        "connected_population_weighted_p50_time": 140.53599999999994,
+        "connected_population_weighted_p90_time": 288.90000000000003,
+        "connected_weighted_mean_time": 162.22829676072544,
+        "disconnected_population": 9965.3251953125,
+        "disconnected_population_share": 0.0027748878374848217,
+        "origin_count": 525,
+        "population_share_over_threshold": 0.0027748878374848217,
+        "population_weighted_p90_time": 290.2609999999999,
+        "threshold": 1800.0,
+        "total_population": 3591253.333087921
+      }
+    },
+    "classification": "SCENARIO from historical evidence",
+    "matched_projected_directed_arc_count": 596
+  }
+}

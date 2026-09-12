@@ -1,0 +1,1 @@
+ARCHIVED DIRECT-OSM IMPORT FAILURE: Ubuntu SUMO 1.18.0 netconvert aborted on the GCC-clipped OSM extract with RTree/junction-angle assertions. The executed fallback succeeded: portable Eclipse SUMO 1.27.1 imported the Stage 3 GraphML through generated plain node/edge files. See STAGE5_SUMO_RESULTS.json for the current result.

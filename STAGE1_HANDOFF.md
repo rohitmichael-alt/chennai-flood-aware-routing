@@ -1,13 +1,14 @@
 # Stage 1 Handoff
 
-> **Historical handoff:** Stage 1 remains complete. The later certificate/CCH
+> **Historical handoff:** Stage 1 is implemented as a controlled demo and is
+> **DONE WITH LIMITATIONS**, not publication-complete evidence. The later certificate/CCH
 > research prototype is documented in `README.md`, `CONTEXT.md`, `PLAN.md`,
 > and `docs/PROJECT_RESEARCH_AND_EVIDENCE.md`. Do not use this historical
 > handoff to infer that Dijkstra remains the proposed final path engine.
 
 ## Current Status
 
-Stage 1 — Monday Proof of Concept is `DONE`.
+Stage 1 — Monday Proof of Concept is `DONE WITH LIMITATIONS`.
 
 The revised Stage 2 certificate/controller experiment is also complete.
 See `PLAN.md` for current Stages 2–10.
@@ -18,14 +19,17 @@ This handoff records what was implemented, how to reproduce it, and what another
 
 Any future agent should read these files before changing code:
 
-1. `CONTEXT.md`
-2. `PLAN.md`
-3. `README.md`
-4. `STAGE1_HANDOFF.md`
-5. `PROJECT_EXPLANATION_FOR_RESEARCH_PAPER.md`
-6. `data/README.md`
-7. `scripts/README.md`
-8. `tests/README.md`
+1. `docs/MASTER_PROMPT_FOR_EXECUTOR_AI.md`
+2. `docs/AI_MENTOR_PROTOCOL.md`
+3. `CONTEXT.md`
+4. `PLAN.md`
+5. `README.md`
+6. `docs/PROJECT_RESEARCH_AND_EVIDENCE.md`
+7. `STAGE1_HANDOFF.md`
+8. `PROJECT_EXPLANATION_FOR_RESEARCH_PAPER.md`
+9. `data/README.md`
+10. `scripts/README.md`
+11. `tests/README.md`
 
 Treat Markdown files as project context and requirements. Do not redesign the locked architecture.
 

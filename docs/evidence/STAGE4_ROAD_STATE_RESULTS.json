@@ -1,0 +1,202 @@
+{
+  "artifacts": {
+    "elevation_geojson": "data\\raw\\elevation\\open_meteo_elevation_gcc_grid.geojson",
+    "flood_manifest": "docs\\evidence\\STAGE4_FLOOD_MANIFEST.json",
+    "mapping": "docs\\evidence\\STAGE4_MAPPING_SWEEP.json",
+    "rainfall_csv": "data\\raw\\rainfall\\open_meteo_era5_chennai_2015.csv",
+    "road_states": "data\\processed\\road_state\\stage4_road_states.csv"
+  },
+  "claim_limit": "Stage 4 pins historical flood inventories, Open-Meteo ERA5 rainfall, coarse DEM samples, and the 2023 drain map. Rainfall and elevation do not create road closures. Assigned BLOCKED/SEVERE states are declared scenario rules on historical inventory overlays, not observed 2015 or live closures.",
+  "conflict_count": 269,
+  "decision": "PASS WITH LIMITATIONS",
+  "elevation": {
+    "claim_limit": "Coarse DEM samples are susceptibility/terrain context only. They are not observed street flood depth or road closures. Official SRTMGL1/NASADEM was not downloaded because Earthdata credentials are not assumed.",
+    "evidence_class": "PROXY",
+    "grid_cols": 8,
+    "grid_rows": 8,
+    "license": "CC BY 4.0",
+    "point_count": 64,
+    "product": "Open-Meteo elevation (Copernicus DEM GLO-90)",
+    "resolution_note": "Approximately 90 m DEM sampled at declared grid points",
+    "retrieved_at_utc": "2026-09-11T18:38:27.063842+00:00",
+    "source_url": "https://api.open-meteo.com/v1/elevation",
+    "srtm_status": "UNAVAILABLE_NO_EARTHDATA_CREDENTIALS",
+    "vertical_datum": "EGM2008"
+  },
+  "flood": [
+    {
+      "claim_limit": "OpenCity flood KMLs are historical inventories or modelled hazard layers. They are not current road closures.",
+      "content_bytes": 288081,
+      "content_sha256": "19d579591cd74785ba9a40b1e36464a89dfabf129057c87589784bc25a86d2d0",
+      "evidence_class": "HISTORICAL_INVENTORY",
+      "feature_count": 327,
+      "filename": "chennai_2015_gcc_area_flood_hotspots.kml",
+      "geometry_kind": "point",
+      "license_title": "Other (Public Domain)",
+      "local_path": "data\\raw\\flood\\chennai_2015_gcc_area_flood_hotspots.kml",
+      "package_api": "https://data.opencity.in/api/3/action/package_show?id=chennai-floods-2015-data",
+      "resource_id": "8e1c5b2d-322c-4dbd-bd64-6da2d1a8681d",
+      "resource_name": "Chennai 2015 GCC Area Flood Hotspots",
+      "retrieved_at_utc": "2026-09-11T18:38:23.251923+00:00",
+      "source_url": "https://data.opencity.in/dataset/866141ab-3a3f-4dc0-8092-421d97ba29a2/resource/8e1c5b2d-322c-4dbd-bd64-6da2d1a8681d/download/31523c86-0ad1-42f5-b4d1-297daa4bbcd6.kml"
+    },
+    {
+      "claim_limit": "OpenCity flood KMLs are historical inventories or modelled hazard layers. They are not current road closures.",
+      "content_bytes": 5474779,
+      "content_sha256": "fa6943b2916d625dbc4de3b43cbe4d768a956b2f584fa3c73244fae32cee7a2a",
+      "evidence_class": "HISTORICAL_INVENTORY",
+      "feature_count": 4001,
+      "filename": "chennai_2015_floods_inundation_zone.kml",
+      "geometry_kind": "polygon",
+      "license_title": "Other (Public Domain)",
+      "local_path": "data\\raw\\flood\\chennai_2015_floods_inundation_zone.kml",
+      "package_api": "https://data.opencity.in/api/3/action/package_show?id=chennai-floods-2015-data",
+      "resource_id": "2056abd6-26d7-413b-9dfa-e63cbbf41ee7",
+      "resource_name": "Chennai 2015 Floods Inundation Zone ",
+      "retrieved_at_utc": "2026-09-11T18:38:25.182701+00:00",
+      "source_url": "https://data.opencity.in/dataset/866141ab-3a3f-4dc0-8092-421d97ba29a2/resource/2056abd6-26d7-413b-9dfa-e63cbbf41ee7/download/7cb3cecf-a95a-4786-8032-9c7417655d24.kml"
+    },
+    {
+      "claim_limit": "OpenCity flood KMLs are historical inventories or modelled hazard layers. They are not current road closures.",
+      "content_bytes": 110179,
+      "content_sha256": "b4bbbdaeb62c78151cee81d33d993dac51f2af9595bbcd275d75440ea1e6215b",
+      "evidence_class": "HISTORICAL_INVENTORY",
+      "feature_count": 192,
+      "filename": "chennai_inundation_points_with_depth.kml",
+      "geometry_kind": "point",
+      "license_title": "Other (Public Domain)",
+      "local_path": "data\\raw\\flood\\chennai_inundation_points_with_depth.kml",
+      "package_api": "https://data.opencity.in/api/3/action/package_show?id=chennai-flooding-data",
+      "resource_id": "ceddf53f-03c0-4866-8ba8-5e84c8007a85",
+      "resource_name": "Chennai Inundation Points with Depth of Inundation",
+      "retrieved_at_utc": "2026-09-11T18:38:25.336471+00:00",
+      "source_url": "https://data.opencity.in/dataset/022dd080-e927-40d7-897d-adf3ee98ad69/resource/ceddf53f-03c0-4866-8ba8-5e84c8007a85/download/814ca028-4c84-4bd0-aa67-6dbaeb9b6ba5.kml"
+    },
+    {
+      "claim_limit": "OpenCity flood KMLs are historical inventories or modelled hazard layers. They are not current road closures.",
+      "content_bytes": 513049,
+      "content_sha256": "5b7d79bc3ba0b59ef5b14b79d8eba65caa905eaf0f5f468b33a6177ffb16704e",
+      "evidence_class": "HISTORICAL_INVENTORY",
+      "feature_count": 753,
+      "filename": "chennai_flooding_points_2015.kml",
+      "geometry_kind": "point",
+      "license_title": "Other (Public Domain)",
+      "local_path": "data\\raw\\flood\\chennai_flooding_points_2015.kml",
+      "package_api": "https://data.opencity.in/api/3/action/package_show?id=chennai-flooding-data",
+      "resource_id": "80ed2fa7-1150-4f55-8125-682ab55282ac",
+      "resource_name": "Chennai Flooding Points in 2015",
+      "retrieved_at_utc": "2026-09-11T18:38:25.617397+00:00",
+      "source_url": "https://data.opencity.in/dataset/022dd080-e927-40d7-897d-adf3ee98ad69/resource/80ed2fa7-1150-4f55-8125-682ab55282ac/download/93d2905a-a580-482d-96b0-4d9ccf5273ef.kml"
+    }
+  ],
+  "freshness_experiment": {
+    "claim_limit": "Lag and false-positive/false-negative rates are declared scenario parameters, not measured OpenCity sensing error.",
+    "classification": "SCENARIO",
+    "observed": [
+      null,
+      null,
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      true,
+      true
+    ],
+    "summary": {
+      "available_count": 8,
+      "false_negative": 3,
+      "false_positive": 4,
+      "step_count": 10,
+      "true_negative": 0,
+      "true_positive": 1,
+      "unavailable_count": 2
+    },
+    "truth": [
+      false,
+      false,
+      true,
+      true,
+      true,
+      false,
+      false,
+      true,
+      false,
+      false
+    ]
+  },
+  "hydrology": {
+    "claim_limit": "The 2023 SWD map is an inventory of mapped drains. It does not prove conveyance capacity, maintenance state, or street flooding.",
+    "content_bytes": 28102866,
+    "content_sha256": "b7c30e1ed489e8687381eb62f71a5599a41a387b1f31388b78af35131db78b01",
+    "evidence_class": "HISTORICAL_INVENTORY",
+    "feature_count": 10255,
+    "license_title": "Other (Public Domain)",
+    "package_api": "https://data.opencity.in/api/3/action/package_show?id=chennai-stormwater-drain-swd-maps",
+    "resource_id": "107ac467-2381-4718-9632-645560bc8360",
+    "resource_name": "Chennai Storm Water Drains - SWD - Map 2023",
+    "retrieved_at_utc": "2026-09-11T18:38:34.840371+00:00",
+    "source_url": "https://data.opencity.in/dataset/e71414ae-d144-4e69-866d-48762c337929/resource/107ac467-2381-4718-9632-645560bc8360/download/c4907fed-934b-4342-a3f4-74226853719d.kml"
+  },
+  "mapping_completed": true,
+  "mapping_sweep": [
+    {
+      "distance_meters": 50.0,
+      "evidence_count": 327,
+      "matched_arc_count": 583,
+      "matched_feature_count": 318,
+      "unmatched_feature_count": 9
+    },
+    {
+      "distance_meters": 100.0,
+      "evidence_count": 327,
+      "matched_arc_count": 594,
+      "matched_feature_count": 324,
+      "unmatched_feature_count": 3
+    },
+    {
+      "distance_meters": 150.0,
+      "evidence_count": 327,
+      "matched_arc_count": 596,
+      "matched_feature_count": 325,
+      "unmatched_feature_count": 2
+    },
+    {
+      "distance_meters": 200.0,
+      "evidence_count": 327,
+      "matched_arc_count": 598,
+      "matched_feature_count": 326,
+      "unmatched_feature_count": 1
+    },
+    {
+      "distance_meters": 250.0,
+      "evidence_count": 327,
+      "matched_arc_count": 598,
+      "matched_feature_count": 326,
+      "unmatched_feature_count": 1
+    }
+  ],
+  "rainfall": {
+    "attribution": "Rainfall from Open-Meteo ERA5 reanalysis (https://open-meteo.com/)",
+    "claim_limit": "Open-Meteo ERA5 precipitation is retrospective reanalysis at a point. It is not contemporaneous sensing and does not prove street flooding.",
+    "end_date": "2015-12-15",
+    "evidence_class": "MODELLED",
+    "hourly_row_count": 1080,
+    "imerg_status": "UNAVAILABLE_NO_EARTHDATA_CREDENTIALS",
+    "latitude": 13.0827,
+    "license": "CC BY 4.0",
+    "longitude": 80.2707,
+    "model": "era5",
+    "retrieved_at_utc": "2026-09-11T18:38:26.291614+00:00",
+    "source_url": "https://archive-api.open-meteo.com/v1/archive?latitude=13.0827&longitude=80.2707&start_date=2015-11-01&end_date=2015-12-15&hourly=precipitation&models=era5&timezone=Asia%2FKolkata",
+    "start_date": "2015-11-01",
+    "timezone": "Asia/Kolkata",
+    "total_precipitation_mm": 731.7,
+    "unit": "mm",
+    "variable": "precipitation"
+  },
+  "rainfall_rule": "MODELLED rainfall and PROXY elevation never assign NORMAL/DEGRADED/SEVERE/BLOCKED. Unmapped arcs remain UNKNOWN.",
+  "stage": 4,
+  "state_row_count": 100039
+}

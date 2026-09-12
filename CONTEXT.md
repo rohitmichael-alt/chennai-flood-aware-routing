@@ -31,7 +31,7 @@ Closest certificate prior art includes [CPD-Search](https://doi.org/10.24963/ijc
 ## Technical Model
 
 ```text
-road/flood evidence (Stage 1 demo / planned Stage 4)
+road/flood evidence (Stage 1 demo / executed Stage 4 scenario mapping)
 → explained road state
 → effective capacity  [implemented]
 → assigned demand / capacity  [Stage 1 uses labelled SCENARIO uniform flow]
@@ -39,21 +39,21 @@ road/flood evidence (Stage 1 demo / planned Stage 4)
 → certificate refresh gate  [implemented]
 → Dijkstra or prototype CCH  [implemented; city CCH not claimed]
 → adoption-threshold filter  [implemented SCENARIO policy]
-→ projected load reservation  [unimplemented]
-→ SUMO outcome  [unimplemented]
-→ accessibility evaluation utilities  [implemented, no Chennai run]
+→ projected load reservation  [implemented on labelled scenario network]
+→ SUMO network import  [implemented; matched outcomes unexecuted]
+→ accessibility evaluation  [implemented on dated graph projection]
 ```
 
 ### Path and Control Responsibilities
 
 | Component | Responsibility |
 |---|---|
-| CCH | Prototype exact engine for finite integer metrics; not a city-scale production claim |
+| CCH | Inertial city-graph engine validated against Dijkstra on 24 sampled OD pairs; timings remain single-machine |
 | Dijkstra | Correctness oracle and Stage 1/2 path engine |
 | ALT-guided bidirectional A* | Unimplemented backup/comparator |
 | Certificate controller | Engine-neutral gate: refresh or keep the synchronized metric |
 | Stability policy | SCENARIO threshold/cooldown filter; reservations unimplemented |
-| SUMO | Unimplemented on this branch |
+| SUMO | Stage 3 graph imported with portable netconvert 1.27.1; demand synthetic and outcome scenarios unexecuted |
 
 ## Certificate Assumptions
 
@@ -95,10 +95,10 @@ The implemented controller uses complete fixed-topology snapshots and non-negati
 4. Certificate-gated synchronizer with atomic versioned updates.
 5. Eager-refresh baseline.
 6. Deterministic synthetic experiment runner.
-7. Population-weighted accessibility, partial-compliance, evidence-robustness, and facility-road-criticality utilities.
+7. Population-weighted Chennai accessibility, partial-compliance, evidence-robustness, and directed facility-road dependency evaluation.
 8. Differential, certificate, closure/recovery, parallel-edge, and CCH tests.
 9. Integer BPR snapshot glue from explained states.
-10. SCENARIO route-adoption filter: cooldown does not block degradation or infeasible incumbents.
+10. SCENARIO route-adoption filter and compliant-only time-binned reservations with update-before-certificate ordering.
 
 ### Preliminary Evidence
 
@@ -111,15 +111,13 @@ The main synthetic experiment used 200 nodes, 600 extra arcs, 100 update epochs,
 
 These results do not establish Chennai traffic outcomes.
 
-### Planned
+### Remaining
 
-- stable dated Chennai graph and turn validation;
-- flood/rainfall/road-state pipeline;
-- Chennai SUMO demand/calibration;
-- production CCH ordering and closure representation;
-- stability and time-indexed projected reservations;
-- facility/population data integration;
-- emergency scenario and full ablations.
+- turn-restriction import and validation;
+- observed Chennai OD/count calibration;
+- matched citywide SUMO scenarios and queue/spillback outcomes;
+- stability and population-weighting ablations;
+- verified relief-centre coordinates and external validation.
 
 ## Additional Evaluation Factors
 
