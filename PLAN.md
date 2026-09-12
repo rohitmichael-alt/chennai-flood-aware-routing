@@ -26,7 +26,7 @@
 **Inputs:** OSM road graph and OpenCity 2015 historical flood hotspots.  
 **Method:** CRS-safe nearest-road mapping, controlled hard closure, effective capacity, BPR, two Dijkstra snapshots.  
 **Evidence:** CSV/JSON/GraphML/PNG outputs and Stage 1 tests.  
-**Status:** **DONE WITH LIMITATIONS.** Fixture-tested demo. Outputs are gitignored; 2015 hotspots are mapped onto a live OSM extract; BPR uses labelled SCENARIO uniform flow/capacity.
+**Status:** **DONE WITH LIMITATIONS.** The publication demo uses the pinned dated Stage 3 graph and Stage 4 historical-hotspot mapping; BPR uses labelled SCENARIO uniform flow/capacity. Large route artifacts remain gitignored while the evidence manifest is committed.
 
 **Claim limit:** It demonstrates closure avoidance, not calibrated congestion-sensitive routing or current flooding.
 
@@ -43,7 +43,7 @@
 - mandatory refresh when the stale lower bound is invalid;
 - eager-refresh baseline;
 - deterministic experiment traces and machine-readable results;
-- 55 collected tests when `routingkit-cch` is installed; 4 skip without it.
+- full repository regression suite passes; dependency-specific skips are reported by the active environment.
 
 **Status:** **DONE as preliminary synthetic evidence.**
 
@@ -69,8 +69,8 @@ Completion requires a graph that loads without a live OSM query and passes struc
 
 **Objective:** Produce explained, timestamped road states.
 
-**Current status:** Generic lag/false-positive/false-negative perturbation and
-summary methods are implemented; Chennai evidence ingestion is pending.
+**Current status:** Chennai OpenCity flood/drain evidence, ERA5 reanalysis, and
+coarse public elevation were acquired and mapped into labelled scenario road states. Controlled lag/error utilities exist, but a matched city experiment is unexecuted.
 
 Inputs:
 
@@ -131,7 +131,7 @@ CCH remains interchangeable: if feasibility fails, use ALT-guided bidirectional 
 
 **Objective:** Prevent route churn and self-created congestion.
 
-**Status:** Tasks 1–2 implemented as a labelled SCENARIO filter (degradation and infeasibility override cooldown; reservations unimplemented).
+**Status:** Tasks 1–5 are implemented and exercised on a four-node labelled SCENARIO network. The matched citywide SUMO periodic-rerouting comparison remains unexecuted.
 
 Tasks:
 
@@ -163,7 +163,7 @@ Metrics:
 - exact seeded cohorts at 0%, 25%, 50%, 75%, and 100% compliance;
 - directed arcs ranked by newly disconnected population and added facility travel time, then grouped by OSM way ID for physical-road reporting.
 
-**Current status:** Generic metrics, deterministic compliance selection, evidence perturbation, and facility-road-criticality ranking are implemented; Chennai data integration is pending.
+**Current status:** The dated Chennai graph, WorldPop, 140 UPHCs, 14 UCHCs, and 47 fire stations were integrated. Population-weighted accessibility, disconnection, seeded compliance, directed-arc dependency, and OSM-way grouping were executed. Relief centres remain excluded for unverified coordinates, and matched weighting/closure ablations remain unexecuted.
 
 ## Stage 9 — Emergency Scenario
 

@@ -37,7 +37,7 @@ road/flood evidence (Stage 1 demo / executed Stage 4 scenario mapping)
 → assigned demand / capacity  [Stage 1 uses labelled SCENARIO uniform flow]
 → BPR → integer milliseconds  [implemented glue]
 → certificate refresh gate  [implemented]
-→ Dijkstra or prototype CCH  [implemented; city CCH not claimed]
+→ Dijkstra or native CCH  [city graph validated on sampled OD pairs]
 → adoption-threshold filter  [implemented SCENARIO policy]
 → projected load reservation  [implemented on labelled scenario network]
 → SUMO network import  [implemented; matched outcomes unexecuted]
@@ -52,7 +52,7 @@ road/flood evidence (Stage 1 demo / executed Stage 4 scenario mapping)
 | Dijkstra | Correctness oracle and Stage 1/2 path engine |
 | ALT-guided bidirectional A* | Unimplemented backup/comparator |
 | Certificate controller | Engine-neutral gate: refresh or keep the synchronized metric |
-| Stability policy | SCENARIO threshold/cooldown filter; reservations unimplemented |
+| Stability policy | SCENARIO threshold/cooldown filter plus time-binned compliant-only reservations; citywide SUMO comparison unexecuted |
 | SUMO | Stage 3 graph imported with portable netconvert 1.27.1; demand synthetic and outcome scenarios unexecuted |
 
 ## Certificate Assumptions

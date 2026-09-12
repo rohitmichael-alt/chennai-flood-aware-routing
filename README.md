@@ -156,4 +156,5 @@ This principle has close prior art, especially [CPD-Search](https://doi.org/10.2
 - [`PLAN.md`](PLAN.md): revised stages and completion criteria.
 - [`STAGE1_HANDOFF.md`](STAGE1_HANDOFF.md): historical Stage 1 implementation.
 - [`docs/PROJECT_RESEARCH_AND_EVIDENCE.md`](docs/PROJECT_RESEARCH_AND_EVIDENCE.md): compact research paper/document.
+- [`docs/SENIOR_RESEARCH_REVIEW.md`](docs/SENIOR_RESEARCH_REVIEW.md): literature-grounded project-to-paper cross-analysis, novelty pivots, rejection risks, and venue guidance.
 - `docs/PROJECT_RESEARCH_AND_EVIDENCE.docx`: generated Word version.

@@ -69,7 +69,7 @@ The strongest defensible contribution is:
 | [Aine and Likhachev, 2016](https://doi.org/10.1016/j.artint.2016.01.009) | Truncated incremental repair with bounded suboptimality | Query-specific incremental search, not batched CCH customization |
 | [Dibbelt et al., CCH, 2016](https://doi.org/10.1145/2886843) | Metric-independent preprocessing, customization, fast exact queries, partial propagation | No per-query certificate for deferring refresh |
 | [Buchhold et al., 2019](https://doi.org/10.1145/3362693) | CCH with BPR traffic assignment and batched queries | No flood state, stability controller, or certificate gate |
-| [Chan et al., 2023](https://doi.org/10.1145/3579842) | CCH customization/query costs, recheck periods, improvement thresholds, compliance/penetration, and congestion redistribution | No flood evidence or deterministic monotone per-query stale-metric certificate |
+| [Chan et al., 2023](https://doi.org/10.1145/3579842) | Metropolitan-scale Mobiliti simulation of dynamic rerouting penetration, recheck periods, improvement thresholds, congestion redistribution, and parallel scalability | No flood evidence or deterministic monotone per-query stale-metric certificate; not a CCH study |
 | [CERT-FLOW, 2026 preprint](https://doi.org/10.31224/7306) | Implemented proof-gated CH/oracle routing under drifting costs | Probabilistic conformal bounds and dual search, not the deterministic monotone specialization |
 | [Li et al., 2026](https://doi.org/10.1007/s13753-026-00697-y) | Hydrodynamic flooding, SUMO, rerouting, and emergency vehicles | No CCH certificate or explicit projected-load/stability evaluation |
 | [Pan et al., 2012](https://doi.org/10.1109/DCOSS.2012.29) | Proactive projected vehicle footprints and sequential rerouting | No flood evidence or CCH |
@@ -88,7 +88,7 @@ Chennai work already includes:
 
 - crowdsourced flooded-street mapping ([Naik, 2016](https://doi.org/10.1109/SysEng.2016.7753186));
 - flood-relief vehicle routing ([Ganguly and Roy, 2017](https://doi.org/10.1109/ICT-DM.2017.8275694));
-- city-level Dijkstra/A*/ALT routing ([Kumar et al., 2020](https://doi.org/10.18520/cs/v119/i4/680-690));
+- city-level Dijkstra/A*/ALT routing ([Bachu et al., 2020](https://doi.org/10.18520/cs/v119/i4/680-690));
 - flood forecasting through C-FLOWS ([publisher PDF](https://currentscience.ac.in/Volumes/117/05/0741.pdf));
 - flood susceptibility mapping ([Alabdan et al., 2025](https://doi.org/10.1038/s41598-025-08912-4));
 - SUMO calibration for heterogeneous Chennai traffic ([Sashank et al., 2020](https://doi.org/10.1007/978-981-15-3742-4_13));
@@ -263,7 +263,7 @@ The lower bound is invalid if any current weight drops below the synchronized we
 - road reopening;
 - any other represented cost decrease.
 
-A closure represented as an increase is safe for the lower-bound direction, but a candidate containing the closed edge fails the upper-bound test. Native CCH currently accepts finite integer weights only; closure-sentinel behavior still requires a dedicated validation stage.
+A closure represented as an increase is safe for the lower-bound direction, but a candidate containing the closed edge fails the upper-bound test. Native CCH accepts finite integer weights only, so Stage 6 validates a finite closure sentinel against the configured maximum finite path-weight bound; it does not support literal \(+\infty\) inside CCH.
 
 ### 5.6 Route Adoption and Projected Load
 
@@ -273,7 +273,7 @@ The certificate controls **metric synchronization**. A separate SCENARIO filter 
 2. candidate improvement exceeds \(\theta_{gain}\);
 3. cooldown has expired unless safety requires immediate action.
 
-Items 1–3 are implemented as `decide_route_adoption`. Time-indexed reservations (items previously 4–5) remain unimplemented. The filter is not claimed to achieve traffic equilibrium.
+Items 1–3 are implemented as `decide_route_adoption`. Stage 7 also implements time-binned, compliant-only projected-load reservations with metric updates applied before certificate evaluation. The reservation experiment is limited to a four-node labelled SCENARIO network and is not claimed to achieve traffic equilibrium or a fleet optimum.
 
 ### 5.7 Emergency and Public-Service Evaluation
 
@@ -292,7 +292,7 @@ Five committed evaluation studies strengthen impact without becoming route weigh
 4. **Partial compliance:** nearest-integer seeded cohorts target 0%, 25%, 50%, 75%, and 100%; exact percentages require a compatible fleet size.
 5. **Facility-oriented criticality:** rank directed keyed arcs by newly disconnected population and unnormalised person-time added to facility access; group both directions/parallel arcs by OSM way ID before physical-road reporting.
 
-Generic utility functions exist for portions of all five factors in `evaluation/metrics.py` and `evaluation/robustness.py`. None of the five has yet been integrated with Chennai inputs or executed as a factor-level experiment.
+The dated Chennai graph, WorldPop raster, UPHC/UCHC catalogues, and fire-station catalogue were integrated in Stage 8. Population-weighted accessibility, seeded compliance cohorts, directed-arc dependency exposure, and OSM-way grouping were executed. Relief centres were excluded for lack of verified coordinates, and controlled lag/classification-error traces remain utility-level rather than a matched city experiment.
 
 ## 6. Dataset and Data Access
 
@@ -300,13 +300,13 @@ Generic utility functions exist for portions of all five factors in `evaluation/
 
 | Factor | Required data | Chennai source | Access method | API key/account | No-credential path | Implemented now | Remaining experiment work |
 |---|---|---|---|---|---|---|---|
-| Evidence freshness and uncertainty | A derived/simulated binary road-state truth trace plus rainfall/flood evidence | [OpenCity flood records](https://data.opencity.in/dataset/chennai-floods-2015-data); [Open-Meteo reanalysis](https://open-meteo.com/en/docs/historical-weather-api); optional [IMERG Final V07](https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGHH_07/summary) | CKAN download, HTTPS JSON, or credentialed GES DISC download | **No key** for OpenCity/Open-Meteo; Earthdata account authorization plus credentials/token for optional IMERG | OpenCity + Open-Meteo | Synthetic binary step-lag and false-positive/false-negative utility only | Create and justify road-state truth, timestamp alignment, multiclass/confidence mapping, then run scenarios |
-| Critical-facility accessibility | Geolocated health, fire, and relief facilities | OpenCity [health](https://data.opencity.in/dataset/chennai-healthcare-uphcs-and-uchcs), [fire](https://data.opencity.in/dataset/chennai-fire-stations-), and [relief](https://data.opencity.in/dataset/gcc-relief-centres); [OSM POIs](https://overpass-api.de/api/interpreter) | Health CSV/selected KML, fire CSV/KML, relief-centre PDF, and cached Overpass response | **No key or account** for the listed sources | Use coordinate-bearing KML/OSM; geocode relief addresses sequentially through no-key Nominatim, then cache and manually verify | Summaries from precomputed travel-time arrays only | Acquire/cache, verify type and emergency capability, geocode relief addresses, snap facilities, compute routes |
-| Population impact | Population count raster | Exact [2015 India 1 km R2025A STAC item](https://api.stac.worldpop.org/collections/IND/items/ind_pop_2015_CN_1km_R2025A_UA_v1) | Public STAC asset/GeoTIFF download | **No key or account** | Use the 1 km 2015 asset to match the 2015 flood scenario | Array-level weighted mean, p90, disconnection, and threshold summaries only | Download/clip raster, verify count conservation, map cells to graph origins |
-| Partial compliance | Vehicle IDs and declared compliance level; no observed compliance dataset | [SUMO automatic-routing options](https://eclipse.dev/sumo/docs/Demand/Automatic_Routing.html) | Local SUMO configuration and TraCI/libsumo | **No key or account** | Seeded cohort; size is \(\lfloor np+0.5\rfloor\), so exact percentages require a compatible fleet size | Reproducible nearest-integer cohort selection only | Wire selected IDs to rerouting devices/TraCI, define non-compliant behaviour, calibrate demand, repeat seeds |
-| Facility-oriented criticality | Chennai graph + facilities + population; no separate dataset | Derived from [OSM](https://www.openstreetmap.org/), OpenCity facilities, and WorldPop | Local reverse multi-source shortest-path analysis | **No additional key or account** | Reuse the three public inputs above | Toy-tested single directed keyed-edge ranking; added cost is unnormalised person-time and disconnection is separate | Select candidates, group/close all physical-road arcs by OSM way ID, and run Chennai-scale analysis |
+| Evidence freshness and uncertainty | A derived/simulated road-state trace plus rainfall/flood evidence | [OpenCity flood records](https://data.opencity.in/dataset/chennai-floods-2015-data); ERA5 reanalysis; optional [IMERG Final V07](https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGHH_07/summary) | CKAN download, HTTPS reanalysis download, or credentialed GES DISC download | **No key** for executed OpenCity/ERA5 path; Earthdata account for optional IMERG | OpenCity + ERA5 | Historical-evidence-conditioned Stage 4 state table; generic lag/error utilities | Obtain timestamped road observations and execute matched lag/error scenarios |
+| Critical-facility accessibility | Geolocated health, fire, and relief facilities | OpenCity [health](https://data.opencity.in/dataset/chennai-healthcare-uphcs-and-uchcs), [fire](https://data.opencity.in/dataset/chennai-fire-stations-), and [relief](https://data.opencity.in/dataset/gcc-relief-centres) | Coordinate-bearing KML and relief-centre PDF | **No key or account** | Use verified coordinate-bearing KML | 140 UPHC, 14 UCHC, and 47 fire stations verified, snapped, and evaluated | Add verified hospital capability/capacity; geocode and manually verify relief centres |
+| Population impact | Population count raster | Exact [2015 India 1 km R2025A STAC item](https://api.stac.worldpop.org/collections/IND/items/ind_pop_2015_CN_1km_R2025A_UA_v1) | Public STAC asset/GeoTIFF download | **No key or account** | Use the 1 km 2015 asset to match the historical scenario | 525 graph origins representing 3,591,253 residents evaluated | Validate sub-cell allocation and compare weighted versus unweighted outcomes |
+| Partial compliance | Vehicle IDs and declared compliance level; no observed compliance dataset | [SUMO automatic-routing options](https://eclipse.dev/sumo/docs/Demand/Automatic_Routing.html) | Local policy/SUMO configuration | **No key or account** | Seeded cohort; size is \(\lfloor np+0.5\rfloor\) | 0/25/50/75/100% seeded Stage 7 scenario cohorts executed | Execute matched citywide SUMO comparator with calibrated demand and repeated stochastic seeds |
+| Facility-oriented criticality | Chennai graph + facilities + population; no separate dataset | Derived from [OSM](https://www.openstreetmap.org/), OpenCity facilities, and WorldPop | Local reverse multi-source shortest-path analysis | **No additional key or account** | Reuse the three public inputs above | Chennai-scale directed-arc dependency ranking and OSM-way grouping executed | Recompute causal closure criticality for physical roads and validate candidate interpretation |
 
-**Feasibility conclusion:** a public-source acquisition path exists for all five factors without user-supplied credentials, but the complete Chennai pipeline has not yet been demonstrated. Official NASA IMERG/SRTM data cannot be acquired in a no-credential run; Open-Meteo reanalysis and non-elevation susceptibility inputs are the declared fallbacks.
+**Feasibility conclusion:** the no-credential Chennai pipeline was demonstrated for dated topology, historical/modelled flood evidence, ERA5 reanalysis, coarse public elevation, coordinate-bearing facilities, and WorldPop. Optional official NASA IMERG/SRTM inputs still require credentials; relief-centre coordinates and operational facility capability remain unverified.
 
 ### 6.2 API and Authentication Checklist
 
@@ -377,7 +377,7 @@ Relief-address geocoding will follow the [Nominatim usage policy](https://operat
 **Limitations:** Approximately 10 km cells; rainfall does not prove street flooding.  
 **Direct access:** [GPM_3IMERGHH_07 summary](https://disc.gsfc.nasa.gov/datasets/GPM_3IMERGHH_07/summary)  
 **Documentation:** [IMERG V07](https://gpm.nasa.gov/resources/documents/imerg-v07-technical-documentation), [DOI 10.5067/GPM/IMERG/3B-HH/07](https://doi.org/10.5067/GPM/IMERG/3B-HH/07)  
-**Repository:** `src/chennai_routing/data/rainfall.py` is currently a placeholder; acquisition is unimplemented.  
+**Repository:** `src/chennai_routing/data/rainfall.py` implements the executed reanalysis acquisition/provenance path; credentialed IMERG acquisition remains optional and unexecuted.
 **Viewer:** [NASA Giovanni](https://giovanni.gsfc.nasa.gov/giovanni/)
 
 If no Earthdata credentials are available, the no-key [Open-Meteo Historical Weather API](https://open-meteo.com/en/docs/historical-weather-api) provides an ERA5-derived fallback. A [tested Chennai request](https://archive-api.open-meteo.com/v1/archive?latitude=13.0827&longitude=80.2707&start_date=2015-11-01&end_date=2015-11-02&hourly=precipitation&models=era5&timezone=Asia%2FKolkata) uses `latitude=13.0827`, `longitude=80.2707`, declared dates, `hourly=precipitation`, `models=era5`, and `timezone=Asia/Kolkata`. It must be labelled retrospective reanalysis—not contemporaneous sensing or road-level observation.
@@ -393,7 +393,7 @@ If no Earthdata credentials are available, the no-key [Open-Meteo Historical Wea
 **Limitations:** Terrain is not road-level flood depth; drain maps do not prove capacity or maintenance.  
 **Direct access:** [SRTMGL1](https://www.earthdata.nasa.gov/data/catalog/lpcloud-srtmgl1-003)  
 **Documentation:** [OpenCity drains](https://data.opencity.in/dataset/chennai-stormwater-drain-swd-maps)  
-**Repository:** `src/chennai_routing/data/elevation.py` and `hydrology.py` are currently placeholders.  
+**Repository:** `src/chennai_routing/data/elevation.py` and `hydrology.py` implement the executed coarse-elevation and public hydrology evidence path.
 **Viewer:** [Earthdata Search](https://search.earthdata.nasa.gov/search?q=SRTMGL1)
 
 ### 6.7 Eclipse SUMO
@@ -421,7 +421,7 @@ If no Earthdata credentials are available, the no-key [Open-Meteo Historical Wea
 **Limitations:** UPHC/UCHC data is not a comprehensive emergency-hospital inventory; the relief PDF does not provide validated graph-ready coordinates or current activation; population exposure is not socioeconomic equity.  
 **Direct access:** [Health metadata/API](https://data.opencity.in/api/3/action/package_show?id=chennai-healthcare-uphcs-and-uchcs), [fire metadata/API](https://data.opencity.in/api/3/action/package_show?id=chennai-fire-stations-), [relief metadata/API](https://data.opencity.in/api/3/action/package_show?id=gcc-relief-centres), [WorldPop 2015 India 1 km item](https://api.stac.worldpop.org/collections/IND/items/ind_pop_2015_CN_1km_R2025A_UA_v1), [15.48 MB GeoTIFF asset](https://data.worldpop.org/GIS/Population/Global_2015_2030/R2025A/2015/IND/v1/1km_ua/constrained/ind_pop_2015_CN_1km_R2025A_UA_v1.tif)  
 **Documentation:** [WorldPop 1 km dataset DOI](https://doi.org/10.5258/SOTON/WP00840), [WorldPop STAC](https://api.stac.worldpop.org)  
-**Repository:** `src/chennai_routing/evaluation/metrics.py` provides array/graph utilities; ingestion and graph snapping are unimplemented.  
+**Repository:** `src/chennai_routing/stage8_accessibility.py` implements streamed graph loading, facility/population snapping, sparse accessibility, and dependency reporting; reusable summaries remain in `evaluation/metrics.py`.
 **Viewer:** OpenCity resource previews and [WorldPop STAC Browser](https://stac.worldpop.org/).
 
 Selected OpenCity resources were downloaded and verified on 6 September 2026:
@@ -716,4 +716,4 @@ It does **not** support:
 - equilibrium, optimal fleet assignment, or causal road-criticality claims;
 - completion of every planned Stage 10 comparator and ablation.
 
-The Stage 10 synthesis is therefore a transparent partial publication package. Its defensible novelty is Chennai-oriented integration, reproducibility, and evaluation design; remaining experiment gaps are enumerated in `docs/evidence/STAGE10_EVALUATION_RESULTS.json` rather than silently converted into results.
+The Stage 10 synthesis is a transparent partial publication package. Its defensible novelty is Chennai-oriented integration and reproducibility; remaining gaps are explicit in `docs/evidence/STAGE10_EVALUATION_RESULTS.json`.
